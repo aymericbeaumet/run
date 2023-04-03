@@ -15,5 +15,5 @@ fn main() -> anyhow::Result<()> {
 
     let runner = workbench::Runner::new(config, cwd);
 
-    runner.run_parallel()
+    runner.run_tmux()
 }
