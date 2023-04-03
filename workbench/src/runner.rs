@@ -1,7 +1,6 @@
 use crate::config::Config;
 use std::path::PathBuf;
 use std::process::Command;
-use std::thread;
 
 pub struct Runner {
     config: Config,
@@ -17,20 +16,18 @@ impl Runner {
     }
 
     pub fn execute(&self) -> anyhow::Result<()> {
-        thread::scope(|s| {
-            for run in self.config.runs() {
-                let (program, args) = run.cmd().unwrap();
-                s.spawn(|| {
-                    Command::new(program)
-                        .args(args)
-                        .current_dir(&self.cwd)
-                        .spawn()
-                        .unwrap()
-                        .wait()
-                        .unwrap();
-                });
-            }
+        let children = self.config.runs().map(|run| {
+            let (program, args) = run.cmd().unwrap();
+            Command::new(program)
+                .args(args)
+                .current_dir(&self.cwd)
+                .spawn()
+                .unwrap()
         });
+
+        for mut child in children {
+            child.wait().unwrap();
+        }
 
         Ok(())
     }
