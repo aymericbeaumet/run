@@ -15,18 +15,33 @@ impl Runner {
         }
     }
 
-    pub fn execute(&self) -> anyhow::Result<()> {
-        let children = self.config.runs().map(|run| {
-            let (program, args) = run.cmd().unwrap();
-            Command::new(program)
+    pub fn run_sequential(&self) -> anyhow::Result<()> {
+        for run in self.config.runs() {
+            let (program, args) = run.cmd()?;
+            let mut child = Command::new(program)
                 .args(args)
                 .current_dir(&self.cwd)
-                .spawn()
-                .unwrap()
-        });
+                .spawn()?;
+            child.wait()?;
+        }
+
+        Ok(())
+    }
+
+    pub fn run_parallel(&self) -> anyhow::Result<()> {
+        let mut children = vec![];
+
+        for run in self.config.runs() {
+            let (program, args) = run.cmd()?;
+            let child = Command::new(program)
+                .args(args)
+                .current_dir(&self.cwd)
+                .spawn()?;
+            children.push(child);
+        }
 
         for mut child in children {
-            child.wait().unwrap();
+            child.wait()?;
         }
 
         Ok(())
