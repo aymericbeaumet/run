@@ -1,0 +1,11 @@
+[package]
+name = "workbench"
+version = "0.1.0"
+authors = ["Aymeric Beaumet <hi@aymericbeaumet.com>"]
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.70"
+serde = { version = "1.0.159", features = ["derive"] }
+shell-words = "1.1.0"
+toml = "0.7.3"

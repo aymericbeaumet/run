@@ -1,0 +1,16 @@
+[package]
+name = "workbench-cli"
+version = "0.1.0"
+authors = ["Aymeric Beaumet <hi@aymericbeaumet.com>"]
+edition = "2021"
+
+[[bin]]
+name = "workbench"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.70"
+clap = { version = "4.2.1", features = ["derive"] }
+log = "0.4.17"
+pretty_env_logger = "0.4.0"
+workbench = { path = "../workbench" }
