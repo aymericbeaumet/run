@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::{Config, Mode};
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::process::Command;
@@ -16,7 +16,15 @@ impl Runner {
         }
     }
 
-    pub fn run_sequential(&self) -> anyhow::Result<()> {
+    pub fn run(&self) -> anyhow::Result<()> {
+        match self.config.mode() {
+            Mode::Sequential => self.run_sequential(),
+            Mode::Parallel => self.run_parallel(),
+            Mode::Tmux => self.run_tmux(),
+        }
+    }
+
+    fn run_sequential(&self) -> anyhow::Result<()> {
         for run in self.config.runs() {
             let (program, args) = run.cmd()?;
             let mut child = Command::new(program)
@@ -29,7 +37,7 @@ impl Runner {
         Ok(())
     }
 
-    pub fn run_parallel(&self) -> anyhow::Result<()> {
+    fn run_parallel(&self) -> anyhow::Result<()> {
         let mut children = vec![];
 
         for run in self.config.runs() {
@@ -48,7 +56,7 @@ impl Runner {
         Ok(())
     }
 
-    pub fn run_tmux(&self) -> anyhow::Result<()> {
+    fn run_tmux(&self) -> anyhow::Result<()> {
         let socket = "/tmp/tmux.workbench.sock";
         let session = format!("workbench-{}", "01" /* uuid::Uuid::new_v4() */);
 
@@ -60,7 +68,7 @@ impl Runner {
 
             // create the pane
             if i == 0 {
-                tmux([
+                self.tmux([
                     "-S",
                     socket,
                     "new-session",
@@ -72,7 +80,7 @@ impl Runner {
                     cmd_str,
                 ])?;
             } else {
-                tmux([
+                self.tmux([
                     "-S",
                     socket,
                     "split-window",
@@ -86,7 +94,7 @@ impl Runner {
             }
 
             // set pane title
-            tmux(["-S", socket, "select-pane", "-t", &session, "-T", title])?;
+            self.tmux(["-S", socket, "select-pane", "-t", &session, "-T", title])?;
         }
 
         for options in [
@@ -94,7 +102,7 @@ impl Runner {
             ["pane-border-status", "top"],
             ["pane-border-format", "[#{pane_title}]"],
         ] {
-            tmux(
+            self.tmux(
                 [
                     ["-S", socket, "set-option", "-s", "-t", &session].as_ref(),
                     &options,
@@ -103,7 +111,7 @@ impl Runner {
             )?;
         }
 
-        tmux([
+        self.tmux([
             "-S",
             socket,
             "attach-session",
@@ -115,24 +123,24 @@ impl Runner {
 
         Ok(())
     }
-}
 
-fn tmux<I, S>(args: I) -> std::io::Result<()>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-{
-    let mut child = Command::new("tmux").args(args).spawn()?;
-    let status = child.wait()?;
+    fn tmux<I, S>(&self, args: I) -> std::io::Result<()>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
+        let mut child = Command::new("tmux").args(args).spawn()?;
+        let status = child.wait()?;
 
-    // TODO: report status code in the pane title
+        // TODO: report status code in the pane title
 
-    if !status.success() {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "tmux command failed",
-        ));
+        if !status.success() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "tmux command failed",
+            ));
+        }
+
+        Ok(())
     }
-
-    Ok(())
 }

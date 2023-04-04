@@ -1,0 +1,12 @@
+# Print one, two, three in that order.
+
+# mode is sequential by default
+
+[[run]]
+cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S one'"]
+
+[[run]]
+cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S two'"]
+
+[[run]]
+cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S three'"]

@@ -2,8 +2,20 @@ use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Deserialize)]
+#[serde(default)]
 pub struct Config {
-    run: Vec<Run>,
+    mode: Mode,
+
+    #[serde(rename = "run")]
+    runs: Vec<Run>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Mode {
+    Sequential,
+    Parallel,
+    Tmux,
 }
 
 #[derive(Debug, Deserialize)]
@@ -35,8 +47,21 @@ impl Config {
         Ok((config, abs_path))
     }
 
+    pub fn mode(&self) -> &Mode {
+        &self.mode
+    }
+
     pub fn runs(&self) -> impl Iterator<Item = &Run> {
-        self.run.iter()
+        self.runs.iter()
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            mode: Mode::Sequential,
+            runs: vec![],
+        }
     }
 }
 
