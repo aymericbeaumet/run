@@ -4,10 +4,11 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct Config {
-    mode: Mode,
+    pub mode: Mode,
+    pub tmux: Tmux,
 
     #[serde(rename = "run")]
-    runs: Vec<Run>,
+    pub runs: Vec<Run>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -19,13 +20,20 @@ pub enum Mode {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct Tmux {
+    pub program: String,
+    pub session_prefix: String,
+    pub socket_path: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct Run {
-    cmd: Cmd,
+    pub cmd: Cmd,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
-enum Cmd {
+pub enum Cmd {
     CmdString(String),
     CmdVec(Vec<String>),
 }
@@ -46,33 +54,24 @@ impl Config {
 
         Ok((config, abs_path))
     }
-
-    pub fn mode(&self) -> &Mode {
-        &self.mode
-    }
-
-    pub fn runs(&self) -> impl Iterator<Item = &Run> {
-        self.runs.iter()
-    }
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
             mode: Mode::Sequential,
+            tmux: Tmux {
+                program: "tmux".to_string(),
+                session_prefix: "workbench-".to_string(),
+                socket_path: "/tmp/tmux.workbench.sock".to_string(),
+            },
             runs: vec![],
         }
     }
 }
 
-impl Run {
-    pub fn cmd(&self) -> anyhow::Result<(String, Vec<String>)> {
-        self.cmd.parse()
-    }
-}
-
 impl Cmd {
-    fn parse(&self) -> anyhow::Result<(String, Vec<String>)> {
+    pub fn parse(&self) -> anyhow::Result<(String, Vec<String>)> {
         let as_vec = match self {
             Cmd::CmdString(s) => shell_words::split(s)?
                 .iter()
