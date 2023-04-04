@@ -14,7 +14,5 @@ async fn main() -> anyhow::Result<()> {
     let cwd = Path::parent(&config_file).expect("the config file must be in a directory");
 
     let runner = workbench::Runner::new(config, cwd);
-    runner.run().await?;
-
-    Ok(())
+    runner.run().await
 }
