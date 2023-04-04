@@ -4,10 +4,11 @@
 
 ## Features
 
-- Works on Linux, macOS and Windows
-- Forwards all the signals to the child process
-- Watch mode to restart process when dependencies change
-- Tmux support. Can also run your processes sequentially or concurrently in your terminal.
+- Lightweight: single non-bloated binary
+- Portable: works on Linux, macOS and Windows
+- Compatible: forwards all the signals to the child process
+- Convenient: watch mode to restart process when dependencies change
+- Ergonomic: carefully designed tmux integration
 
 ## Install
 

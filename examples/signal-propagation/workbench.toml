@@ -1,0 +1,6 @@
+# This workbench starts a bash process listening for SIGINT (sent on Ctrl-C)
+# and printing a simple message on stdout when that happens. It's here to
+# demonstrate workbench ability to properly forward signals.
+
+[[run]]
+cmd = ["bash", "-c", "trap 'echo Interrupted!; exit 0' SIGINT; while true; do read -t 0.1; done"]

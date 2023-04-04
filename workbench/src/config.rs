@@ -27,12 +27,12 @@ pub struct Tmux {
     pub socket_path: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Run {
     pub cmd: Cmd,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum Cmd {
     CmdString(String),

@@ -1,6 +1,10 @@
 Just random ideas as they flow in my brain.
 
-## Ideas
+- Allow to add command from cli with `workbench -c '<cmd>'`
+- Allow N workbenches
+- Allow to filter processes with tags
+- Add support for remote workbenches (e.g.: over https)
+- Support those options in workbench files:
 
 ```
 # load_dotenv = true

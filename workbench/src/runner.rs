@@ -16,7 +16,7 @@ impl Runner {
         }
     }
 
-    pub async fn run(&self) -> anyhow::Result<()> {
+    pub async fn run(&mut self) -> anyhow::Result<()> {
         match self.config.mode {
             Mode::Sequential => self.run_sequential().await,
             Mode::Parallel => self.run_parallel().await,
@@ -24,25 +24,30 @@ impl Runner {
         }
     }
 
-    async fn run_sequential(&self) -> anyhow::Result<()> {
+    async fn run_sequential(&mut self) -> anyhow::Result<()> {
+        // TODO: print a message to announce which commands we are going to run
+
         for run in &self.config.runs {
-            let (program, args) = run.cmd.parse()?;
-            Command::new(program)
+            let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
+
+            let mut child = Command::new(program)
                 .args(args)
                 .current_dir(&self.cwd)
-                .spawn()?
-                .wait()
-                .await?;
+                .spawn()?;
+
+            child.wait().await?;
         }
 
         Ok(())
     }
 
-    async fn run_parallel(&self) -> anyhow::Result<()> {
+    async fn run_parallel(&mut self) -> anyhow::Result<()> {
+        // TODO: print a message to announce which commands we are going to run
+
         let mut children = vec![];
 
         for run in &self.config.runs {
-            let (program, args) = run.cmd.parse()?;
+            let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
             children.push(
                 Command::new(program)
                     .args(args)
@@ -58,7 +63,7 @@ impl Runner {
         Ok(())
     }
 
-    async fn run_tmux(&self) -> anyhow::Result<()> {
+    async fn run_tmux(&mut self) -> anyhow::Result<()> {
         let session = format!(
             "{}{}",
             self.config.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
@@ -71,7 +76,7 @@ impl Runner {
         }
 
         for (i, run) in self.config.runs.iter().enumerate() {
-            let (program, args) = run.cmd.parse()?;
+            let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
 
             let cwd = &self.cwd.to_string_lossy();
             let title = format!("{} {}", program, args.join(" ")); // TODO: make it more robust
@@ -96,11 +101,13 @@ impl Runner {
             .await?;
 
         // TODO: unbind-key -a
+        // TODO: bind Ctrl-C globally to kill session
 
         for options in [
             ["mouse", "on"],
             // status
             ["status", "on"],
+            ["status-position", "top"],
             ["status-justify", "absolute-centre"],
             ["status-left", ""],
             ["status-left-length", "0"],
@@ -108,9 +115,9 @@ impl Runner {
             ["status-right-length", "0"],
             ["window-status-current-format", "~ WORKBENCH ~"],
             // pane
-            ["pane-border-format", "[#{pane_title}]"],
+            ["pane-border-format", "╣ #{pane_title} ╠"],
             ["pane-border-indicators", "off"],
-            ["pane-border-lines", "single"],
+            ["pane-border-lines", "double"],
             ["pane-border-status", "top"],
             // theme
             ["status-style", "fg=white bg=orange"],
@@ -121,9 +128,7 @@ impl Runner {
                 .await?;
         }
 
-        self.tmux(["attach-session", "-t", &session]).await?;
-
-        Ok(())
+        Ok(self.tmux(["attach-session", "-t", &session]).await?)
     }
 
     async fn tmux<I, S>(&self, args: I) -> std::io::Result<()>
@@ -146,6 +151,7 @@ impl Runner {
         }
 
         // TODO: report status code in the pane title
+        // TODO: report time to finish in the pane title
 
         Ok(())
     }
