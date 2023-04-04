@@ -74,7 +74,8 @@ impl Runner {
             let (program, args) = run.cmd.parse()?;
 
             let cwd = &self.cwd.to_string_lossy();
-            let title = &format!("{} {}", program, args.join(" ")); // TODO: make it more robust
+            let title = format!("{} {}", program, args.join(" ")); // TODO: make it more robust
+            let title = title.trim();
             let cmd_str = &format!("{} {}; read", program, args.join(" ")); // TODO: make it more robust
 
             // create the pane
@@ -91,21 +92,36 @@ impl Runner {
                 .await?;
         }
 
+        self.tmux(["select-layout", "-t", &session, "even-vertical"])
+            .await?;
+
+        // TODO: unbind-key -a
+
         for options in [
+            ["mouse", "on"],
+            // status
+            ["status", "on"],
+            ["status-justify", "absolute-centre"],
+            ["status-left", ""],
+            ["status-left-length", "0"],
+            ["status-right", ""],
+            ["status-right-length", "0"],
+            ["window-status-current-format", "~ WORKBENCH ~"],
+            // pane
             ["pane-border-format", "[#{pane_title}]"],
             ["pane-border-indicators", "off"],
-            ["pane-border-lines", "heavy"],
+            ["pane-border-lines", "single"],
             ["pane-border-status", "top"],
-            ["pane-border-style", "fg=white"],
-            ["pane-active-border-style", "fg=white"],
-            ["status", "off"],
+            // theme
+            ["status-style", "fg=white bg=orange"],
+            ["pane-border-style", "fg=white bg=orange"],
+            ["pane-active-border-style", "fg=white bg=orange"],
         ] {
             self.tmux([["set-option", "-t", &session, "-s"].as_ref(), &options].concat())
                 .await?;
         }
 
-        self.tmux(["attach-session", "-t", &session, "-f", "read-only"])
-            .await?;
+        self.tmux(["attach-session", "-t", &session]).await?;
 
         Ok(())
     }
