@@ -1,7 +1,7 @@
 use crate::config::{Config, Mode};
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use std::process::Command;
+use tokio::process::Command;
 
 pub struct Runner {
     config: Config,
@@ -16,54 +16,58 @@ impl Runner {
         }
     }
 
-    pub fn run(&self) -> anyhow::Result<()> {
+    pub async fn run(&self) -> anyhow::Result<()> {
         match self.config.mode {
-            Mode::Sequential => self.run_sequential(),
-            Mode::Parallel => self.run_parallel(),
-            Mode::Tmux => self.run_tmux(),
+            Mode::Sequential => self.run_sequential().await,
+            Mode::Parallel => self.run_parallel().await,
+            Mode::Tmux => self.run_tmux().await,
         }
     }
 
-    fn run_sequential(&self) -> anyhow::Result<()> {
+    async fn run_sequential(&self) -> anyhow::Result<()> {
         for run in &self.config.runs {
             let (program, args) = run.cmd.parse()?;
-            let mut child = Command::new(program)
+            Command::new(program)
                 .args(args)
                 .current_dir(&self.cwd)
-                .spawn()?;
-            child.wait()?;
+                .spawn()?
+                .wait()
+                .await?;
         }
 
         Ok(())
     }
 
-    fn run_parallel(&self) -> anyhow::Result<()> {
+    async fn run_parallel(&self) -> anyhow::Result<()> {
         let mut children = vec![];
 
         for run in &self.config.runs {
             let (program, args) = run.cmd.parse()?;
-            let child = Command::new(program)
-                .args(args)
-                .current_dir(&self.cwd)
-                .spawn()?;
-            children.push(child);
+            children.push(
+                Command::new(program)
+                    .args(args)
+                    .current_dir(&self.cwd)
+                    .spawn()?,
+            );
         }
 
         for mut child in children {
-            child.wait()?;
+            child.wait().await?;
         }
 
         Ok(())
     }
 
-    fn run_tmux(&self) -> anyhow::Result<()> {
+    async fn run_tmux(&self) -> anyhow::Result<()> {
         let session = format!(
             "{}{}",
             self.config.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
         );
 
         if self.config.tmux.kill_duplicate_session {
-            let _ = self.tmux(["kill-session", "-t", &session]);
+            if let Err(err) = self.tmux(["kill-session", "-t", &session]).await {
+                println!("[debug] failed to kill duplicate session: {}", err); // TODO: use log library
+            }
         }
 
         for (i, run) in self.config.runs.iter().enumerate() {
@@ -75,13 +79,16 @@ impl Runner {
 
             // create the pane
             if i == 0 {
-                self.tmux(["new-session", "-s", &session, "-d", "-c", cwd, cmd_str])?;
+                self.tmux(["new-session", "-s", &session, "-d", "-c", cwd, cmd_str])
+                    .await?;
             } else {
-                self.tmux(["split-window", "-t", &session, "-v", "-c", cwd, cmd_str])?;
+                self.tmux(["split-window", "-t", &session, "-v", "-c", cwd, cmd_str])
+                    .await?;
             }
 
             // set pane title
-            self.tmux(["select-pane", "-t", &session, "-T", title])?;
+            self.tmux(["select-pane", "-t", &session, "-T", title])
+                .await?;
         }
 
         for options in [
@@ -93,15 +100,17 @@ impl Runner {
             ["pane-active-border-style", "fg=white"],
             ["status", "off"],
         ] {
-            self.tmux([["set-option", "-t", &session, "-s"].as_ref(), &options].concat())?;
+            self.tmux([["set-option", "-t", &session, "-s"].as_ref(), &options].concat())
+                .await?;
         }
 
-        self.tmux(["attach-session", "-t", &session, "-f", "read-only"])?;
+        self.tmux(["attach-session", "-t", &session, "-f", "read-only"])
+            .await?;
 
         Ok(())
     }
 
-    fn tmux<I, S>(&self, args: I) -> std::io::Result<()>
+    async fn tmux<I, S>(&self, args: I) -> std::io::Result<()>
     where
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
@@ -112,7 +121,7 @@ impl Runner {
 
         let mut child = cmd.spawn()?;
 
-        let status = child.wait()?;
+        let status = child.wait().await?;
         if !status.success() {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,

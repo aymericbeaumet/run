@@ -40,7 +40,7 @@ pub enum Cmd {
 }
 
 impl Config {
-    pub fn load<P: AsRef<Path>>(rel_path: Option<P>) -> anyhow::Result<(Config, PathBuf)> {
+    pub async fn load<P: AsRef<Path>>(rel_path: Option<P>) -> anyhow::Result<(Config, PathBuf)> {
         let mut abs_path = std::env::current_dir()?;
         if let Some(rel_path) = rel_path {
             abs_path.push(rel_path);
@@ -50,7 +50,7 @@ impl Config {
         }
         let abs_path = abs_path.canonicalize()?;
 
-        let content = std::fs::read_to_string(&abs_path)?;
+        let content = tokio::fs::read_to_string(&abs_path).await?;
         let config = toml::from_str(&content)?;
 
         Ok((config, abs_path))
