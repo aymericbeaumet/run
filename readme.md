@@ -7,7 +7,7 @@
 - Works on Linux, macOS and Windows
 - Forwards all the signals to the child process
 - Watch mode to restart process when dependencies change
-- Can run processes sequentially, concurrently, or in tmux
+- Tmux support. Can also run your processes sequentially or concurrently in your terminal.
 
 ## Install
 
