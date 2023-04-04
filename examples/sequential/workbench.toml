@@ -1,6 +1,7 @@
-# Print one, two, three in that order.
+# This workbench starts three commands sequentially. Printing one, two, three
+# in that order to the standard output.
 
-# mode is sequential by default
+mode = "sequential" # this is the default and can be omitted
 
 [[run]]
 cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S one'"]

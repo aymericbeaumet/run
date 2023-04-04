@@ -1,12 +1,13 @@
-# Print three, two, one in that order.
+# This workbench starts three commands in parallel. Printing three, two, one in
+# that order to the standard output.
 
 mode = "parallel"
 
 [[run]]
-cmd = ["bash", "-c", "sleep 2; date '+%H:%M:%S one'"]
+cmd = ["bash", "-c", "sleep 2; echo one"]
 
 [[run]]
-cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S two'"]
+cmd = ["bash", "-c", "sleep 1; echo two"]
 
 [[run]]
-cmd = ["bash", "-c", "sleep 0; date '+%H:%M:%S three'"]
+cmd = ["bash", "-c", "sleep 0; echo three"]

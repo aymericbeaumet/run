@@ -1,7 +1,12 @@
+# This workbench starts three commands in parallel in a single tmux session.
+
 mode = "tmux"
 
 [[run]]
-cmd = "ls"
+cmd = ["curl", "ifconfig.me"]
 
 [[run]]
-cmd = ["ls"]
+cmd = ["uname", "-a"]
+
+[[run]]
+cmd = ["df", "-h"]
