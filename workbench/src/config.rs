@@ -21,6 +21,7 @@ pub enum Mode {
 
 #[derive(Debug, Deserialize)]
 pub struct Tmux {
+    pub kill_duplicate_session: bool,
     pub program: String,
     pub session_prefix: String,
     pub socket_path: String,
@@ -61,6 +62,7 @@ impl Default for Config {
         Config {
             mode: Mode::Sequential,
             tmux: Tmux {
+                kill_duplicate_session: true,
                 program: "tmux".to_string(),
                 session_prefix: "workbench-".to_string(),
                 socket_path: "/tmp/tmux.workbench.sock".to_string(),

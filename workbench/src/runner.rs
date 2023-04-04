@@ -62,6 +62,10 @@ impl Runner {
             self.config.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
         );
 
+        if self.config.tmux.kill_duplicate_session {
+            let _ = self.tmux(["kill-session", "-t", &session]);
+        }
+
         for (i, run) in self.config.runs.iter().enumerate() {
             let (program, args) = run.cmd.parse()?;
 
@@ -81,9 +85,13 @@ impl Runner {
         }
 
         for options in [
-            ["status", "off"],
-            ["pane-border-status", "top"],
             ["pane-border-format", "[#{pane_title}]"],
+            ["pane-border-indicators", "off"],
+            ["pane-border-lines", "heavy"],
+            ["pane-border-status", "top"],
+            ["pane-border-style", "fg=white"],
+            ["pane-active-border-style", "fg=white"],
+            ["status", "off"],
         ] {
             self.tmux([["set-option", "-t", &session, "-s"].as_ref(), &options].concat())?;
         }
