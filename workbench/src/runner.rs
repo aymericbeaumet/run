@@ -57,7 +57,10 @@ impl Runner {
     }
 
     fn run_tmux(&self) -> anyhow::Result<()> {
-        let session = format!("workbench-{}", "01" /* uuid::Uuid::new_v4() */);
+        let session = format!(
+            "{}{}",
+            self.config.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
+        );
 
         for (i, run) in self.config.runs.iter().enumerate() {
             let (program, args) = run.cmd.parse()?;
