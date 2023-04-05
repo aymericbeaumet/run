@@ -3,4 +3,4 @@
 # demonstrate workbench ability to properly forward signals.
 
 [[run]]
-cmd = ["bash", "-c", "echo 'Try to press Ctrl-C'; trap 'echo Interrupted!' SIGINT; read"]
+cmd = ["bash", "-c", "echo 'Try to press Ctrl-C...'; trap 'echo Interrupted!' SIGINT; read"]

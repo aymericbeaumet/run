@@ -1,7 +1,10 @@
+mod config;
+mod runner;
+
 use clap::Parser;
+use config::{Cmd, Config, Mode, Run};
+use runner::Runner;
 use std::path::{Path, PathBuf};
-use workbench::config::{Cmd, Config, Mode, Run};
-use workbench::runner::Runner;
 
 #[derive(Parser, Debug)]
 struct Args {

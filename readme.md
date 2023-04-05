@@ -20,5 +20,5 @@ machine._
 
 ```
 git clone -–depth=1 https://github.com/aymericbeaumet/workbench.git /tmp/workbench
-cargo install --path=/tmp/workbench/workbench-cli
+cargo install --path=/tmp/workbench
 ```
