@@ -4,10 +4,10 @@
 mode = "sequential"
 
 [[run]]
-cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S one'"]
+cmd = ["bash", "-c", "sleep 1; echo one"]
 
 [[run]]
-cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S two'"]
+cmd = ["bash", "-c", "sleep 1; echo two"]
 
 [[run]]
-cmd = ["bash", "-c", "sleep 1; date '+%H:%M:%S three'"]
+cmd = ["bash", "-c", "sleep 1; echo three"]
