@@ -8,7 +8,6 @@ pub struct Config {
     pub mode: Mode,
     pub tmux: Tmux,
     pub workdir: PathBuf,
-
     #[serde(rename = "run")]
     pub runs: Vec<Run>,
 }
@@ -32,6 +31,7 @@ pub struct Tmux {
 #[derive(Debug, Deserialize, Clone)]
 pub struct Run {
     pub cmd: Cmd,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]

@@ -3,7 +3,7 @@ mod runner;
 
 use clap::Parser;
 use config::{Cmd, Config, Mode, Run};
-use runner::Runner;
+use runner::{Runner, RunnerOpts};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -18,8 +18,11 @@ struct Args {
     )]
     commands: Vec<String>,
 
-    #[arg(short, long = "mode", value_enum)]
+    #[arg(short, long, value_enum)]
     mode: Option<Mode>,
+
+    #[arg(short, long, help = "Only run the tasks matching all the given tags")]
+    tags: Vec<String>,
 
     #[arg(
         long = "workdir",
@@ -36,14 +39,17 @@ async fn main() -> anyhow::Result<()> {
     // Find and parse config
     let mut config = Config::load(args.config_file).await?;
 
-    // Extend config with CLI args
+    // Override config with CLI args
     config.runs.extend(args.commands.into_iter().map(|cmd| Run {
         cmd: Cmd::CmdString(cmd),
+        tags: vec![],
     }));
     config.mode = args.mode.unwrap_or(config.mode);
     config.workdir = args.workdir.unwrap_or(config.workdir);
 
+    let opts = RunnerOpts { tags: args.tags };
+
     // Run commands
-    let mut runner = Runner::new(config);
+    let mut runner = Runner::new(config, opts);
     runner.run().await
 }

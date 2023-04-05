@@ -1,14 +1,19 @@
-use crate::config::{Config, Mode};
+use crate::config::{Config, Mode, Run};
 use std::ffi::OsStr;
 use tokio::process::Command;
 
+pub struct RunnerOpts {
+    pub tags: Vec<String>,
+}
+
 pub struct Runner {
     config: Config,
+    opts: RunnerOpts,
 }
 
 impl Runner {
-    pub fn new(config: Config) -> Self {
-        Runner { config }
+    pub fn new(config: Config, opts: RunnerOpts) -> Self {
+        Runner { config, opts }
     }
 
     pub async fn run(&mut self) -> anyhow::Result<()> {
@@ -22,7 +27,7 @@ impl Runner {
     async fn run_sequential(&mut self) -> anyhow::Result<()> {
         // TODO: print a message to announce which commands we are going to run
 
-        for run in &self.config.runs {
+        for run in self.filtered_runs() {
             let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
 
             let mut child = Command::new(program)
@@ -41,7 +46,7 @@ impl Runner {
 
         let mut children = vec![];
 
-        for run in &self.config.runs {
+        for run in self.filtered_runs() {
             let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
             children.push(
                 Command::new(program)
@@ -70,7 +75,7 @@ impl Runner {
             }
         }
 
-        for (i, run) in self.config.runs.iter().enumerate() {
+        for (i, run) in self.filtered_runs().enumerate() {
             let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
 
             let workdir = &self.config.workdir.to_string_lossy();
@@ -150,5 +155,11 @@ impl Runner {
         // TODO: report time to finish in the pane title
 
         Ok(())
+    }
+
+    fn filtered_runs(&self) -> impl Iterator<Item = &Run> {
+        self.config.runs.iter().filter(|run| {
+            run.tags.is_empty() || run.tags.iter().all(|tag| self.opts.tags.contains(tag))
+        })
     }
 }

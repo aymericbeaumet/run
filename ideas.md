@@ -1,11 +1,11 @@
 Just random ideas as they flow in my brain.
 
 - Allow to pass N workbench files as cli args
-- Allow to filter processes with tags
 - Add support for remote workbenches (e.g.: over https)
 - Detect http://....:... patterns in stdout, and add them to panel title in tmux
-- Add a "ready" condition to config to allow waiting for a specific state (e.g.: http//.../health returns 200)
+- Add a "wait_for" condition to config to allow waiting for a specific state (e.g.: http//.../health returns 200)
 - Allow to use the `workbench #install #dev` shortcut instead of `workbench -t install -t dev`
+- Allow to configure options for specific tags
 
 Maybe support those options in workbench files?
 
