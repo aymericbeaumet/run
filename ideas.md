@@ -14,23 +14,27 @@ Maybe support those options in workbench files?
 # root = ../www
 # environment = { NODE_ENV = "production" }
 
-#[[init]]
-#cmd = ""
+[init]]
+cmd = ""
+watch = true
+include = []
+exclude = []
+clear = true
 
-#[[test]]
-#cmd = ""
+[[test]]
+cmd = ""
 
-#[[dev]]
-#cmd = ""
+[[dev]]
+cmd = ""
 
 [[run]]
 cmd = "ls"
-#watch = true
+watch = true
 
 [[run]]
 cmd = ["ls"]
-#once = true
-#tags = ["test"]
-#after = ["tag1"]
-#before = ["tag2"]
+once = true
+tags = ["test"]
+after = ["tag1"]
+before = ["tag2"]
 ```

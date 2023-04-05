@@ -1,19 +1,14 @@
 use crate::config::{Config, Mode};
 use std::ffi::OsStr;
-use std::path::PathBuf;
 use tokio::process::Command;
 
 pub struct Runner {
     config: Config,
-    cwd: PathBuf,
 }
 
 impl Runner {
-    pub fn new<P: Into<PathBuf>>(config: Config, cwd: P) -> Self {
-        Runner {
-            config,
-            cwd: cwd.into(),
-        }
+    pub fn new(config: Config) -> Self {
+        Runner { config }
     }
 
     pub async fn run(&mut self) -> anyhow::Result<()> {
@@ -32,7 +27,7 @@ impl Runner {
 
             let mut child = Command::new(program)
                 .args(args)
-                .current_dir(&self.cwd)
+                .current_dir(&self.config.workdir)
                 .spawn()?;
 
             child.wait().await?;
@@ -51,7 +46,7 @@ impl Runner {
             children.push(
                 Command::new(program)
                     .args(args)
-                    .current_dir(&self.cwd)
+                    .current_dir(&self.config.workdir)
                     .spawn()?,
             );
         }
@@ -78,17 +73,17 @@ impl Runner {
         for (i, run) in self.config.runs.iter().enumerate() {
             let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
 
-            let cwd = &self.cwd.to_string_lossy();
+            let workdir = &self.config.workdir.to_string_lossy();
             let title = format!("{} {}", program, args.join(" ")); // TODO: make it more robust
             let title = title.trim();
             let cmd_str = &format!("{} {}; read", program, args.join(" ")); // TODO: make it more robust
 
             // create the pane
             if i == 0 {
-                self.tmux(["new-session", "-s", &session, "-d", "-c", cwd, cmd_str])
+                self.tmux(["new-session", "-s", &session, "-d", "-c", workdir, cmd_str])
                     .await?;
             } else {
-                self.tmux(["split-window", "-t", &session, "-v", "-c", cwd, cmd_str])
+                self.tmux(["split-window", "-t", &session, "-v", "-c", workdir, cmd_str])
                     .await?;
             }
 

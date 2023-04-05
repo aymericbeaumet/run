@@ -4,17 +4,28 @@ mod runner;
 use clap::Parser;
 use config::{Cmd, Config, Mode, Run};
 use runner::Runner;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 struct Args {
     config_file: Option<PathBuf>,
 
-    #[arg(short, long = "command", value_name = "CMD")]
+    #[arg(
+        short,
+        long = "command",
+        value_name = "CMD",
+        help = "Append an additional command to run"
+    )]
     commands: Vec<String>,
 
     #[arg(short, long = "mode", value_enum)]
     mode: Option<Mode>,
+
+    #[arg(
+        long = "workdir",
+        help = "Change the working directory (default to the workbench file directory)"
+    )]
+    workdir: Option<PathBuf>,
 }
 
 #[tokio::main]
@@ -23,18 +34,16 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::try_parse()?;
 
     // Find and parse config
-    let (mut config, config_file) = Config::load(args.config_file).await?;
+    let mut config = Config::load(args.config_file).await?;
 
-    // Apply CLI flags
+    // Extend config with CLI args
     config.runs.extend(args.commands.into_iter().map(|cmd| Run {
         cmd: Cmd::CmdString(cmd),
     }));
     config.mode = args.mode.unwrap_or(config.mode);
-
-    // Infer CWD
-    let cwd = Path::parent(&config_file).expect("the config file must be in a directory");
+    config.workdir = args.workdir.unwrap_or(config.workdir);
 
     // Run commands
-    let mut runner = Runner::new(config, cwd);
+    let mut runner = Runner::new(config);
     runner.run().await
 }

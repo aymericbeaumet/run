@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 pub struct Config {
     pub mode: Mode,
     pub tmux: Tmux,
+    pub workdir: PathBuf,
 
     #[serde(rename = "run")]
     pub runs: Vec<Run>,
@@ -41,7 +42,7 @@ pub enum Cmd {
 }
 
 impl Config {
-    pub async fn load<P: AsRef<Path>>(rel_path: Option<P>) -> anyhow::Result<(Config, PathBuf)> {
+    pub async fn load<P: AsRef<Path>>(rel_path: Option<P>) -> anyhow::Result<Config> {
         let mut abs_path = std::env::current_dir()?;
         if let Some(rel_path) = rel_path {
             abs_path.push(rel_path);
@@ -52,9 +53,14 @@ impl Config {
         let abs_path = abs_path.canonicalize()?;
 
         let content = tokio::fs::read_to_string(&abs_path).await?;
-        let config = toml::from_str(&content)?;
+        let mut config: Config = toml::from_str(&content)?;
 
-        Ok((config, abs_path))
+        config.workdir = abs_path
+            .parent()
+            .expect("infaillible with an existing file")
+            .to_path_buf();
+
+        Ok(config)
     }
 }
 
@@ -69,6 +75,7 @@ impl Default for Config {
                 socket_path: "/tmp/tmux.workbench.sock".to_string(),
             },
             runs: vec![],
+            workdir: std::env::current_dir().expect("cannot guess current dir"),
         }
     }
 }
