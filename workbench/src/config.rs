@@ -1,3 +1,4 @@
+use clap::ValueEnum;
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
@@ -11,7 +12,8 @@ pub struct Config {
     pub runs: Vec<Run>,
 }
 
-#[derive(Debug, Deserialize)]
+// TODO: find a way not to derive ValueEnum here as we are mixing the lib logic with the cli logic.
+#[derive(Debug, Deserialize, Clone, ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
     Sequential,

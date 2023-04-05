@@ -674,6 +674,7 @@ name = "workbench"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "clap",
  "serde",
  "shell-words",
  "tokio",

@@ -1,5 +1,2 @@
-mod config;
-mod runner;
-
-pub use config::Config;
-pub use runner::Runner;
+pub mod config;
+pub mod runner;

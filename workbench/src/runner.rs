@@ -95,10 +95,11 @@ impl Runner {
             // set pane title
             self.tmux(["select-pane", "-t", &session, "-T", title])
                 .await?;
-        }
 
-        self.tmux(["select-layout", "-t", &session, "even-vertical"])
-            .await?;
+            // select layout after spawning each command to avoid: https://stackoverflow.com/a/68362774/1071486
+            self.tmux(["select-layout", "-t", &session, "even-vertical"])
+                .await?;
+        }
 
         // TODO: unbind-key -a
         // TODO: bind Ctrl-C globally to kill session
