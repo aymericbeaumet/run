@@ -5,10 +5,9 @@
 ## Features
 
 - Lightweight: single non-bloated binary
-- Portable: works on Linux, macOS and Windows
-- Compatible: forwards all the signals to the child process
 - Convenient: watch mode to restart process when dependencies change
 - Ergonomic: carefully designed tmux integration
+- Portable: works on Linux, macOS and Windows
 
 ## Install
 
@@ -19,6 +18,5 @@ toolchain](https://www.rust-lang.org/tools/install) to be installed on your
 machine._
 
 ```
-git clone -–depth=1 https://github.com/aymericbeaumet/workbench.git /tmp/workbench
-cargo install --path=/tmp/workbench
+cargo install -f --git https://github.com/aymericbeaumet/workbench
 ```
