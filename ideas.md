@@ -11,6 +11,8 @@ Just random ideas as they flow in my brain.
 - Support env expansion in commands
 - Offer to send stderr to chatgpt to get suggestions
 - Test --workdir cli flag (require .toml.args support in tests)
+- Add a --dry-run flag that basically prints the commands instead of running
+- Add a --dump flag that prints the whole config instead of running
 
 Maybe support those options in workbench files?
 
