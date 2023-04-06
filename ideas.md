@@ -7,6 +7,8 @@ Just random ideas as they flow in my brain.
 - Allow to use the `workbench #install #dev` shortcut instead of `workbench -t install -t dev`
 - Allow to configure options for specific tags
 - Rename the project `run`
+- Automatic support for node_modules/.bin
+- Support env expansion in commands
 
 Maybe support those options in workbench files?
 

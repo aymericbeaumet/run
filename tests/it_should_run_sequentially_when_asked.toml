@@ -1,0 +1,7 @@
+mode = "sequential"
+
+[run.one]
+cmd = ["echo", "one"]
+
+[run.two]
+cmd = ["echo", "two"]

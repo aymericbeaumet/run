@@ -1,7 +1,10 @@
-use assert_cmd::{assert::Assert, Command};
 use glob::glob;
 use pretty_assertions::assert_str_eq;
-use std::path::Path;
+use std::{
+    path::{Path, PathBuf},
+    process::Output,
+};
+use tokio::process::Command;
 
 const ROOT: &str = env!("CARGO_MANIFEST_DIR");
 
@@ -13,7 +16,7 @@ const PATTERNS: [&str; 2] = [
 ];
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_invocations() {
+async fn test_all() {
     let mut set = tokio::task::JoinSet::new();
 
     PATTERNS
@@ -21,37 +24,51 @@ async fn test_invocations() {
         .map(|pattern| format!("{}/{}", ROOT, pattern))
         .flat_map(|pattern| glob(&pattern).unwrap().map(|entry| entry.unwrap()))
         .for_each(|file| {
-            set.spawn(async move {
-                let pretty_file = file.strip_prefix(ROOT).unwrap();
-
-                if read_file(&file, ".skip").await.is_some() {
-                    println!("[skipped] {:?}", &pretty_file);
-                    return;
-                }
-
-                let stdout = read_file(&file, ".stdout").await.unwrap_or_default();
-                let stderr = read_file(&file, ".stderr").await.unwrap_or_default();
-
-                // run and assert success
-                let assert = workbench(Some(&file)).success();
-
-                // assert stdout
-                assert_str_eq!(
-                    std::str::from_utf8(&assert.get_output().stdout).unwrap(),
-                    stdout
-                );
-
-                // assert stderr
-                assert_str_eq!(
-                    std::str::from_utf8(&assert.get_output().stderr).unwrap(),
-                    stderr,
-                );
-
-                println!("[ok]      {:?}", &pretty_file);
-            });
+            set.spawn(test_one(file));
         });
 
     while set.join_next().await.is_some() {}
+}
+
+async fn test_one(file: PathBuf) {
+    let pretty_file = file.strip_prefix(ROOT).unwrap();
+
+    if read_file(&file, ".skip").await.is_some() {
+        println!("[skipped] {:?}", &pretty_file);
+        return;
+    }
+
+    let expected_stdout = read_file(&file, ".stdout").await;
+    let expected_stderr = read_file(&file, ".stderr").await;
+
+    if expected_stdout.is_none() && expected_stderr.is_none() {
+        panic!("none one of .stdout/.stderr found for {:?}", pretty_file);
+    }
+
+    // run and get output
+    let output = workbench(Some(&file)).await;
+
+    // assert stdout
+    if let Some(expected_stdout) = expected_stdout {
+        assert_str_eq!(
+            std::str::from_utf8(&output.stdout).unwrap(),
+            expected_stdout,
+            "{:?}",
+            pretty_file
+        );
+    }
+
+    // assert stderr
+    if let Some(expected_stderr) = expected_stderr {
+        assert_str_eq!(
+            std::str::from_utf8(&output.stderr).unwrap(),
+            expected_stderr,
+            "{:?}",
+            pretty_file
+        );
+    }
+
+    println!("[ok]      {:?}", &pretty_file);
 }
 
 async fn read_file<P: AsRef<Path>>(filepath: P, suffix: &str) -> Option<String> {
@@ -59,16 +76,16 @@ async fn read_file<P: AsRef<Path>>(filepath: P, suffix: &str) -> Option<String> 
     tokio::fs::read_to_string(&filepath).await.ok()
 }
 
-fn workbench<P>(file: Option<P>) -> Assert
+async fn workbench<P>(file: Option<P>) -> Output
 where
     P: AsRef<Path>,
 {
-    let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME")).unwrap();
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_workbench"));
 
     if let Some(file) = file {
         cmd.arg("-f");
         cmd.arg(file.as_ref());
     }
 
-    cmd.assert()
+    cmd.output().await.unwrap()
 }

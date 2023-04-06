@@ -1,0 +1,7 @@
+mode = "parallel"
+
+[run.one]
+cmd = ["bash", "-c", "sleep 0.1 && echo one"]
+
+[run.two]
+cmd = ["bash", "-c", "sleep 0.0 && echo two"]
