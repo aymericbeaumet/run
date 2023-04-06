@@ -4,7 +4,7 @@ mod runner;
 use clap::Parser;
 use config::{Config, Mode, Run};
 use runner::{Runner, RunnerOpts};
-use std::{ffi::OsString, path::PathBuf};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 struct Args {
@@ -39,16 +39,8 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    workbench(std::env::args_os()).await
-}
-
-pub async fn workbench<I, T>(args: I) -> anyhow::Result<()>
-where
-    I: IntoIterator<Item = T>,
-    T: Into<OsString> + Clone,
-{
     // Parse arguments
-    let args = Args::try_parse_from(args)?;
+    let args = Args::try_parse_from(std::env::args_os())?;
 
     // Find and parse config
     let mut config = Config::load(args.file).await?;
