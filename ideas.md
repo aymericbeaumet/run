@@ -6,6 +6,7 @@ Just random ideas as they flow in my brain.
 - Add a "wait_for" condition to config to allow waiting for a specific state (e.g.: http//.../health returns 200)
 - Allow to use the `workbench #install #dev` shortcut instead of `workbench -t install -t dev`
 - Allow to configure options for specific tags
+- Rename the project `run`
 
 Maybe support those options in workbench files?
 

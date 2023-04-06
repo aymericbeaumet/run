@@ -8,7 +8,9 @@ use std::{ffi::OsString, path::PathBuf};
 
 #[derive(Parser)]
 struct Args {
-    config_file: Option<PathBuf>,
+    // positional arguments
+    #[arg(use_value_delimiter = true, value_delimiter = ',')]
+    selectors: Vec<String>,
 
     #[arg(
         short,
@@ -18,19 +20,19 @@ struct Args {
     )]
     commands: Vec<String>,
 
+    #[arg(
+        short,
+        long,
+        help = "The config file to use (default: workbench.toml in the working directory)"
+    )]
+    file: Option<PathBuf>,
+
     #[arg(short, long, value_enum)]
     mode: Option<Mode>,
 
     #[arg(
-        short = 't',
-        long = "tags",
-        help = "Only run the tasks matching all the given tags"
-    )]
-    required_tags: Vec<String>,
-
-    #[arg(
         long = "workdir",
-        help = "Change the working directory (default to the workbench.toml directory)"
+        help = "Change the working directory (default: the parent directory of FILE)"
     )]
     workdir: Option<PathBuf>,
 }
@@ -49,7 +51,7 @@ where
     let args = Args::try_parse_from(args)?;
 
     // Find and parse config
-    let mut config = Config::load(args.config_file).await?;
+    let mut config = Config::load(args.file).await?;
 
     // Override config with CLI flags
     if let Some(mode) = args.mode {
@@ -64,7 +66,7 @@ where
         config.runs.insert(
             format!("cli-{}", i),
             Run {
-                cmd: vec![cmd], // TODO: parse cmd
+                cmd: vec![cmd], // TODO: not correct, properly parse cmd
                 ..Default::default()
             },
         );
@@ -74,7 +76,7 @@ where
     let runner = Runner::new(
         config,
         RunnerOpts {
-            required_tags: args.required_tags,
+            required_tags: args.selectors, // TODO: not correct, properly parse selectors
         },
     );
     runner.run().await
