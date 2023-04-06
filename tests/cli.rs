@@ -3,6 +3,8 @@ use glob::glob;
 use pretty_assertions::assert_str_eq;
 use std::path::Path;
 
+const ROOT: &str = env!("CARGO_MANIFEST_DIR");
+
 const PATTERNS: [&str; 2] = [
     // try to match all workbench.toml files in the examples directory
     "examples/*/workbench.toml",
@@ -12,16 +14,14 @@ const PATTERNS: [&str; 2] = [
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_invocations() {
-    let root = env!("CARGO_MANIFEST_DIR");
-
     let tasks = PATTERNS
         .iter()
-        .map(|pattern| format!("{}/{}", root, pattern))
+        .map(|pattern| format!("{}/{}", ROOT, pattern))
         .flat_map(|pattern| glob(&pattern).unwrap().map(|entry| entry.unwrap()))
         .map(|file| {
             // TODO: limit concurrency
             tokio::spawn(async move {
-                let pretty_file = file.strip_prefix(root).unwrap();
+                let pretty_file = file.strip_prefix(ROOT).unwrap();
 
                 if read_file(&file, ".skip").await.is_some() {
                     println!("[skipped] {:?}", &pretty_file);
