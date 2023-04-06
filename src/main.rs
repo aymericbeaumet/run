@@ -50,7 +50,7 @@ async fn main() -> anyhow::Result<()> {
         config.mode = mode;
     }
     if let Some(workdir) = args.workdir {
-        let mut abs = std::env::current_dir()?;
+        let mut abs = std::env::current_dir()?; // TODO: clean this up
         abs.push(workdir);
         config.workdir.set(abs);
     }
