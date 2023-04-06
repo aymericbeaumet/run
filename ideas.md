@@ -9,6 +9,8 @@ Just random ideas as they flow in my brain.
 - Rename the project `run`
 - Automatic support for node_modules/.bin
 - Support env expansion in commands
+- Offer to send stderr to chatgpt to get suggestions
+- Test --workdir cli flag (require .toml.args support in tests)
 
 Maybe support those options in workbench files?
 

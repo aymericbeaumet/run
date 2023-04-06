@@ -8,7 +8,7 @@ use std::{
 pub type Runs = indexmap::map::IndexMap<String, Run>;
 pub type Tags = indexmap::set::IndexSet<String>;
 
-#[derive(Deserialize, Default)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
@@ -21,7 +21,7 @@ pub struct Config {
     pub workdir: Workdir,
 }
 
-#[derive(Deserialize, Clone, ValueEnum, Default)]
+#[derive(Debug, Deserialize, Clone, ValueEnum, Default)]
 #[serde(deny_unknown_fields, rename_all = "lowercase")]
 pub enum Mode {
     #[default]
@@ -31,10 +31,10 @@ pub enum Mode {
 }
 
 impl Config {
-    pub async fn load<P: AsRef<Path>>(config_cli_path: Option<P>) -> anyhow::Result<Config> {
+    pub async fn load<P: AsRef<Path>>(relpath: Option<P>) -> anyhow::Result<Config> {
         let mut config_path = std::env::current_dir()?;
-        if let Some(config_cli_path) = config_cli_path {
-            config_path.push(config_cli_path);
+        if let Some(relpath) = relpath {
+            config_path.push(relpath);
         }
         if std::fs::metadata(&config_path)?.is_dir() {
             config_path.push("workbench.toml");
@@ -45,24 +45,28 @@ impl Config {
         let mut config: Config = toml::from_str(&config_str)?;
 
         // if workdir is not set, we set it to the directory of the config file
+        let config_dir = config_path
+            .parent()
+            .expect("infaillible with an existing file")
+            .to_path_buf();
         if config.workdir.is_none() {
-            config.workdir.set(
-                config_path
-                    .parent()
-                    .expect("infaillible with an existing file")
-                    .to_path_buf(),
-            );
+            config.workdir.set(config_dir);
+        } else {
+            let mut abs = config_dir;
+            abs.push(&config.workdir);
+            config.workdir.set(abs);
         }
 
         Ok(config)
     }
 }
 
-#[derive(Deserialize, Clone, Default)]
+#[derive(Debug, Deserialize, Clone, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Run {
     pub cmd: Vec<String>,
     pub description: Option<String>,
+    pub workdir: Option<PathBuf>,
     #[serde(default)]
     pub tags: Tags,
 }
@@ -76,7 +80,7 @@ impl Run {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Tmux {
     pub kill_duplicate_session: bool,
@@ -96,12 +100,16 @@ impl Default for Tmux {
     }
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Debug, Deserialize, Default, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Workdir(Option<PathBuf>);
 
 impl Workdir {
     pub fn set(&mut self, workdir: PathBuf) {
+        assert!(
+            workdir.is_absolute(),
+            "implementation error: must always be absolute"
+        );
         self.0.replace(workdir);
     }
 

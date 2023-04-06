@@ -31,9 +31,18 @@ impl Runner {
     async fn run_sequential(&self) -> anyhow::Result<()> {
         for (id, run) in self.filtered_runs() {
             println!("---[ {} ]---", run.title(id));
+
+            // TODO: clean + refactor
+            let mut workdir = self.config.workdir.as_ref().to_path_buf();
+            if let Some(wd) = run.workdir.as_ref() {
+                let mut abs = workdir.to_path_buf();
+                abs.push(wd);
+                workdir = abs;
+            }
+
             let mut child = Command::new(&run.cmd[0])
                 .args(&run.cmd[1..])
-                .current_dir(&self.config.workdir)
+                .current_dir(workdir)
                 .spawn()?;
 
             child.wait().await?;
@@ -49,10 +58,19 @@ impl Runner {
 
         for (id, run) in self.filtered_runs() {
             println!("---[ {} ]---", run.title(id));
+
+            // TODO: clean + refactor
+            let mut workdir = self.config.workdir.as_ref().to_path_buf();
+            if let Some(wd) = run.workdir.as_ref() {
+                let mut abs = workdir.to_path_buf();
+                abs.push(wd);
+                workdir = abs;
+            }
+
             children.push(
                 Command::new(&run.cmd[0])
                     .args(&run.cmd[1..])
-                    .current_dir(&self.config.workdir)
+                    .current_dir(workdir)
                     .spawn()?,
             );
         }
@@ -80,7 +98,15 @@ impl Runner {
             let program = &run.cmd[0];
             let args = &run.cmd[1..];
 
-            let workdir = &self.config.workdir.to_string_lossy();
+            // TODO: clean + refactor
+            let mut workdir = self.config.workdir.as_ref().to_path_buf();
+            if let Some(wd) = run.workdir.as_ref() {
+                let mut abs = workdir.to_path_buf();
+                abs.push(wd);
+                workdir = abs;
+            }
+
+            let workdir = &workdir.to_string_lossy();
             let cmd_str = &format!("{} {}; read", program, args.join(" ")); // TODO: make it more robust
 
             // create the pane
