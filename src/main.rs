@@ -23,16 +23,16 @@ struct Args {
     #[arg(
         short,
         long,
-        help = "The config file to use (default: workbench.toml in the working directory)"
+        help = "The config file to use (default: workbench.toml in the current directory)"
     )]
     file: Option<PathBuf>,
 
-    #[arg(short, long, value_enum)]
+    #[arg(short, long, value_enum, help = "The mode to use to run commands")]
     mode: Option<Mode>,
 
     #[arg(
         long = "workdir",
-        help = "Change the working directory (default: the parent directory of FILE)"
+        help = "The working directory to work in (default: the parent directory of FILE)"
     )]
     workdir: Option<PathBuf>,
 }
