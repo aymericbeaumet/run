@@ -1,7 +1,7 @@
 use assert_cmd::{assert::Assert, Command};
 use glob::glob;
 use pretty_assertions::assert_str_eq;
-use std::{path::Path, process::Output};
+use std::path::Path;
 
 const PATTERNS: [&str; 2] = [
     // try to match all workbench.toml files in the examples directory
