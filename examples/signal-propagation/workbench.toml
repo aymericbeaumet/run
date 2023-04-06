@@ -2,5 +2,5 @@
 # and printing a simple message on stdout when that happens. It's here to
 # demonstrate workbench ability to properly forward signals.
 
-[[run]]
+[run.bash]
 cmd = ["bash", "-c", "echo 'Try to press Ctrl-C...'; trap 'echo Interrupted!' SIGINT; read"]

@@ -3,11 +3,11 @@
 
 mode = "tmux"
 
-[[run]]
+[run.curl]
 cmd = ["curl", "ifconfig.me"]
 
-[[run]]
+[run.uname]
 cmd = ["uname", "-a"]
 
-[[run]]
+[run.df]
 cmd = ["df", "-h"]

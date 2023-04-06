@@ -2,11 +2,11 @@ mod config;
 mod runner;
 
 use clap::Parser;
-use config::{Cmd, Config, Mode, Run};
+use config::{Config, Mode, Run};
 use runner::{Runner, RunnerOpts};
 use std::path::PathBuf;
 
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 struct Args {
     config_file: Option<PathBuf>,
 
@@ -21,12 +21,16 @@ struct Args {
     #[arg(short, long, value_enum)]
     mode: Option<Mode>,
 
-    #[arg(short, long, help = "Only run the tasks matching all the given tags")]
-    tags: Vec<String>,
+    #[arg(
+        short = 't',
+        long = "tags",
+        help = "Only run the tasks matching all the given tags"
+    )]
+    required_tags: Vec<String>,
 
     #[arg(
         long = "workdir",
-        help = "Change the working directory (default to the workbench file directory)"
+        help = "Change the working directory (default to the workbench.toml directory)"
     )]
     workdir: Option<PathBuf>,
 }
@@ -39,17 +43,27 @@ async fn main() -> anyhow::Result<()> {
     // Find and parse config
     let mut config = Config::load(args.config_file).await?;
 
-    // Override config with CLI args
-    config.runs.extend(args.commands.into_iter().map(|cmd| Run {
-        cmd: Cmd::CmdString(cmd),
-        tags: vec![],
-    }));
+    // Override config with CLI flags
     config.mode = args.mode.unwrap_or(config.mode);
     config.workdir = args.workdir.unwrap_or(config.workdir);
 
-    let opts = RunnerOpts { tags: args.tags };
+    // Override config with additional commands
+    for (i, cmd) in args.commands.into_iter().enumerate() {
+        config.runs.insert(
+            format!("cli-{}", i),
+            Run {
+                cmd: vec![cmd], // TODO: parse cmd
+                ..Default::default()
+            },
+        );
+    }
 
-    // Run commands
-    let mut runner = Runner::new(config, opts);
+    // Create and start runner
+    let runner = Runner::new(
+        config,
+        RunnerOpts {
+            required_tags: args.required_tags,
+        },
+    );
     runner.run().await
 }

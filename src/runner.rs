@@ -1,22 +1,25 @@
-use crate::config::{Config, Mode, Run};
+use crate::config::{Config, Mode, Run, Tags};
 use std::ffi::OsStr;
 use tokio::process::Command;
 
 pub struct RunnerOpts {
-    pub tags: Vec<String>,
+    pub required_tags: Vec<String>,
 }
 
 pub struct Runner {
     config: Config,
-    opts: RunnerOpts,
+    required_tags: Tags,
 }
 
 impl Runner {
     pub fn new(config: Config, opts: RunnerOpts) -> Self {
-        Runner { config, opts }
+        Runner {
+            config,
+            required_tags: opts.required_tags.into_iter().collect(),
+        }
     }
 
-    pub async fn run(&mut self) -> anyhow::Result<()> {
+    pub async fn run(&self) -> anyhow::Result<()> {
         match self.config.mode {
             Mode::Sequential => self.run_sequential().await,
             Mode::Parallel => self.run_parallel().await,
@@ -24,14 +27,12 @@ impl Runner {
         }
     }
 
-    async fn run_sequential(&mut self) -> anyhow::Result<()> {
+    async fn run_sequential(&self) -> anyhow::Result<()> {
         // TODO: print a message to announce which commands we are going to run
 
-        for run in self.filtered_runs() {
-            let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
-
-            let mut child = Command::new(program)
-                .args(args)
+        for (_id, run) in self.filtered_runs() {
+            let mut child = Command::new(&run.cmd[0])
+                .args(&run.cmd[1..])
                 .current_dir(&self.config.workdir)
                 .spawn()?;
 
@@ -41,16 +42,15 @@ impl Runner {
         Ok(())
     }
 
-    async fn run_parallel(&mut self) -> anyhow::Result<()> {
+    async fn run_parallel(&self) -> anyhow::Result<()> {
         // TODO: print a message to announce which commands we are going to run
 
         let mut children = vec![];
 
-        for run in self.filtered_runs() {
-            let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
+        for (_id, run) in self.filtered_runs() {
             children.push(
-                Command::new(program)
-                    .args(args)
+                Command::new(&run.cmd[0])
+                    .args(&run.cmd[1..])
                     .current_dir(&self.config.workdir)
                     .spawn()?,
             );
@@ -63,7 +63,7 @@ impl Runner {
         Ok(())
     }
 
-    async fn run_tmux(&mut self) -> anyhow::Result<()> {
+    async fn run_tmux(&self) -> anyhow::Result<()> {
         let session = format!(
             "{}{}",
             self.config.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
@@ -75,11 +75,12 @@ impl Runner {
             }
         }
 
-        for (i, run) in self.filtered_runs().enumerate() {
-            let (program, args) = run.cmd.parse()?; // TODO: move .parse() step during config parsing
+        for (i, (id, run)) in self.filtered_runs().enumerate() {
+            let program = &run.cmd[0];
+            let args = &run.cmd[1..];
 
             let workdir = &self.config.workdir.to_string_lossy();
-            let title = format!("{} {}", program, args.join(" ")); // TODO: make it more robust
+            let title = id;
             let title = title.trim();
             let cmd_str = &format!("{} {}; read", program, args.join(" ")); // TODO: make it more robust
 
@@ -157,9 +158,13 @@ impl Runner {
         Ok(())
     }
 
-    fn filtered_runs(&self) -> impl Iterator<Item = &Run> {
-        self.config.runs.iter().filter(|run| {
-            run.tags.is_empty() || run.tags.iter().all(|tag| self.opts.tags.contains(tag))
+    fn filtered_runs(&self) -> impl Iterator<Item = (&String, &Run)> {
+        self.config.runs.iter().filter(|(_, run)| {
+            self.required_tags.is_empty()
+                || self
+                    .required_tags
+                    .iter()
+                    .all(|required_tag| run.tags.contains(required_tag))
         })
     }
 }

@@ -7,10 +7,10 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.70"
 clap = { version = "4.2.1", features = ["derive"] }
+indexmap = { version = "1.9.3", features = ["serde"] }
 log = "0.4.17"
 pretty_env_logger = "0.4.0"
 serde = { version = "1.0.159", features = ["derive"] }
-shell-words = "1.1.0"
 tokio = { version = "1.27.0", features = ["macros", "rt-multi-thread", "signal", "fs", "process"] }
 toml = "0.7.3"
 uuid = { version = "1.3.0", features = ["v4"] }
