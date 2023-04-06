@@ -44,8 +44,12 @@ async fn main() -> anyhow::Result<()> {
     let mut config = Config::load(args.config_file).await?;
 
     // Override config with CLI flags
-    config.mode = args.mode.unwrap_or(config.mode);
-    config.workdir = args.workdir.unwrap_or(config.workdir);
+    if let Some(mode) = args.mode {
+        config.mode = mode;
+    }
+    if let Some(workdir) = args.workdir {
+        config.workdir.set(workdir);
+    }
 
     // Override config with additional commands
     for (i, cmd) in args.commands.into_iter().enumerate() {
