@@ -9,6 +9,7 @@ pub type Runs = indexmap::map::IndexMap<String, Run>;
 pub type Tags = indexmap::set::IndexSet<String>;
 
 #[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
     pub mode: Mode,
@@ -21,7 +22,7 @@ pub struct Config {
 }
 
 #[derive(Deserialize, Clone, ValueEnum, Default)]
-#[serde(rename_all = "lowercase")]
+#[serde(deny_unknown_fields, rename_all = "lowercase")]
 pub enum Mode {
     #[default]
     Sequential,
@@ -58,13 +59,25 @@ impl Config {
 }
 
 #[derive(Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Run {
     pub cmd: Vec<String>,
+    pub description: Option<String>,
     #[serde(default)]
     pub tags: Tags,
 }
 
+impl Run {
+    pub fn title<S: AsRef<str>>(&self, id: S) -> String {
+        self.description
+            .as_ref()
+            .map(|desc| format!("{}: {}", id.as_ref(), desc))
+            .unwrap_or(id.as_ref().to_string())
+    }
+}
+
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Tmux {
     pub kill_duplicate_session: bool,
     pub program: String,
@@ -84,6 +97,7 @@ impl Default for Tmux {
 }
 
 #[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Workdir(Option<PathBuf>);
 
 impl Workdir {

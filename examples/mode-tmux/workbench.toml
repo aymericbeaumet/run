@@ -4,7 +4,8 @@
 mode = "tmux"
 
 [run.curl]
-cmd = ["curl", "ifconfig.me"]
+description = "fetch the current ip address"
+cmd = ["curl", "icanhazip.com"]
 
 [run.uname]
 cmd = ["uname", "-a"]

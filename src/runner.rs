@@ -1,5 +1,6 @@
 use crate::config::{Config, Mode, Run, Tags};
 use std::ffi::OsStr;
+use std::io::{stderr, stdout, Write};
 use tokio::process::Command;
 
 pub struct RunnerOpts {
@@ -28,26 +29,26 @@ impl Runner {
     }
 
     async fn run_sequential(&self) -> anyhow::Result<()> {
-        // TODO: print a message to announce which commands we are going to run
-
-        for (_id, run) in self.filtered_runs() {
+        for (id, run) in self.filtered_runs() {
+            println!("---[ {} ]---", run.title(id));
             let mut child = Command::new(&run.cmd[0])
                 .args(&run.cmd[1..])
                 .current_dir(&self.config.workdir)
                 .spawn()?;
 
             child.wait().await?;
+            stdout().flush()?;
+            stderr().flush()?;
         }
 
         Ok(())
     }
 
     async fn run_parallel(&self) -> anyhow::Result<()> {
-        // TODO: print a message to announce which commands we are going to run
-
         let mut children = vec![];
 
-        for (_id, run) in self.filtered_runs() {
+        for (id, run) in self.filtered_runs() {
+            println!("---[ {} ]---", run.title(id));
             children.push(
                 Command::new(&run.cmd[0])
                     .args(&run.cmd[1..])
@@ -80,8 +81,6 @@ impl Runner {
             let args = &run.cmd[1..];
 
             let workdir = &self.config.workdir.to_string_lossy();
-            let title = id;
-            let title = title.trim();
             let cmd_str = &format!("{} {}; read", program, args.join(" ")); // TODO: make it more robust
 
             // create the pane
@@ -94,7 +93,7 @@ impl Runner {
             }
 
             // set pane title
-            self.tmux(["select-pane", "-t", &session, "-T", title])
+            self.tmux(["select-pane", "-t", &session, "-T", &run.title(id)])
                 .await?;
 
             // select layout after spawning each command to avoid: https://stackoverflow.com/a/68362774/1071486
