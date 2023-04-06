@@ -4,10 +4,10 @@
 mode = "sequential"
 
 [run.one]
-cmd = ["bash", "-c", "sleep 1; echo one"]
+cmd = ["bash", "-c", "echo one"]
 
 [run.two]
-cmd = ["bash", "-c", "sleep 1; echo two"]
+cmd = ["bash", "-c", "echo two"]
 
 [run.three]
-cmd = ["bash", "-c", "sleep 1; echo three"]
+cmd = ["bash", "-c", "echo three"]

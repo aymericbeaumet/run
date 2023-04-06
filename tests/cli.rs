@@ -10,7 +10,7 @@ const PATTERNS: [&str; 2] = [
     "tests/workbench*.toml",
 ];
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn test_invocations() {
     let files: Vec<_> = PATTERNS
         .iter()
@@ -20,10 +20,11 @@ async fn test_invocations() {
 
     assert!(!files.is_empty());
 
+    // TODO: run in parallel with a concurrency of X
     for file in files {
         let skip = read_file(&file, ".skip").await;
         if skip.is_some() {
-            println!("[skip] {:?}", file);
+            println!("[skipped] {:?}", file);
             continue;
         }
 
@@ -44,6 +45,8 @@ async fn test_invocations() {
             std::str::from_utf8(&assert.get_output().stderr).unwrap(),
             stderr,
         );
+
+        println!("[ok]      {:?}", file);
     }
 }
 
