@@ -14,13 +14,14 @@ const PATTERNS: [&str; 2] = [
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_invocations() {
-    let tasks = PATTERNS
+    let mut set = tokio::task::JoinSet::new();
+
+    PATTERNS
         .iter()
         .map(|pattern| format!("{}/{}", ROOT, pattern))
         .flat_map(|pattern| glob(&pattern).unwrap().map(|entry| entry.unwrap()))
-        .map(|file| {
-            // TODO: limit concurrency
-            tokio::spawn(async move {
+        .for_each(|file| {
+            set.spawn(async move {
                 let pretty_file = file.strip_prefix(ROOT).unwrap();
 
                 if read_file(&file, ".skip").await.is_some() {
@@ -47,10 +48,10 @@ async fn test_invocations() {
                 );
 
                 println!("[ok]      {:?}", &pretty_file);
-            })
+            });
         });
 
-    futures::future::join_all(tasks).await;
+    while set.join_next().await.is_some() {}
 }
 
 async fn read_file<P: AsRef<Path>>(filepath: P, suffix: &str) -> Option<String> {
