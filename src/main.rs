@@ -7,7 +7,7 @@ use runner::{Runner, RunnerOpts};
 use std::path::PathBuf;
 
 #[derive(Parser)]
-struct CLI {
+struct Args {
     // positional arguments
     #[arg(use_value_delimiter = true, value_delimiter = ',')]
     selectors: Vec<String>,
@@ -40,23 +40,23 @@ struct CLI {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Parse arguments
-    let cli = CLI::try_parse_from(std::env::args_os())?;
+    let args = Args::try_parse_from(std::env::args_os())?;
 
     // Find and parse config
-    let mut config = Config::load(cli.file).await?;
+    let mut config = Config::load(args.file).await?;
 
     // Override config with CLI flags
-    if let Some(mode) = cli.mode {
+    if let Some(mode) = args.mode {
         config.mode = mode;
     }
-    if let Some(workdir) = cli.workdir {
+    if let Some(workdir) = args.workdir {
         let mut abs = std::env::current_dir()?;
         abs.push(workdir);
         config.workdir.set(abs);
     }
 
     // Override config with additional commands
-    for (i, cmd) in cli.commands.into_iter().enumerate() {
+    for (i, cmd) in args.commands.into_iter().enumerate() {
         config.runs.insert(
             format!("cli-{}", i),
             Run {
@@ -70,7 +70,7 @@ async fn main() -> anyhow::Result<()> {
     let runner = Runner::new(
         config,
         RunnerOpts {
-            required_tags: cli.selectors, // TODO: not correct, properly parse selectors
+            required_tags: args.selectors, // TODO: not correct, properly parse selectors
         },
     );
     runner.run().await
