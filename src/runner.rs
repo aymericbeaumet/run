@@ -72,6 +72,10 @@ impl Runner {
             }
 
             let child = self.exec(&run.cmd, &workdir).await?;
+
+            let pipeline = Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone());
+            // TODO: process with pipeline in a non-blocking manner
+
             children.push(child);
         }
 

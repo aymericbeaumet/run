@@ -102,26 +102,40 @@ impl Processor for OpenaiProcessor {
     }
 
     async fn flush(&mut self) -> anyhow::Result<()> {
-        eprintln!("=== Asking ChatGPT for help... ===");
-
-        let client = reqwest::Client::new();
+        eprintln!(
+            "\n+=================================[ ChatGPT ]==================================+"
+        );
 
         let body = json!({
           "model": "gpt-3.5-turbo",
-          "messages": [{"role": "user", "content": format!("I'm in a terminal and I'm trying to run a command. I get the following output on stderr. Can you help me fix the issue?\n{}", self.lines.join("\n"))}]
+          "messages": [
+              {
+                  "role": "user",
+                  "content": format!("I am a developer working in a terminal. I'm trying to run a command but I get the following error message. In a first paragraph explain what the issue is and why it is happening. In a second paragraph explain how to fix the issue. In a third paragraph suggest a command that might help fixing the issue.\n{}", self.lines.join("\n")),
+              },
+          ]
         });
 
-        let resp = client
+        let resp = reqwest::Client::new()
             .post("https://api.openai.com/v1/chat/completions")
             .bearer_auth(&self.api_key)
             .json(&body)
             .send()
             .await?;
 
+        eprintln!(
+            "|                                                                              |"
+        );
         let resp: OpenaiResponse = resp.json().await?;
-        for line in textwrap::wrap(&resp.choices[0].message.content, 100) {
-            eprintln!("{}", line);
+        for line in textwrap::wrap(&resp.choices[0].message.content, 76) {
+            eprintln!("| {:<76} |", line);
         }
+        eprintln!(
+            "|                                                                              |"
+        );
+        eprintln!(
+            "+==============================================================================+\n"
+        );
 
         Ok(())
     }

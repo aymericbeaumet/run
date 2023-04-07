@@ -27,9 +27,9 @@ pub struct Config {
 
     // pipeline
     #[serde(default)]
-    pub prefixer: Prefixer, // should this be in the pipeline package?
+    pub prefixer: Prefixer,
     #[serde(default)]
-    pub openai: Openai, // should this be in the pipeline package?
+    pub openai: Openai,
 
     // runs
     #[serde(rename = "run")]
@@ -44,6 +44,22 @@ pub enum Mode {
     Parallel,
     Tmux,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
+pub struct Sequential;
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
+pub struct Parallel;
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
+pub struct Prefixer;
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(deny_unknown_fields)]
+pub struct Openai;
 
 impl Config {
     pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
