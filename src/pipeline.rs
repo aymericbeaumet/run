@@ -8,7 +8,7 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 // TODO: optimization, do not redirect stdout/stderr if there are no processors to run
 
 #[async_trait]
-trait Processor {
+trait Processor: Send + Sync {
     fn process(&mut self, line: String) -> anyhow::Result<String>;
 
     async fn flush(&mut self) -> anyhow::Result<()> {

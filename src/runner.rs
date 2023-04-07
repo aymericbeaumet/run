@@ -14,7 +14,7 @@ pub struct RunnerOpts {
 
 pub struct Runner {
     config: Config,
-    openai: bool,
+    _openai: bool,
     openapi_api_key: Option<String>,
     required_tags: Tags,
 }
@@ -23,7 +23,7 @@ impl Runner {
     pub fn new(config: Config, opts: RunnerOpts) -> Self {
         Runner {
             config,
-            openai: opts.openai,
+            _openai: opts.openai,
             openapi_api_key: opts.openai_api_key,
             required_tags: opts.required_tags.into_iter().collect(),
         }
@@ -73,7 +73,7 @@ impl Runner {
 
             let child = self.exec(&run.cmd, &workdir).await?;
 
-            let pipeline = Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone());
+            let _pipeline = Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone());
             // TODO: process with pipeline in a non-blocking manner
 
             children.push(child);
