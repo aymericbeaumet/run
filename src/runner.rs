@@ -158,7 +158,7 @@ impl Runner {
                 .await?;
         }
 
-        Ok(self.tmux(["attach-session", "-t", &session]).await?)
+        self.tmux(["attach-session", "-t", &session]).await
     }
 
     async fn tmux<I, S>(&self, args: I) -> anyhow::Result<()>
