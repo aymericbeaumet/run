@@ -1,0 +1,6 @@
+Error: TOML parse error at line 2, column 7
+  |
+2 | cmd = "npm install"
+  |       ^^^^^^^^^^^^^
+invalid type: string "npm install", expected a sequence
+

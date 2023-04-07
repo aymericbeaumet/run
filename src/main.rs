@@ -12,6 +12,10 @@ struct Args {
     #[arg(use_value_delimiter = true, value_delimiter = ',')]
     selectors: Vec<String>,
 
+    // command
+    #[arg(long = "check", help = "Run workbench in check check mode")]
+    check: bool,
+
     // flag
     #[arg(
         short,
@@ -68,6 +72,11 @@ async fn main() -> anyhow::Result<()> {
                 ..Default::default()  // no other fields can be set from CLI
             },
         );
+    }
+
+    // Abort before running if --check
+    if args.check {
+        return Ok(());
     }
 
     // Create and start runner
