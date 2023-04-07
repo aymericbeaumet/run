@@ -43,9 +43,9 @@ impl Runner {
 
             let mut child = Command::new(&run.cmd[0])
                 .args(&run.cmd[1..])
-                .current_dir(workdir)
+                .current_dir(&workdir)
                 .spawn()
-                .with_context(|| format!("could not spawn {}", &run.cmd[0]))?;
+                .with_context(|| format!("could not spawn {:?} in {:?}", &run.cmd, &workdir))?;
 
             child.wait().await?;
             stdout().flush()?;
@@ -74,7 +74,7 @@ impl Runner {
                     .args(&run.cmd[1..])
                     .current_dir(workdir)
                     .spawn()
-                    .with_context(|| format!("could not spawn {}", &run.cmd[0]))?,
+                    .with_context(|| format!("could not spawn {:?}", &run.cmd))?,
             );
         }
 
@@ -172,7 +172,7 @@ impl Runner {
 
         let mut child = cmd
             .spawn()
-            .with_context(|| format!("could not spawn {}", &self.config.tmux.program))?;
+            .with_context(|| format!("could not spawn {:?}", &self.config.tmux.program))?;
 
         let status = child.wait().await?;
         if !status.success() {

@@ -38,13 +38,6 @@ struct Args {
     )]
     mode: Option<Mode>,
 
-    // flag
-    #[arg(
-        long = "workdir",
-        help = "Set the working directory (default: FILE's parent directory)"
-    )]
-    workdir: Option<PathBuf>,
-
     // --check command
     #[arg(long, help = "Start run in check mode")]
     check: bool,
@@ -65,11 +58,6 @@ async fn main() -> anyhow::Result<()> {
     // Override config with CLI flags
     if let Some(mode) = args.mode {
         config.mode = mode;
-    }
-    if let Some(workdir) = args.workdir {
-        let mut abs = std::env::current_dir()?; // TODO: clean this up
-        abs.push(workdir);
-        config.workdir.set(abs);
     }
 
     // Override config with additional runs
