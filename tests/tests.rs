@@ -12,6 +12,7 @@ async fn check_examples() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
     for (test_name, file) in list_files(["examples/*/run.toml"]) {
+        println!("[example] {}", &test_name);
         set.spawn(async move {
             check_example(&file)
                 .await
@@ -32,6 +33,7 @@ async fn run_tests() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
     for (test_name, file) in list_files(["tests/**/*.toml"]) {
+        println!("[test] {}", &test_name);
         set.spawn(async move {
             run_test(&file)
                 .await
@@ -77,7 +79,7 @@ async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     }
 
     // assert stdout
-    if let Some(expected) = expected_stdout {
+    if let Some(expected) = expected_stdout.map(patch_env) {
         if expected != stdout {
             bail!(format!(
                 "stdout does not match: {}",
@@ -87,7 +89,7 @@ async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     }
 
     // assert stderr
-    if let Some(expected) = expected_stderr {
+    if let Some(expected) = expected_stderr.map(patch_env) {
         if expected != stderr {
             bail!(format!(
                 "stderr does not match: {}",
@@ -119,19 +121,30 @@ async fn read_file<P: AsRef<Path>>(filepath: P, suffix: &str) -> Option<String> 
     tokio::fs::read_to_string(&filepath).await.ok()
 }
 
+const CARGO_MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
+
 fn list_files<I, D>(patterns: I) -> impl Iterator<Item = (String, PathBuf)>
 where
     I: IntoIterator<Item = D>,
     D: std::fmt::Display,
 {
-    const ROOT: &str = env!("CARGO_MANIFEST_DIR");
     patterns
         .into_iter()
-        .map(|pattern| format!("{}/{}", ROOT, pattern))
+        .map(|pattern| format!("{}/{}", CARGO_MANIFEST_DIR, pattern))
         .flat_map(|pattern| glob(&pattern).unwrap().map(|entry| entry.unwrap()))
         .map(|file| {
-            let test_name = &file.strip_prefix(ROOT).unwrap().with_extension("");
+            let test_name = &file
+                .strip_prefix(CARGO_MANIFEST_DIR)
+                .unwrap()
+                .with_extension("");
             let test_name = test_name.to_str().unwrap().to_string();
             (test_name, file)
         })
+}
+
+/// patch_env replaces $CARGO_MANIFEST_DIR with the actual path. This is useful as some path are
+/// actually absolute.
+fn patch_env<S: AsRef<str>>(s: S) -> String {
+    s.as_ref()
+        .replace("$CARGO_MANIFEST_DIR", CARGO_MANIFEST_DIR)
 }

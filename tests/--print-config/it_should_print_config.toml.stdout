@@ -1,5 +1,5 @@
 mode = "sequential"
-workdir = "/Users/aymericbeaumet/Workspace/aymericbeaumet/run/tests/--print-config"
+workdir = "$CARGO_MANIFEST_DIR/tests/--print-config"
 
 [run.echo]
 cmd = [
