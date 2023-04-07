@@ -1,4 +1,5 @@
 use crate::config::{Config, Mode, Run, Tags};
+use anyhow::Context;
 use std::ffi::OsStr;
 use std::io::{stderr, stdout, Write};
 use tokio::process::Command;
@@ -43,7 +44,8 @@ impl Runner {
             let mut child = Command::new(&run.cmd[0])
                 .args(&run.cmd[1..])
                 .current_dir(workdir)
-                .spawn()?;
+                .spawn()
+                .with_context(|| format!("could not spawn {}", &run.cmd[0]))?;
 
             child.wait().await?;
             stdout().flush()?;
@@ -71,7 +73,8 @@ impl Runner {
                 Command::new(&run.cmd[0])
                     .args(&run.cmd[1..])
                     .current_dir(workdir)
-                    .spawn()?,
+                    .spawn()
+                    .with_context(|| format!("could not spawn {}", &run.cmd[0]))?,
             );
         }
 
@@ -158,7 +161,7 @@ impl Runner {
         Ok(self.tmux(["attach-session", "-t", &session]).await?)
     }
 
-    async fn tmux<I, S>(&self, args: I) -> std::io::Result<()>
+    async fn tmux<I, S>(&self, args: I) -> anyhow::Result<()>
     where
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
@@ -167,14 +170,16 @@ impl Runner {
         cmd.args(["-S", &self.config.tmux.socket_path]);
         cmd.args(args);
 
-        let mut child = cmd.spawn()?;
+        let mut child = cmd
+            .spawn()
+            .with_context(|| format!("could not spawn {}", &self.config.tmux.program))?;
 
         let status = child.wait().await?;
         if !status.success() {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "tmux command failed",
-            ));
+            ))?;
         }
 
         // TODO: report status code in the pane title

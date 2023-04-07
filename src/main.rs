@@ -12,10 +12,6 @@ struct Args {
     #[arg(use_value_delimiter = true, value_delimiter = ',')]
     selectors: Vec<String>,
 
-    // command
-    #[arg(long = "check", help = "Run workbench in check check mode")]
-    check: bool,
-
     // flag
     #[arg(
         short,
@@ -29,20 +25,33 @@ struct Args {
     #[arg(
         short,
         long,
-        help = "The config file to use (default: workbench.toml in the current directory)"
+        help = "Specify the config file to use (default: workbench.toml in the current directory)"
     )]
     file: Option<PathBuf>,
 
     // flag
-    #[arg(short, long, value_enum, help = "The mode to use to run commands")]
+    #[arg(
+        short,
+        long,
+        value_enum,
+        help = "Change the mode to use to run commands"
+    )]
     mode: Option<Mode>,
 
     // flag
     #[arg(
         long = "workdir",
-        help = "The working directory to work in (default: FILE's parent directory)"
+        help = "Set the working directory (default: FILE's parent directory)"
     )]
     workdir: Option<PathBuf>,
+
+    // --check command
+    #[arg(long, help = "Run workbench in check mode")]
+    check: bool,
+
+    // --print-config command
+    #[arg(long, help = "Print the resolved workbench config on stdout")]
+    print_config: bool,
 }
 
 #[tokio::main]
@@ -63,7 +72,7 @@ async fn main() -> anyhow::Result<()> {
         config.workdir.set(abs);
     }
 
-    // Override config with additional commands
+    // Override config with additional runs
     for (i, cmd) in args.commands.into_iter().enumerate() {
         config.runs.insert(
             format!("cli-{}", i),
@@ -74,17 +83,19 @@ async fn main() -> anyhow::Result<()> {
         );
     }
 
-    // Abort before running if --check
     if args.check {
-        return Ok(());
+        // noop
+        Ok(())
+    } else if args.print_config {
+        println!("{}", toml::to_string_pretty(&config)?);
+        Ok(())
+    } else {
+        let runner = Runner::new(
+            config,
+            RunnerOpts {
+                required_tags: args.selectors, // TODO: not correct, properly parse selectors
+            },
+        );
+        runner.run().await
     }
-
-    // Create and start runner
-    let runner = Runner::new(
-        config,
-        RunnerOpts {
-            required_tags: args.selectors, // TODO: not correct, properly parse selectors
-        },
-    );
-    runner.run().await
 }

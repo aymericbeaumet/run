@@ -1,5 +1,5 @@
 use clap::ValueEnum;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{
     ops::Deref,
     path::{Path, PathBuf},
@@ -8,7 +8,7 @@ use std::{
 pub type Runs = indexmap::map::IndexMap<String, Run>;
 pub type Tags = indexmap::set::IndexSet<String>;
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
     #[serde(default)]
@@ -21,7 +21,7 @@ pub struct Config {
     pub workdir: Workdir,
 }
 
-#[derive(Debug, Deserialize, Clone, ValueEnum, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, ValueEnum, Default)]
 #[serde(deny_unknown_fields, rename_all = "lowercase")]
 pub enum Mode {
     #[default]
@@ -61,11 +61,13 @@ impl Config {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Run {
     pub cmd: Vec<String>,
+    #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
     pub workdir: Option<PathBuf>,
     #[serde(default)]
     pub tags: Tags,
@@ -80,12 +82,16 @@ impl Run {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Tmux {
+    #[serde(default)]
     pub kill_duplicate_session: bool,
+    #[serde(default)]
     pub program: String,
+    #[serde(default)]
     pub session_prefix: String,
+    #[serde(default)]
     pub socket_path: String,
 }
 
@@ -100,7 +106,7 @@ impl Default for Tmux {
     }
 }
 
-#[derive(Debug, Deserialize, Default, Clone)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Workdir(Option<PathBuf>);
 

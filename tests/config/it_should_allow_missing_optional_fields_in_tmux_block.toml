@@ -1,0 +1,7 @@
+mode = "sequential"
+
+[tmux]
+program = "/usr/local/bin/tmux"
+
+[run.echo]
+cmd = ["echo", "ok"]
