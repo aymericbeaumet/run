@@ -2,6 +2,7 @@ use anyhow::bail;
 use anyhow::Context;
 use glob::glob;
 use pretty_assertions::StrComparison;
+use std::path::PathBuf;
 use std::{path::Path, process::Output};
 use tokio::process::Command;
 
@@ -14,26 +15,31 @@ const PATTERNS: [&str; 2] = [
     "tests/**/*.toml",
 ];
 
-#[tokio::test(flavor = "multi_thread")]
-async fn test_all() -> anyhow::Result<()> {
-    let mut set = tokio::task::JoinSet::new();
-
+fn list_files() -> impl Iterator<Item = (String, PathBuf)> {
     PATTERNS
         .iter()
         .map(|pattern| format!("{}/{}", ROOT, pattern))
         .flat_map(|pattern| glob(&pattern).unwrap().map(|entry| entry.unwrap()))
-        .for_each(|file| {
-            set.spawn(async move {
-                let test_name = &file.strip_prefix(ROOT)?.with_extension("");
+        .map(|file| {
+            let test_name = &file.strip_prefix(ROOT).unwrap().with_extension("");
+            let test_name = test_name.to_str().unwrap().to_string();
+            (test_name, file)
+        })
+}
 
-                test_one(&file)
-                    .await
-                    .with_context(|| format!("test failed: {:?}", test_name))?;
+#[tokio::test(flavor = "multi_thread")]
+async fn run_all() -> anyhow::Result<()> {
+    let mut set = tokio::task::JoinSet::new();
 
-                println!("[ok] {:?}", &test_name);
-                Ok::<(), anyhow::Error>(())
-            });
+    for (test_name, file) in list_files() {
+        set.spawn(async move {
+            run_one(&file)
+                .await
+                .with_context(|| format!("test failed: {:?}", &test_name))?;
+            println!("[ok] {}", &test_name);
+            Ok::<(), anyhow::Error>(())
         });
+    }
 
     while let Some(Ok(joined)) = set.join_next().await {
         joined?;
@@ -42,7 +48,7 @@ async fn test_all() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn test_one<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
+async fn run_one<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     if read_file(&file, ".skip").await.is_some() {
         return Ok(());
     }

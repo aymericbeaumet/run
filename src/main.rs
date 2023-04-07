@@ -12,6 +12,7 @@ struct Args {
     #[arg(use_value_delimiter = true, value_delimiter = ',')]
     selectors: Vec<String>,
 
+    // flag
     #[arg(
         short,
         long = "command",
@@ -20,6 +21,7 @@ struct Args {
     )]
     commands: Vec<String>,
 
+    // flag
     #[arg(
         short,
         long,
@@ -27,9 +29,11 @@ struct Args {
     )]
     file: Option<PathBuf>,
 
+    // flag
     #[arg(short, long, value_enum, help = "The mode to use to run commands")]
     mode: Option<Mode>,
 
+    // flag
     #[arg(
         long = "workdir",
         help = "The working directory to work in (default: FILE's parent directory)"
