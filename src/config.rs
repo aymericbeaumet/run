@@ -11,14 +11,29 @@ pub type Tags = indexmap::set::IndexSet<String>;
 #[derive(Debug, Serialize, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
-    #[serde(default)]
-    pub mode: Mode,
-    #[serde(rename = "run")]
-    pub runs: Runs,
-    #[serde(default)]
-    pub tmux: Tmux,
+    // misc
     #[serde(default)]
     pub workdir: Workdir,
+
+    // mode
+    #[serde(default)]
+    pub mode: Mode,
+    #[serde(default)]
+    pub sequential: Sequential,
+    #[serde(default)]
+    pub parallel: Parallel,
+    #[serde(default)]
+    pub tmux: Tmux,
+
+    // pipeline
+    #[serde(default)]
+    pub prefixer: Prefixer, // should this be in the pipeline package?
+    #[serde(default)]
+    pub openai: Openai, // should this be in the pipeline package?
+
+    // runs
+    #[serde(rename = "run")]
+    pub runs: Runs,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, ValueEnum, Default)]
