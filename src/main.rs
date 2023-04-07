@@ -1,6 +1,8 @@
 mod config;
+mod pipeline;
 mod runner;
 
+use anyhow::bail;
 use clap::Parser;
 use config::{Config, Mode, Run};
 use runner::{Runner, RunnerOpts};
@@ -25,7 +27,8 @@ struct Args {
     #[arg(
         short,
         long,
-        help = "Specify the config file to use (default: run.toml in the current directory)"
+        help = "Specify the config file to use (default: run.toml in the current directory)",
+        env = "RUN_CLI_FILE"
     )]
     file: Option<PathBuf>,
 
@@ -34,9 +37,28 @@ struct Args {
         short,
         long,
         value_enum,
-        help = "Change the mode to use to run commands"
+        help = "Change the mode to use to run commands",
+        env = "RUN_CLI_MODE"
     )]
     mode: Option<Mode>,
+
+    // flag
+    #[arg(
+        long,
+        help = "Ask OpenAPI for advices when your runs return an error",
+        env = "RUN_CLI_OPENAI"
+    )]
+    openai: bool,
+
+    // flag
+    #[arg(
+        short,
+        long,
+        value_enum,
+        help = "The OpenAI API key to use",
+        env = "RUN_CLI_OPENAI_API_KEY"
+    )]
+    openai_api_key: Option<String>,
 
     // --check command
     #[arg(long, help = "Start run in check mode")]
@@ -52,8 +74,15 @@ async fn main() -> anyhow::Result<()> {
     // Parse arguments
     let args = Args::try_parse_from(std::env::args_os())?;
 
-    // Find and parse config
-    let mut config = Config::load(args.file).await?;
+    // Find and parse config. If no config file is specified, we try to find one in the current
+    // directory, but it is allowed not to be here.
+    let mut config = if let Some(file) = args.file {
+        Config::load(file).await?
+    } else if !args.commands.is_empty() {
+        Config::load_allow_missing(std::env::current_dir().expect("infaillible")).await?
+    } else {
+        bail!("No config file specified and no additional commands to run");
+    };
 
     // Override config with CLI flags
     if let Some(mode) = args.mode {
@@ -81,6 +110,8 @@ async fn main() -> anyhow::Result<()> {
         let runner = Runner::new(
             config,
             RunnerOpts {
+                openai: args.openai,
+                openai_api_key: args.openai_api_key,
                 required_tags: args.selectors, // TODO: not correct, properly parse selectors
             },
         );

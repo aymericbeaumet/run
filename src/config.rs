@@ -31,11 +31,9 @@ pub enum Mode {
 }
 
 impl Config {
-    pub async fn load<P: AsRef<Path>>(relpath: Option<P>) -> anyhow::Result<Config> {
+    pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
         let mut config_path = std::env::current_dir()?;
-        if let Some(relpath) = relpath {
-            config_path.push(relpath);
-        }
+        config_path.push(relpath);
         if std::fs::metadata(&config_path)?.is_dir() {
             config_path.push("run.toml");
         }
@@ -58,6 +56,22 @@ impl Config {
         }
 
         Ok(config)
+    }
+
+    pub async fn load_allow_missing<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
+        match Config::load(relpath).await {
+            Ok(config) => Ok(config),
+            Err(err) => {
+                if err
+                    .downcast_ref::<std::io::Error>()
+                    .map_or(false, |e| e.kind() == std::io::ErrorKind::NotFound)
+                {
+                    Ok(Config::default())
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 }
 

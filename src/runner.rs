@@ -1,15 +1,21 @@
 use crate::config::{Config, Mode, Run, Tags};
+use crate::pipeline::Pipeline;
 use anyhow::Context;
 use std::ffi::OsStr;
-use std::io::{stderr, stdout, Write};
-use tokio::process::Command;
+use std::path::Path;
+use std::process::Stdio;
+use tokio::process::{Child, Command};
 
 pub struct RunnerOpts {
+    pub openai: bool,
+    pub openai_api_key: Option<String>,
     pub required_tags: Vec<String>,
 }
 
 pub struct Runner {
     config: Config,
+    openai: bool,
+    openapi_api_key: Option<String>,
     required_tags: Tags,
 }
 
@@ -17,6 +23,8 @@ impl Runner {
     pub fn new(config: Config, opts: RunnerOpts) -> Self {
         Runner {
             config,
+            openai: opts.openai,
+            openapi_api_key: opts.openai_api_key,
             required_tags: opts.required_tags.into_iter().collect(),
         }
     }
@@ -31,8 +39,6 @@ impl Runner {
 
     async fn run_sequential(&self) -> anyhow::Result<()> {
         for (id, run) in self.filtered_runs() {
-            println!("---[ {} ]---", run.title(id));
-
             // TODO: clean + refactor
             let mut workdir = self.config.workdir.as_ref().to_path_buf();
             if let Some(wd) = run.workdir.as_ref() {
@@ -41,15 +47,13 @@ impl Runner {
                 workdir = abs;
             }
 
-            let mut child = Command::new(&run.cmd[0])
-                .args(&run.cmd[1..])
-                .current_dir(&workdir)
-                .spawn()
-                .with_context(|| format!("could not spawn {:?} in {:?}", &run.cmd, &workdir))?;
+            let mut child = self.exec(&run.cmd, &workdir).await?;
+
+            Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone())
+                .process(child.stdout.take().unwrap(), child.stderr.take().unwrap())
+                .await?;
 
             child.wait().await?;
-            stdout().flush()?;
-            stderr().flush()?;
         }
 
         Ok(())
@@ -59,8 +63,6 @@ impl Runner {
         let mut children = vec![];
 
         for (id, run) in self.filtered_runs() {
-            println!("---[ {} ]---", run.title(id));
-
             // TODO: clean + refactor
             let mut workdir = self.config.workdir.as_ref().to_path_buf();
             if let Some(wd) = run.workdir.as_ref() {
@@ -69,13 +71,8 @@ impl Runner {
                 workdir = abs;
             }
 
-            children.push(
-                Command::new(&run.cmd[0])
-                    .args(&run.cmd[1..])
-                    .current_dir(workdir)
-                    .spawn()
-                    .with_context(|| format!("could not spawn {:?}", &run.cmd))?,
-            );
+            let child = self.exec(&run.cmd, &workdir).await?;
+            children.push(child);
         }
 
         for mut child in children {
@@ -186,6 +183,25 @@ impl Runner {
         // TODO: report time to finish in the pane title
 
         Ok(())
+    }
+
+    async fn exec<P: AsRef<Path> + std::fmt::Debug>(
+        &self,
+        cmd: &[String],
+        workdir: P,
+    ) -> anyhow::Result<Child> {
+        let mut child = Command::new(&cmd[0]);
+
+        let child = child
+            .env_clear()
+            .args(&cmd[1..])
+            .current_dir(workdir.as_ref())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
+
+        Ok(child)
     }
 
     fn filtered_runs(&self) -> impl Iterator<Item = (&String, &Run)> {
