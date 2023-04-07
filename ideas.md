@@ -1,12 +1,11 @@
 Just random ideas as they flow in my brain.
 
-- Allow to pass N workbench files as cli args
-- Add support for remote workbenches (e.g.: over https)
+- Allow to pass N run files as cli args
+- Add support for remote runes (e.g.: over https)
 - Detect http://....:... patterns in stdout, and add them to panel title in tmux
 - Add a "wait_for" condition to config to allow waiting for a specific state (e.g.: http//.../health returns 200)
-- Allow to use the `workbench #install #dev` shortcut instead of `workbench -t install -t dev`
+- Allow to use the `run #install #dev` shortcut instead of `run -t install -t dev`
 - Allow to configure options for specific tags
-- Rename the project `run`
 - Automatic support for node_modules/.bin
 - Support env expansion in commands
 - Offer to send stderr to chatgpt to get suggestions
@@ -14,7 +13,7 @@ Just random ideas as they flow in my brain.
 - Add a --dry-run flag that basically prints the commands instead of running
 - Add a --dump flag that prints the whole config instead of running
 
-Maybe support those options in workbench files?
+Maybe support those options in run files?
 
 ```
 # load_dotenv = true

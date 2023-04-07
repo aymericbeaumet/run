@@ -523,6 +523,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
 
 [[package]]
+name = "run"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "assert_cmd",
+ "clap",
+ "glob",
+ "indexmap",
+ "log",
+ "pretty_assertions",
+ "pretty_env_logger",
+ "serde",
+ "tokio",
+ "toml",
+ "uuid",
+]
+
+[[package]]
 name = "rustix"
 version = "0.37.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -885,24 +903,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ae8970b36c66498d8ff1d66685dc86b91b29db0c7739899012f63a63814b4b28"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "workbench"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "assert_cmd",
- "clap",
- "glob",
- "indexmap",
- "log",
- "pretty_assertions",
- "pretty_env_logger",
- "serde",
- "tokio",
- "toml",
- "uuid",
 ]
 
 [[package]]

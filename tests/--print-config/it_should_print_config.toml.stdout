@@ -1,5 +1,5 @@
 mode = "sequential"
-workdir = "/Users/aymericbeaumet/Workspace/aymericbeaumet/workbench/tests/--print-config"
+workdir = "/Users/aymericbeaumet/Workspace/aymericbeaumet/run/tests/--print-config"
 
 [run.echo]
 cmd = [
@@ -11,6 +11,6 @@ tags = []
 [tmux]
 kill_duplicate_session = true
 program = "tmux"
-session_prefix = "workbench-"
-socket_path = "/tmp/tmux.workbench.sock"
+session_prefix = "run-"
+socket_path = "/tmp/tmux.run.sock"
 

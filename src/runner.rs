@@ -143,7 +143,7 @@ impl Runner {
             ["status-left-length", "0"],
             ["status-right", ""],
             ["status-right-length", "0"],
-            ["window-status-current-format", "~ WORKBENCH ~"],
+            ["window-status-current-format", "~ RUN ~"],
             // pane
             ["pane-border-format", "╣ #{pane_title} ╠"],
             ["pane-border-indicators", "off"],

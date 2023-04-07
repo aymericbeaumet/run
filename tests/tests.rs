@@ -11,7 +11,7 @@ use tokio::process::Command;
 async fn check_examples() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
-    for (test_name, file) in list_files(["examples/*/workbench.toml"]) {
+    for (test_name, file) in list_files(["examples/*/run.toml"]) {
         set.spawn(async move {
             check_example(&file)
                 .await
@@ -48,7 +48,7 @@ async fn run_tests() -> anyhow::Result<()> {
 }
 
 async fn check_example<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
-    let output = workbench(&file, ["--check"]).await?;
+    let output = run(&file, ["--check"]).await?;
 
     if !output.status.success() {
         let stderr = std::str::from_utf8(&output.stderr)?;
@@ -68,7 +68,7 @@ async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     }
 
     // run and get output
-    let output = workbench(&file, args.lines()).await?;
+    let output = run(&file, args.lines()).await?;
     let stdout = std::str::from_utf8(&output.stdout)?;
     let stderr = std::str::from_utf8(&output.stderr)?;
 
@@ -99,13 +99,13 @@ async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn workbench<P, I, S>(file: P, args: I) -> anyhow::Result<Output>
+async fn run<P, I, S>(file: P, args: I) -> anyhow::Result<Output>
 where
     P: AsRef<Path>,
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_workbench"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_run"));
 
     cmd.arg("-f");
     cmd.arg(file.as_ref());

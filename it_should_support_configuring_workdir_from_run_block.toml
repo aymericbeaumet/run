@@ -1,3 +1,0 @@
-[run.ls]
-workdir = "./fixtures/b"
-cmd = ["ls"]

@@ -25,7 +25,7 @@ struct Args {
     #[arg(
         short,
         long,
-        help = "Specify the config file to use (default: workbench.toml in the current directory)"
+        help = "Specify the config file to use (default: run.toml in the current directory)"
     )]
     file: Option<PathBuf>,
 
@@ -46,11 +46,11 @@ struct Args {
     workdir: Option<PathBuf>,
 
     // --check command
-    #[arg(long, help = "Run workbench in check mode")]
+    #[arg(long, help = "Start run in check mode")]
     check: bool,
 
     // --print-config command
-    #[arg(long, help = "Print the resolved workbench config on stdout")]
+    #[arg(long, help = "Print the resolved run config on stdout")]
     print_config: bool,
 }
 

@@ -1,4 +1,4 @@
-# This workbench starts three commands sequentially. Printing one, two, three
+# This run starts three commands sequentially. Printing one, two, three
 # in that order to the standard output.
 
 mode = "sequential"

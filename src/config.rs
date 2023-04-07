@@ -37,7 +37,7 @@ impl Config {
             config_path.push(relpath);
         }
         if std::fs::metadata(&config_path)?.is_dir() {
-            config_path.push("workbench.toml");
+            config_path.push("run.toml");
         }
         let config_path = config_path.canonicalize()?;
 
@@ -100,8 +100,8 @@ impl Default for Tmux {
         Tmux {
             kill_duplicate_session: true,
             program: "tmux".to_string(),
-            session_prefix: "workbench-".to_string(),
-            socket_path: "/tmp/tmux.workbench.sock".to_string(),
+            session_prefix: "run-".to_string(),
+            socket_path: "/tmp/tmux.run.sock".to_string(),
         }
     }
 }

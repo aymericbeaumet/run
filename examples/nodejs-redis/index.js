@@ -3,7 +3,7 @@ import { createClient } from "redis";
 
 const [hostname, port] = ["127.0.0.1", 8080];
 
-// TODO: remove this when workbench allows to wait for a command to be marked as "ready"
+// TODO: remove this when run allows to wait for a command to be marked as "ready"
 await new Promise((resolve) => setTimeout(resolve, 1000));
 
 const redisClient = createClient({ url: "redis://127.0.0.1:6379/0" });

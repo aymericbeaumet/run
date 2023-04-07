@@ -1,4 +1,4 @@
-# This workbench starts three commands in individual panels grouped under a
+# This run starts three commands in individual panels grouped under a
 # unique tmux window.
 
 mode = "tmux"

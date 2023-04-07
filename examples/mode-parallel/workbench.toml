@@ -1,4 +1,4 @@
-# This workbench starts three commands in parallel. Printing three, two, one in
+# This run starts three commands in parallel. Printing three, two, one in
 # that order to the standard output.
 
 mode = "parallel"
