@@ -18,17 +18,17 @@ use std::path::{Path, PathBuf};
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     #[arg(long = "check", help = "Start in check mode to validate the config")]
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     #[merge(skip)]
     pub command_check: bool,
 
     #[arg(long = "print-config", help = "Print the resolved config on stdout")]
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     #[merge(skip)]
     pub command_print_config: bool,
 
     #[arg(long = "print-optins", help = "Print the runners options on stdout")]
-    #[serde(skip_deserializing)]
+    #[serde(skip_deserializing, skip_serializing)]
     #[merge(skip)]
     pub command_print_options: bool,
 
@@ -37,13 +37,13 @@ pub struct Config {
         long = "file",
         help = "Specify the config file(s) to use (default: run.toml in the current directory)"
     )]
-    #[serde(skip_deserializing)]
-    #[merge(skip)]
-    pub files: Option<PathBuf>,
+    #[serde(skip_deserializing, skip_serializing)]
+    #[merge(strategy = merge::vec::overwrite_empty)]
+    pub files: Vec<PathBuf>,
 
     #[arg(use_value_delimiter = true, value_delimiter = ',')] // positional arguments
     #[serde(skip_deserializing)]
-    #[merge(skip)]
+    #[merge(strategy = merge::vec::overwrite_empty)]
     selectors: Vec<String>,
 
     #[arg(
@@ -64,8 +64,11 @@ pub struct Config {
     #[merge(strategy = merge::vec::append)]
     pub befores: Vec<String>,
 
-    //#[serde(rename = "run")]
-    //pub commands: indexmap::IndexMap<String, Command>,
+    #[arg(skip)]
+    #[serde(rename = "run")]
+    #[merge(strategy = merge::vec::append)]
+    pub commands: Vec<Command>,
+
     #[arg(
         short,
         long,
@@ -84,14 +87,15 @@ pub struct Config {
 #[derive(Debug, Serialize, Deserialize, Default, Parser, Clone)]
 #[serde(deny_unknown_fields, default)]
 pub struct Command {
+    pub id: Option<String>,
     pub cmd: Vec<String>,
     pub description: Option<String>,
     pub workdir: Option<PathBuf>,
     pub tags: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, ValueEnum)]
-#[serde(deny_unknown_fields, rename_all = "lowercase")]
+#[derive(Debug, Serialize, Deserialize, Default, Clone, ValueEnum)]
+#[serde(rename_all = "lowercase")]
 pub enum Mode {
     #[default]
     Sequential,
@@ -99,24 +103,16 @@ pub enum Mode {
     Tmux,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone)]
+#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields)]
 pub struct Openai {
     #[arg(long, help = "Enable OpenAPI advices")]
     pub enabled: Option<bool>,
 
-    #[arg(
-        long = "openai-api-endpoint",
-        value_enum,
-        help = "The OpenAI API endpoint to use"
-    )]
+    #[arg(long = "openai-api-endpoint", help = "The OpenAI API endpoint to use")]
     pub api_endpoint: Option<String>,
 
-    #[arg(
-        long = "openai-api-key",
-        value_enum,
-        help = "The OpenAI API key to use"
-    )]
+    #[arg(long = "openai-api-key", help = "The OpenAI API key to use")]
     pub api_key: Option<String>,
 }
 
