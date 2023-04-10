@@ -8,7 +8,6 @@ Just random ideas as they flow in my brain.
 - Allow to configure options for specific tags
 - Automatic support for node_modules/.bin
 - Support env expansion in commands
-- Offer to send stderr to chatgpt to get suggestions
 - Add a --dry-run flag that basically prints the commands instead of running
 
 Maybe support those options in run files?

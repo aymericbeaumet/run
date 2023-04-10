@@ -1,34 +1,20 @@
-use crate::config::{Config, Mode, Run, Tags};
+/*
+use crate::config::Mode;
 use crate::pipeline::Pipeline;
+use crate::selector::Selector;
 use anyhow::Context;
 use std::ffi::OsStr;
 use std::path::Path;
 use std::process::Stdio;
 use tokio::process::{Child, Command};
 
-pub struct RunnerOpts {
-    pub openai: bool,
-    pub openai_api_key: Option<String>,
-    pub required_tags: Vec<String>,
-}
-
 pub struct Runner {
-    config: Config,
-    _openai: bool,
-    openapi_api_key: Option<String>,
-    required_tags: Tags,
+    openai: bool,
+    openai_api_key: Option<String>,
+    selector: Selector,
 }
 
 impl Runner {
-    pub fn new(config: Config, opts: RunnerOpts) -> Self {
-        Runner {
-            config,
-            _openai: opts.openai,
-            openapi_api_key: opts.openai_api_key,
-            required_tags: opts.required_tags.into_iter().collect(),
-        }
-    }
-
     pub async fn run(&self) -> anyhow::Result<()> {
         match self.config.mode {
             Mode::Sequential => self.run_sequential().await,
@@ -208,13 +194,14 @@ impl Runner {
         Ok(child)
     }
 
-    fn filtered_runs(&self) -> impl Iterator<Item = (&String, &Run)> {
-        self.config.runs.iter().filter(|(_, run)| {
-            self.required_tags.is_empty()
-                || self
-                    .required_tags
-                    .iter()
-                    .all(|required_tag| run.tags.contains(required_tag))
-        })
-    }
+    //fn filtered_runs(&self) -> impl Iterator<Item = (&String, &Run)> {
+    //self.config.runs.iter().filter(|(_, run)| {
+    //self.required_tags.is_empty()
+    //|| self
+    //.required_tags
+    //.iter()
+    //.all(|required_tag| run.tags.contains(required_tag))
+    //})
+    //}
 }
+*/
