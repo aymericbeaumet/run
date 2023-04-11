@@ -1,15 +1,11 @@
-use serde::Serialize;
-//use crate::config::Mode;
 //use crate::pipeline::Pipeline;
-//use crate::selector::Selector;
-//use anyhow::Context;
-//use std::ffi::OsStr;
-//use std::path::Path;
-//use std::process::Stdio;
-//use tokio::process::{Child, Command};
-
-#[derive(Serialize)]
-pub struct RunnerOptions {}
+use anyhow::Context;
+use serde::Serialize;
+use std::ffi::OsStr;
+use std::path::Path;
+use std::path::PathBuf;
+use std::process::Stdio;
+use tokio::process::{Child, Command};
 
 pub struct Runner {
     options: RunnerOptions,
@@ -20,30 +16,25 @@ impl Runner {
         Self { options }
     }
 
-    /*
     pub async fn run(&self) -> anyhow::Result<()> {
-        match self.config.mode {
-            Mode::Sequential => self.run_sequential().await,
-            Mode::Parallel => self.run_parallel().await,
-            Mode::Tmux => self.run_tmux().await,
+        match self.options.mode {
+            RunnerMode::Sequential => self.run_sequential().await,
+            RunnerMode::Parallel => self.run_parallel().await,
+            RunnerMode::Tmux => self.run_tmux().await,
         }
     }
 
     async fn run_sequential(&self) -> anyhow::Result<()> {
-        for (id, run) in self.filtered_runs() {
+        for run in &self.options.commands {
             // TODO: clean + refactor
-            let mut workdir = self.config.workdir.as_ref().to_path_buf();
-            if let Some(wd) = run.workdir.as_ref() {
-                let mut abs = workdir.to_path_buf();
-                abs.push(wd);
-                workdir = abs;
-            }
+            let mut child = self.exec(&run.cmd, &run.workdir).await?;
 
-            let mut child = self.exec(&run.cmd, &workdir).await?;
-
-            Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone())
-                .process(child.stdout.take().unwrap(), child.stderr.take().unwrap())
-                .await?;
+            //Pipeline::new(
+            //format!("[{}]", &run.cmd[0]),
+            //self.options.openai.api_key.clone(),
+            //)
+            //.process(child.stdout.take().unwrap(), child.stderr.take().unwrap())
+            //.await?;
 
             child.wait().await?;
         }
@@ -54,18 +45,10 @@ impl Runner {
     async fn run_parallel(&self) -> anyhow::Result<()> {
         let mut children = vec![];
 
-        for (id, run) in self.filtered_runs() {
-            // TODO: clean + refactor
-            let mut workdir = self.config.workdir.as_ref().to_path_buf();
-            if let Some(wd) = run.workdir.as_ref() {
-                let mut abs = workdir.to_path_buf();
-                abs.push(wd);
-                workdir = abs;
-            }
+        for run in &self.options.commands {
+            let child = self.exec(&run.cmd, &run.workdir).await?;
 
-            let child = self.exec(&run.cmd, &workdir).await?;
-
-            let _pipeline = Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone());
+            //let _pipeline = Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone());
             // TODO: process with pipeline in a non-blocking manner
 
             children.push(child);
@@ -81,28 +64,20 @@ impl Runner {
     async fn run_tmux(&self) -> anyhow::Result<()> {
         let session = format!(
             "{}{}",
-            self.config.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
+            self.options.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
         );
 
-        if self.config.tmux.kill_duplicate_session {
+        if self.options.tmux.kill_duplicate_session {
             if let Err(err) = self.tmux(["kill-session", "-t", &session]).await {
                 println!("[debug] failed to kill duplicate session: {}", err); // TODO: use log library
             }
         }
 
-        for (i, (id, run)) in self.filtered_runs().enumerate() {
+        for (i, run) in self.options.commands.iter().enumerate() {
             let program = &run.cmd[0];
             let args = &run.cmd[1..];
 
-            // TODO: clean + refactor
-            let mut workdir = self.config.workdir.as_ref().to_path_buf();
-            if let Some(wd) = run.workdir.as_ref() {
-                let mut abs = workdir.to_path_buf();
-                abs.push(wd);
-                workdir = abs;
-            }
-
-            let workdir = &workdir.to_string_lossy();
+            let workdir = &run.workdir.to_string_lossy();
             let cmd_str = &format!("{} {}; read", program, args.join(" ")); // TODO: make it more robust
 
             // create the pane
@@ -115,7 +90,7 @@ impl Runner {
             }
 
             // set pane title
-            self.tmux(["select-pane", "-t", &session, "-T", &run.title(id)])
+            self.tmux(["select-pane", "-t", &session, "-T", &run.cmd[0]])
                 .await?;
 
             // select layout after spawning each command to avoid: https://stackoverflow.com/a/68362774/1071486
@@ -159,13 +134,13 @@ impl Runner {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        let mut cmd = Command::new(&self.config.tmux.program);
-        cmd.args(["-S", &self.config.tmux.socket_path]);
+        let mut cmd = Command::new(&self.options.tmux.program);
+        cmd.args(["-S", &self.options.tmux.socket_path]);
         cmd.args(args);
 
         let mut child = cmd
             .spawn()
-            .with_context(|| format!("could not spawn {:?}", &self.config.tmux.program))?;
+            .with_context(|| format!("could not spawn {:?}", &self.options.tmux.program))?;
 
         let status = child.wait().await?;
         if !status.success() {
@@ -199,15 +174,42 @@ impl Runner {
 
         Ok(child)
     }
+}
 
-    //fn filtered_runs(&self) -> impl Iterator<Item = (&String, &Run)> {
-    //self.config.runs.iter().filter(|(_, run)| {
-    //self.required_tags.is_empty()
-    //|| self
-    //.required_tags
-    //.iter()
-    //.all(|required_tag| run.tags.contains(required_tag))
-    //})
-    //}
-    */
+#[derive(Debug, Serialize)]
+pub struct RunnerOptions {
+    pub commands: Vec<RunnerCommand>,
+    pub mode: RunnerMode,
+    pub openai: RunnerOpenai,
+    pub tmux: RunnerTmux,
+}
+
+#[derive(Debug, Serialize)]
+pub struct RunnerCommand {
+    pub cmd: Vec<String>,
+    pub workdir: PathBuf,
+}
+
+#[derive(Debug, Serialize)]
+pub enum RunnerMode {
+    Sequential,
+    Parallel,
+    Tmux,
+}
+
+#[derive(Debug, Serialize)]
+pub enum RunnerOpenai {
+    Disabled,
+    Enabled {
+        api_key: String,
+        api_base_url: String,
+    },
+}
+
+#[derive(Debug, Serialize)]
+pub struct RunnerTmux {
+    pub kill_duplicate_session: bool,
+    pub program: String,
+    pub session_prefix: String,
+    pub socket_path: String,
 }

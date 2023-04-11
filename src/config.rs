@@ -1,10 +1,9 @@
+use crate::runner::{RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux};
 use clap::Parser;
 use clap::ValueEnum;
 use merge::Merge;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-
-use crate::runner::RunnerOptions;
 
 /*
  * Shared configuration for the command line interface and the TOML configuration file.
@@ -48,6 +47,7 @@ pub struct Config {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(untagged)]
 pub enum CommandOrString {
     String(String),
     Command(Command),
@@ -61,15 +61,6 @@ pub struct Command {
     pub description: Option<String>,
     pub workdir: Option<PathBuf>,
     pub tags: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, ValueEnum, Default)]
-#[serde(rename_all = "lowercase")]
-pub enum Mode {
-    #[default]
-    Sequential,
-    Parallel,
-    Tmux,
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
@@ -105,6 +96,15 @@ impl Default for Openai {
             api_key: None,
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, ValueEnum, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum Mode {
+    #[default]
+    Sequential,
+    Parallel,
+    Tmux,
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
@@ -170,6 +170,34 @@ impl TryFrom<&Config> for RunnerOptions {
     type Error = anyhow::Error;
 
     fn try_from(config: &Config) -> Result<Self, Self::Error> {
-        Ok(Self {})
+        let commands = vec![];
+
+        let mode = match config.mode.as_ref().unwrap() {
+            Mode::Sequential => RunnerMode::Sequential,
+            Mode::Parallel => RunnerMode::Parallel,
+            Mode::Tmux => RunnerMode::Tmux,
+        };
+
+        let openai = match (config.openai.enabled, config.openai.api_key.as_ref()) {
+            (Some(enabled), Some(api_key)) if enabled => RunnerOpenai::Enabled {
+                api_key: api_key.clone(),
+                api_base_url: config.openai.api_base_url.clone().unwrap(),
+            },
+            _ => RunnerOpenai::Disabled,
+        };
+
+        let tmux = RunnerTmux {
+            kill_duplicate_session: config.tmux.kill_duplicate_session.unwrap_or_default(),
+            program: config.tmux.program.clone().unwrap_or_default(),
+            session_prefix: config.tmux.session_prefix.clone().unwrap_or_default(),
+            socket_path: config.tmux.socket_path.clone().unwrap_or_default(),
+        };
+
+        Ok(Self {
+            commands,
+            mode,
+            openai,
+            tmux,
+        })
     }
 }

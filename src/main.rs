@@ -1,7 +1,6 @@
 mod config;
-//mod pipeline;
+mod pipeline;
 mod runner;
-//mod selector;
 
 use clap::Parser;
 use config::Config;
@@ -35,14 +34,14 @@ struct Cli {
     pub command_check: bool,
 
     #[arg(
-        long = "print-config",
-        help = "Print the resolved config on stdout and exit"
+        long = "print-merged-config",
+        help = "Print the merged config on stdout and exit"
     )]
     pub command_print_config: bool,
 
     #[arg(
-        long = "print-options",
-        help = "Print the resolve runner options on stdout and exit"
+        long = "print-runner-options",
+        help = "Print the final runner options on stdout and exit"
     )]
     pub command_print_options: bool,
 }
@@ -68,18 +67,17 @@ async fn main() -> anyhow::Result<()> {
     }
 
     if cli.command_print_config {
-        println!("{}", toml::to_string(&config)?);
+        serde_json::to_writer_pretty(std::io::stdout(), &config)?;
         return Ok(());
     }
 
     let options = RunnerOptions::try_from(&config)?;
 
     if cli.command_print_options {
-        println!("{}", toml::to_string(&options)?);
+        serde_json::to_writer_pretty(std::io::stdout(), &options)?;
         return Ok(());
     }
 
     let runner = Runner::new(options);
-    //Ok(runner.run().await?)
-    Ok(())
+    runner.run().await
 }
