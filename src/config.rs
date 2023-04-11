@@ -1,4 +1,4 @@
-use crate::runner::{RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux};
+use crate::runner::{RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux};
 use clap::Parser;
 use clap::ValueEnum;
 use merge::Merge;
@@ -31,7 +31,7 @@ pub struct Config {
     #[arg(skip)]
     #[serde(rename = "run")]
     #[merge(strategy = merge::vec::append)]
-    pub runs: Vec<CommandOrString>,
+    pub runs: Vec<Command>,
 
     #[arg(short, long, value_enum, help = "Change the mode used to run commands")]
     pub mode: Option<Mode>,
@@ -46,21 +46,12 @@ pub struct Config {
     pub workdir: Option<PathBuf>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(untagged)]
-pub enum CommandOrString {
-    String(String),
-    Command(Command),
-}
-
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Default)]
 #[serde(deny_unknown_fields, default)]
 pub struct Command {
-    pub id: Option<String>,
     pub cmd: Vec<String>,
     pub description: Option<String>,
     pub workdir: Option<PathBuf>,
-    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
@@ -151,7 +142,7 @@ impl Default for Tmux {
 }
 
 impl Config {
-    pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
+    pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<(PathBuf, Config)> {
         let mut config_path = std::env::current_dir()?;
         config_path.push(relpath);
         if std::fs::metadata(&config_path)?.is_dir() {
@@ -162,7 +153,7 @@ impl Config {
         let config_str = tokio::fs::read_to_string(&config_path).await?;
         let config = toml::from_str(&config_str)?;
 
-        Ok(config)
+        Ok((config_path, config))
     }
 }
 
@@ -170,7 +161,18 @@ impl TryFrom<&Config> for RunnerOptions {
     type Error = anyhow::Error;
 
     fn try_from(config: &Config) -> Result<Self, Self::Error> {
-        let commands = vec![];
+        let commands = config
+            .runs
+            .iter()
+            .map(|run| RunnerCommand {
+                cmd: run.cmd.clone(),
+                description: run.description.clone(),
+                workdir: run
+                    .workdir
+                    .clone()
+                    .unwrap_or(config.workdir.clone().unwrap()),
+            })
+            .collect();
 
         let mode = match config.mode.as_ref().unwrap() {
             Mode::Sequential => RunnerMode::Sequential,
@@ -187,10 +189,10 @@ impl TryFrom<&Config> for RunnerOptions {
         };
 
         let tmux = RunnerTmux {
-            kill_duplicate_session: config.tmux.kill_duplicate_session.unwrap_or_default(),
-            program: config.tmux.program.clone().unwrap_or_default(),
-            session_prefix: config.tmux.session_prefix.clone().unwrap_or_default(),
-            socket_path: config.tmux.socket_path.clone().unwrap_or_default(),
+            kill_duplicate_session: config.tmux.kill_duplicate_session.unwrap(),
+            program: config.tmux.program.clone().unwrap(),
+            session_prefix: config.tmux.session_prefix.clone().unwrap(),
+            socket_path: config.tmux.socket_path.clone().unwrap(),
         };
 
         Ok(Self {

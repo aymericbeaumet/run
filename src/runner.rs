@@ -167,8 +167,8 @@ impl Runner {
             .env_clear()
             .args(&cmd[1..])
             .current_dir(workdir.as_ref())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            //.stdout(Stdio::piped())
+            //.stderr(Stdio::piped())
             .spawn()
             .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
 
@@ -187,6 +187,7 @@ pub struct RunnerOptions {
 #[derive(Debug, Serialize)]
 pub struct RunnerCommand {
     pub cmd: Vec<String>,
+    pub description: Option<String>,
     pub workdir: PathBuf,
 }
 

@@ -55,8 +55,16 @@ async fn main() -> anyhow::Result<()> {
 
     // Then the config files
     for file in &cli.files {
-        let config_file = Config::load(file).await?;
-        config.merge(config_file);
+        let (config_file, mut loaded_config) = Config::load(file).await?;
+
+        // TODO: handle relative workdir
+        loaded_config.workdir = Some(
+            loaded_config
+                .workdir
+                .unwrap_or_else(|| config_file.parent().unwrap().to_path_buf()),
+        );
+
+        config.merge(loaded_config);
     }
 
     // And finally the cli/env
