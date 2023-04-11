@@ -51,7 +51,7 @@ struct Cli {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::try_parse_from(std::env::args_os())?;
 
-    // Lowest priority is the default
+    // Lowest priority is the default config
     let mut config = Config::default();
 
     // Then the config files

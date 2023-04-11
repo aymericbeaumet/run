@@ -22,7 +22,7 @@ pub struct Config {
     #[arg(
         short = 'c',
         long = "command",
-        help = "Register a command to run",
+        help = "Register a command to run. Can be called multiple times",
         value_name = "COMMAND"
     )]
     #[serde(skip_deserializing)]
@@ -83,9 +83,9 @@ pub struct Openai {
     pub enabled: Option<bool>,
 
     #[arg(
-        long = "openai-api-endpoint",
+        long = "openai-api-base-url",
         env = "RUN_CLI_OPENAI_API_BASE_URL",
-        help = "The OpenAI API endpoint to use"
+        help = "The OpenAI API base url to use"
     )]
     pub api_base_url: Option<String>,
 
