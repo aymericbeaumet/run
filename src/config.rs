@@ -77,9 +77,12 @@ pub struct Config {
     )]
     pub mode: Option<Mode>,
 
-    //pub openai: Openai,
+    #[command(flatten)]
+    pub openai: Openai,
 
-    //pub tmux: Tmux,
+    #[command(flatten)]
+    pub tmux: Tmux,
+
     #[arg(long)]
     pub workdir: Option<PathBuf>,
 }
@@ -116,20 +119,20 @@ pub struct Openai {
     pub api_key: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone)]
+#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Tmux {
     #[arg(long = "tmux-kill-duplicate-session")]
-    pub kill_duplicate_session: bool,
+    pub kill_duplicate_session: Option<bool>,
 
     #[arg(long = "tmux-program")]
-    pub program: String,
+    pub program: Option<String>,
 
     #[arg(long = "tmux-session-prefix")]
-    pub session_prefix: String,
+    pub session_prefix: Option<String>,
 
     #[arg(long = "tmux-socket-path")]
-    pub socket_path: String,
+    pub socket_path: Option<String>,
 }
 
 impl Config {
