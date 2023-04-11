@@ -1,20 +1,26 @@
-/*
-use crate::config::Mode;
-use crate::pipeline::Pipeline;
-use crate::selector::Selector;
-use anyhow::Context;
-use std::ffi::OsStr;
-use std::path::Path;
-use std::process::Stdio;
-use tokio::process::{Child, Command};
+use serde::Serialize;
+//use crate::config::Mode;
+//use crate::pipeline::Pipeline;
+//use crate::selector::Selector;
+//use anyhow::Context;
+//use std::ffi::OsStr;
+//use std::path::Path;
+//use std::process::Stdio;
+//use tokio::process::{Child, Command};
+
+#[derive(Serialize)]
+pub struct RunnerOptions {}
 
 pub struct Runner {
-    openai: bool,
-    openai_api_key: Option<String>,
-    selector: Selector,
+    options: RunnerOptions,
 }
 
 impl Runner {
+    pub fn new(options: RunnerOptions) -> Self {
+        Self { options }
+    }
+
+    /*
     pub async fn run(&self) -> anyhow::Result<()> {
         match self.config.mode {
             Mode::Sequential => self.run_sequential().await,
@@ -203,5 +209,5 @@ impl Runner {
     //.all(|required_tag| run.tags.contains(required_tag))
     //})
     //}
+    */
 }
-*/

@@ -9,6 +9,7 @@ Just random ideas as they flow in my brain.
 - Automatic support for node_modules/.bin
 - Support env expansion in commands
 - Add a --dry-run flag that basically prints the commands instead of running
+- Add null-ls support in neovim (run check?)
 
 Maybe support those options in run files?
 

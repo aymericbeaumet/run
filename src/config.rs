@@ -4,6 +4,8 @@ use merge::Merge;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
+use crate::runner::RunnerOptions;
+
 /*
  * Shared configuration for the command line interface and the TOML configuration file.
  *
@@ -17,35 +19,6 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
-    #[arg(long = "check", help = "Start in check mode to validate the config")]
-    #[serde(skip_deserializing, skip_serializing)]
-    #[merge(skip)]
-    pub command_check: bool,
-
-    #[arg(long = "print-config", help = "Print the resolved config on stdout")]
-    #[serde(skip_deserializing, skip_serializing)]
-    #[merge(skip)]
-    pub command_print_config: bool,
-
-    #[arg(long = "print-optins", help = "Print the runners options on stdout")]
-    #[serde(skip_deserializing, skip_serializing)]
-    #[merge(skip)]
-    pub command_print_options: bool,
-
-    #[arg(
-        short,
-        long = "file",
-        help = "Specify the config file(s) to use (default: run.toml in the current directory)"
-    )]
-    #[serde(skip_deserializing, skip_serializing)]
-    #[merge(strategy = merge::vec::overwrite_empty)]
-    pub files: Vec<PathBuf>,
-
-    #[arg(use_value_delimiter = true, value_delimiter = ',')] // positional arguments
-    #[serde(skip_deserializing)]
-    #[merge(strategy = merge::vec::overwrite_empty)]
-    selectors: Vec<String>,
-
     #[arg(
         short = 'A',
         long = "after",
@@ -69,12 +42,7 @@ pub struct Config {
     #[merge(strategy = merge::vec::append)]
     pub commands: Vec<Command>,
 
-    #[arg(
-        short,
-        long,
-        value_enum,
-        help = "Change the mode to use to run commands"
-    )]
+    #[arg(short, long, value_enum, help = "Change the mode used to run commands")]
     pub mode: Option<Mode>,
 
     #[command(flatten)]
@@ -109,29 +77,57 @@ pub enum Mode {
 #[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields)]
 pub struct Openai {
-    #[arg(long, help = "Enable OpenAPI advices")]
+    #[arg(
+        long,
+        env = "RUN_CLI_OPENAI_ENABLED",
+        help = "Call the OpenAI API with the standard error output to try and give you advices"
+    )]
     pub enabled: Option<bool>,
 
-    #[arg(long = "openai-api-endpoint", help = "The OpenAI API endpoint to use")]
+    #[arg(
+        long = "openai-api-endpoint",
+        env = "RUN_CLI_OPENAI_API_ENDPOINT",
+        help = "The OpenAI API endpoint to use"
+    )]
     pub api_endpoint: Option<String>,
 
-    #[arg(long = "openai-api-key", help = "The OpenAI API key to use")]
+    #[arg(
+        long = "openai-api-key",
+        env = "RUN_CLI_OPENAI_API_KEY",
+        help = "The OpenAI API key to use"
+    )]
     pub api_key: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Tmux {
-    #[arg(long = "tmux-kill-duplicate-session")]
+    #[arg(
+        long = "tmux-kill-duplicate-session",
+        env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
+        long_help = "Kill the existing tmux session if it already exists"
+    )]
     pub kill_duplicate_session: Option<bool>,
 
-    #[arg(long = "tmux-program")]
+    #[arg(
+        long = "tmux-program",
+        env = "RUN_CLI_TMUX_PROGRAM",
+        long = "Specify which tmux binary to use"
+    )]
     pub program: Option<String>,
 
-    #[arg(long = "tmux-session-prefix")]
+    #[arg(
+        long = "tmux-session-prefix",
+        env = "TMUX_SESSION_PREFIX",
+        long = "Specify the tmux session prefix to use"
+    )]
     pub session_prefix: Option<String>,
 
-    #[arg(long = "tmux-socket-path")]
+    #[arg(
+        long = "tmux-socket-path",
+        env = "TMUX_SOCKET_PATH",
+        long = "Specify the tmux socket path to use"
+    )]
     pub socket_path: Option<String>,
 }
 
@@ -148,5 +144,13 @@ impl Config {
         let config = toml::from_str(&config_str)?;
 
         Ok(config)
+    }
+}
+
+impl TryFrom<&Config> for RunnerOptions {
+    type Error = anyhow::Error;
+
+    fn try_from(config: &Config) -> Result<Self, Self::Error> {
+        Ok(Self {})
     }
 }
