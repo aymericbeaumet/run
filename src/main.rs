@@ -18,19 +18,32 @@ struct Cli {
     )]
     pub files: Vec<PathBuf>,
 
-    #[arg(use_value_delimiter = true, value_delimiter = ',')] // positional arguments
+    #[arg(
+        help = "Only run the commands matching the given selectors",
+        use_value_delimiter = true,
+        value_delimiter = ','
+    )] // positional arguments
     selectors: Vec<String>,
 
     #[command(flatten)]
     config: Config,
 
-    #[arg(long = "check", help = "Start in check mode to validate the config")]
+    #[arg(
+        long = "check",
+        help = "Start in check mode to validate the config and exit"
+    )]
     pub command_check: bool,
 
-    #[arg(long = "print-config", help = "Print the resolved config on stdout")]
+    #[arg(
+        long = "print-config",
+        help = "Print the resolved config on stdout and exit"
+    )]
     pub command_print_config: bool,
 
-    #[arg(long = "print-optins", help = "Print the runners options on stdout")]
+    #[arg(
+        long = "print-options",
+        help = "Print the resolve runner options on stdout and exit"
+    )]
     pub command_print_options: bool,
 }
 

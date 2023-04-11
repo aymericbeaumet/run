@@ -16,31 +16,23 @@ use crate::runner::RunnerOptions;
  * #[serde(skip_deserializing)] is passed.
  */
 
-#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
+#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge, Default)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     #[arg(
-        short = 'A',
-        long = "after",
-        help = "Add a command to run after the selected commands"
+        short = 'c',
+        long = "command",
+        help = "Register a command to run",
+        value_name = "COMMAND"
     )]
     #[serde(skip_deserializing)]
     #[merge(strategy = merge::vec::append)]
-    pub afters: Vec<String>,
-
-    #[arg(
-        short = 'B',
-        long = "before",
-        help = "Add a command to run before the selected commands"
-    )]
-    #[serde(skip_deserializing)]
-    #[merge(strategy = merge::vec::append)]
-    pub befores: Vec<String>,
+    pub commands: Vec<String>,
 
     #[arg(skip)]
     #[serde(rename = "run")]
     #[merge(strategy = merge::vec::append)]
-    pub commands: Vec<Command>,
+    pub runs: Vec<CommandOrString>,
 
     #[arg(short, long, value_enum, help = "Change the mode used to run commands")]
     pub mode: Option<Mode>,
@@ -51,11 +43,17 @@ pub struct Config {
     #[command(flatten)]
     pub tmux: Tmux,
 
-    #[arg(long)]
+    #[arg(long, help = "Change the working directory")]
     pub workdir: Option<PathBuf>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum CommandOrString {
+    String(String),
+    Command(Command),
+}
+
+#[derive(Debug, Serialize, Deserialize, Parser, Clone, Default)]
 #[serde(deny_unknown_fields, default)]
 pub struct Command {
     pub id: Option<String>,
@@ -65,7 +63,7 @@ pub struct Command {
     pub tags: Vec<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Clone, ValueEnum)]
+#[derive(Debug, Serialize, Deserialize, Clone, ValueEnum, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
     #[default]
@@ -74,11 +72,11 @@ pub enum Mode {
     Tmux,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
+#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields)]
 pub struct Openai {
     #[arg(
-        long,
+        long = "openai-enabled",
         env = "RUN_CLI_OPENAI_ENABLED",
         help = "Call the OpenAI API with the standard error output to try and give you advices"
     )]
@@ -86,10 +84,10 @@ pub struct Openai {
 
     #[arg(
         long = "openai-api-endpoint",
-        env = "RUN_CLI_OPENAI_API_ENDPOINT",
+        env = "RUN_CLI_OPENAI_API_BASE_URL",
         help = "The OpenAI API endpoint to use"
     )]
-    pub api_endpoint: Option<String>,
+    pub api_base_url: Option<String>,
 
     #[arg(
         long = "openai-api-key",
@@ -99,36 +97,57 @@ pub struct Openai {
     pub api_key: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, Parser, Clone, Merge)]
+impl Default for Openai {
+    fn default() -> Self {
+        Self {
+            enabled: Some(false),
+            api_base_url: Some(String::from("https://api.openai.com")),
+            api_key: None,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Tmux {
     #[arg(
         long = "tmux-kill-duplicate-session",
         env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
-        long_help = "Kill the existing tmux session if it already exists"
+        help = "Kill the existing tmux session if it already exists"
     )]
     pub kill_duplicate_session: Option<bool>,
 
     #[arg(
         long = "tmux-program",
         env = "RUN_CLI_TMUX_PROGRAM",
-        long = "Specify which tmux binary to use"
+        help = "Specify which tmux binary to use"
     )]
     pub program: Option<String>,
 
     #[arg(
         long = "tmux-session-prefix",
         env = "TMUX_SESSION_PREFIX",
-        long = "Specify the tmux session prefix to use"
+        help = "Specify the tmux session prefix to use"
     )]
     pub session_prefix: Option<String>,
 
     #[arg(
         long = "tmux-socket-path",
         env = "TMUX_SOCKET_PATH",
-        long = "Specify the tmux socket path to use"
+        help = "Specify the tmux socket path to use"
     )]
     pub socket_path: Option<String>,
+}
+
+impl Default for Tmux {
+    fn default() -> Self {
+        Self {
+            kill_duplicate_session: Some(true),
+            program: Some("tmux".to_string()),
+            session_prefix: Some("run-".to_string()),
+            socket_path: Some("/tmp/tmux.run.sock".to_string()),
+        }
+    }
 }
 
 impl Config {
