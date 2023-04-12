@@ -204,9 +204,9 @@ impl TryFrom<Config> for RunnerOptions {
             .runs
             .into_iter()
             .map(|run| RunnerCommand {
-                cmd: run.cmd.clone(),
-                description: run.description.clone(),
-                workdir: run.workdir.unwrap_or(config.workdir.clone().unwrap()),
+                cmd: run.cmd,
+                description: run.description,
+                workdir: run.workdir.unwrap_or_else(|| config.workdir.clone().unwrap()),
             })
             .collect();
 
@@ -218,11 +218,11 @@ impl TryFrom<Config> for RunnerOptions {
 
         let openai = match (
             config.openai.openai_enabled.unwrap(),
-            config.openai.openai_api_key.as_ref(),
+            config.openai.openai_api_key,
         ) {
             (true, Some(api_key)) => RunnerOpenai::Enabled {
-                api_key: api_key.clone(),
-                api_base_url: config.openai.openai_api_base_url.clone().unwrap(),
+                api_key,
+                api_base_url: config.openai.openai_api_base_url.unwrap(),
             },
             _ => RunnerOpenai::Disabled,
         };
@@ -235,8 +235,8 @@ impl TryFrom<Config> for RunnerOptions {
 
         let tmux = RunnerTmux {
             kill_duplicate_session: config.tmux.tmux_kill_duplicate_session.unwrap(),
-            program: config.tmux.tmux_program.clone().unwrap(),
-            session_prefix: config.tmux.tmux_session_prefix.clone().unwrap(),
+            program: config.tmux.tmux_program.unwrap(),
+            session_prefix: config.tmux.tmux_session_prefix.unwrap(),
             socket_path: config.tmux.tmux_socket_path.unwrap(),
         };
 
