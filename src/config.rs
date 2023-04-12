@@ -62,7 +62,8 @@ pub struct Openai {
     #[arg(
         long = "openai-enabled",
         env = "RUN_CLI_OPENAI_ENABLED",
-        help = "Call the OpenAI API with stderr to try and give you advices"
+        help = "Call the OpenAI API with stderr to try and give you advices",
+        value_parser = clap::builder::BoolishValueParser::new(),
     )]
     #[serde(rename = "enabled")]
     pub openai_enabled: Option<bool>,
@@ -109,7 +110,8 @@ pub struct Prefix {
     #[arg(
         long = "prefix-enabled",
         env = "RUN_CLI_PREFIX_ENABLED",
-        help = "Prefix each line from stdout and stderr with the command id"
+        help = "Prefix each line from stdout and stderr with the command id",
+        value_parser = clap::builder::BoolishValueParser::new(),
     )]
     #[serde(rename = "enabled")]
     pub prefix_enabled: Option<bool>,
@@ -129,7 +131,8 @@ pub struct Tmux {
     #[arg(
         long = "tmux-kill-duplicate-session",
         env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
-        help = "Kill the existing tmux session if it already exists"
+        help = "Kill the existing tmux session if it already exists",
+        value_parser = clap::builder::BoolishValueParser::new(),
     )]
     #[serde(rename = "kill_duplicate_session")]
     pub tmux_kill_duplicate_session: Option<bool>,
@@ -164,8 +167,8 @@ impl Default for Tmux {
         Self {
             tmux_kill_duplicate_session: Some(true),
             tmux_program: Some("tmux".to_string()),
-            tmux_session_prefix: Some("run-".to_string()),
-            tmux_socket_path: Some("/tmp/tmux.run.sock".to_string()),
+            tmux_session_prefix: Some("run-cli-".to_string()),
+            tmux_socket_path: Some("/tmp/tmux.run_cli.sock".to_string()),
         }
     }
 }
