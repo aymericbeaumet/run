@@ -1,7 +1,7 @@
 mod config;
 mod executor;
-mod runner;
 mod processors;
+mod runner;
 
 use clap::Parser;
 use config::Config;
@@ -15,7 +15,7 @@ struct Cli {
         short,
         long = "file",
         help = "Specify the config file(s) to use (default: load run.toml in the current directory, unless at least one COMMAND or one FILE is passed)",
-        value_name = "FILE",
+        value_name = "FILE"
     )]
     pub files: Vec<PathBuf>,
 
@@ -62,24 +62,15 @@ async fn main() -> anyhow::Result<()> {
 
     // If no commands and no config files are passed, load run.toml in the current directory.
     // Otherwise, use the default config.
-    let mut config = if cli.commands.is_empty() && cli.files.is_empty()  {
-        Config::load("run.toml").await?.1
+    let mut config = if cli.commands.is_empty() && cli.files.is_empty() {
+        Config::load("run.toml").await?
     } else {
         Config::default()
     };
 
-    // Then load the additional the config files
+    // Then load the additional config files
     for file in &cli.files {
-        let (config_file, mut loaded_config) = Config::load(file).await?;
-
-        // TODO: handle relative workdir
-        loaded_config.workdir = Some(
-            loaded_config
-                .workdir
-                .unwrap_or_else(|| config_file.parent().unwrap().to_path_buf()),
-        );
-
-        config.merge(loaded_config);
+        config.merge(Config::load(file).await?);
     }
 
     // And finally the cli/env

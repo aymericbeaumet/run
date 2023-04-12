@@ -17,16 +17,16 @@ impl Runner {
     pub fn new(options: RunnerOptions) -> Self {
         let mut executor = Executor::default();
 
-        if let RunnerPrefix::Enabled = options.prefix {
-            executor.push_out(Box::new(processors::Prefix::new("[test]".to_string())));
-            executor.push_err(Box::new(processors::Prefix::new("[test]".to_string())));
-        }
-
         if let RunnerOpenai::Enabled {
             api_base_url,
             api_key,
         } = &options.openai {
             executor.push_err(Box::new(processors::Openai::new(api_base_url.clone(), api_key.clone())));
+        }
+
+        if let RunnerPrefix::Enabled = options.prefix {
+            executor.push_out(Box::new(processors::Prefix::new("[test]".to_string())));
+            executor.push_err(Box::new(processors::Prefix::new("[test]".to_string())));
         }
 
         Self { options, executor }

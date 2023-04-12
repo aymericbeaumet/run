@@ -1,4 +1,6 @@
-use crate::runner::{RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux, RunnerPrefix};
+use crate::runner::{
+    RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
+};
 use clap::Parser;
 use clap::ValueEnum;
 use merge::Merge;
@@ -85,9 +87,9 @@ pub struct Openai {
 impl Default for Openai {
     fn default() -> Self {
         Self {
-           openai_enabled: Some(false),
-           openai_api_base_url: Some(String::from("https://api.openai.com")),
-           openai_api_key: None,
+            openai_enabled: Some(false),
+            openai_api_base_url: Some(String::from("https://api.openai.com")),
+            openai_api_key: None,
         }
     }
 }
@@ -160,16 +162,17 @@ pub struct Tmux {
 impl Default for Tmux {
     fn default() -> Self {
         Self {
-           tmux_kill_duplicate_session: Some(true),
-           tmux_program: Some("tmux".to_string()),
-           tmux_session_prefix: Some("run-".to_string()),
-           tmux_socket_path: Some("/tmp/tmux.run.sock".to_string()),
+            tmux_kill_duplicate_session: Some(true),
+            tmux_program: Some("tmux".to_string()),
+            tmux_session_prefix: Some("run-".to_string()),
+            tmux_socket_path: Some("/tmp/tmux.run.sock".to_string()),
         }
     }
 }
 
 impl Config {
-    pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<(PathBuf, Config)> {
+    pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
+        // Find the absolute path to the config file
         let mut config_path = std::env::current_dir()?;
         config_path.push(relpath);
         if std::fs::metadata(&config_path)?.is_dir() {
@@ -177,10 +180,21 @@ impl Config {
         }
         let config_path = config_path.canonicalize()?;
 
+        // Load configuration
         let config_str = tokio::fs::read_to_string(&config_path).await?;
-        let config = toml::from_str(&config_str)?;
+        let mut config: Config = toml::from_str(&config_str)?;
 
-        Ok((config_path, config))
+        // Make sure the workdir is present and absolute
+        let mut workdir = std::env::current_dir()?;
+        if let Some(w) = config.workdir.as_ref() {
+            workdir.push(w); // use provided workdir if found
+        } else {
+            workdir.push(config_path.parent().unwrap()); // fallback to config file dir
+        }
+        let workdir = workdir.canonicalize()?;
+        config.workdir = Some(workdir);
+
+        Ok(config)
     }
 }
 
@@ -194,7 +208,9 @@ impl TryFrom<Config> for RunnerOptions {
             .map(|run| RunnerCommand {
                 cmd: run.command_cmd,
                 description: run.command_description,
-                workdir: run.command_workdir.unwrap_or_else(|| config.workdir.clone().unwrap()),
+                workdir: run
+                    .command_workdir
+                    .unwrap_or_else(|| config.workdir.clone().unwrap()),
             })
             .collect();
 
