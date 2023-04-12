@@ -13,9 +13,18 @@ struct Cli {
     #[arg(
         short,
         long = "file",
-        help = "Specify the config file(s) to use (default: run.toml in the current directory)"
+        help = "Specify the config file(s) to use (default: load run.toml in the current directory, unless at least one COMMAND or one FILE is passed)",
+        value_name = "FILE",
     )]
     pub files: Vec<PathBuf>,
+
+    #[arg(
+        short = 'c',
+        long = "command",
+        help = "Register a command to run. Can be called multiple times",
+        value_name = "COMMAND"
+    )]
+    pub commands: Vec<String>,
 
     #[arg(
         help = "Only run the commands matching the given selectors",
@@ -50,10 +59,15 @@ struct Cli {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::try_parse_from(std::env::args_os())?;
 
-    // Lowest priority is the default config
-    let mut config = Config::default();
+    // If no commands and no config files are passed, load run.toml in the current directory.
+    // Otherwise, use the default config.
+    let mut config = if cli.commands.is_empty() && cli.files.is_empty()  {
+        Config::load("run.toml").await?.1
+    } else {
+        Config::default()
+    };
 
-    // Then the config files
+    // Then load the additional the config files
     for file in &cli.files {
         let (config_file, mut loaded_config) = Config::load(file).await?;
 

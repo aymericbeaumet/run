@@ -7,26 +7,11 @@ use std::path::{Path, PathBuf};
 
 /*
  * Shared configuration for the command line interface and the TOML configuration file.
- *
- * Attributes will NOT BE deserialized from the CLI arguments by default. Unless
- * #[arg(...)] is passed.
- *
- * Attributes will BE deserialized from the TOML configuration by default. Unless
- * #[serde(skip_deserializing)] is passed.
  */
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge, Default)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
-    #[arg(
-        short = 'c',
-        long = "command",
-        help = "Register a command to run. Can be called multiple times",
-        value_name = "COMMAND"
-    )]
-    #[serde(skip_deserializing)]
-    pub commands: Option<Vec<String>>,
-
     #[arg(skip)]
     #[serde(rename = "run")]
     #[merge(strategy = merge::vec::append)]
@@ -56,14 +41,17 @@ pub struct Config {
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Default)]
 #[serde(deny_unknown_fields, default)]
 pub struct Command {
+    #[arg(skip)]
     #[serde(rename = "cmd")]
-    pub cmd: Vec<String>,
+    pub command_cmd: Vec<String>,
 
+    #[arg(skip)]
     #[serde(rename = "description")]
-    pub description: Option<String>,
+    pub command_description: Option<String>,
 
+    #[arg(skip)]
     #[serde(rename = "workdir")]
-    pub workdir: Option<PathBuf>,
+    pub command_workdir: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
@@ -119,7 +107,7 @@ pub struct Prefixer {
     #[arg(
         long = "prefixer-enabled",
         env = "RUN_CLI_PREFIXER_ENABLED",
-        help = "Add a prefix to the command output"
+        help = "Prefix each line from stdout and stderr with the command id"
     )]
     #[serde(rename = "enabled")]
     pub prefixer_enabled: Option<bool>,
@@ -204,9 +192,9 @@ impl TryFrom<Config> for RunnerOptions {
             .runs
             .into_iter()
             .map(|run| RunnerCommand {
-                cmd: run.cmd,
-                description: run.description,
-                workdir: run.workdir.unwrap_or_else(|| config.workdir.clone().unwrap()),
+                cmd: run.command_cmd,
+                description: run.command_description,
+                workdir: run.command_workdir.unwrap_or_else(|| config.workdir.clone().unwrap()),
             })
             .collect();
 
