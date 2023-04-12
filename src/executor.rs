@@ -1,6 +1,9 @@
+use anyhow::Context;
 use async_trait::async_trait;
-use tokio::io::AsyncRead;
+use std::path::Path;
+use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Command;
 
 #[async_trait]
 pub trait Processor: Send + Sync {
@@ -18,27 +21,38 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub fn push_out(&mut self, processor: Box<dyn Processor + Send + Sync>) {
-        self.out_processors.push(processor);
+    pub fn push_out<P: Processor + Send + Sync + 'static>(&mut self, processor: P) {
+        self.out_processors
+            .push(Box::new(processor) as Box<dyn Processor + Send + Sync>);
     }
 
-    pub fn push_err(&mut self, processor: Box<dyn Processor + Send + Sync>) {
-        self.err_processors.push(processor);
+    pub fn push_err<P: Processor + Send + Sync + 'static>(&mut self, processor: P) {
+        self.err_processors
+            .push(Box::new(processor) as Box<dyn Processor + Send + Sync>);
     }
 
-    pub async fn process(
-        &mut self,
-        out: impl AsyncRead + Unpin,
-        err: impl AsyncRead + Unpin,
-    ) -> anyhow::Result<()> {
-        let mut out = BufReader::new(out).lines();
-        let mut err = BufReader::new(err).lines();
+    pub async fn exec<P>(mut self, cmd: &[String], workdir: P) -> anyhow::Result<()>
+    where
+        P: AsRef<Path> + std::fmt::Debug,
+    {
+        let mut child = Command::new(&cmd[0]);
+        let child = child
+            .env_clear()
+            .args(&cmd[1..])
+            .current_dir(workdir.as_ref())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
+
+        let mut out = BufReader::new(child.stdout.unwrap()).lines();
+        let mut err = BufReader::new(child.stderr.unwrap()).lines();
 
         // TODO: read both streams in parallel
         // TODO: do not catch stdout/stderr if no processors for stream
 
         while let Some(mut line) = out.next_line().await? {
-            for processor in &mut self.out_processors  {
+            for processor in &mut self.out_processors {
                 line = processor.process(line)?;
             }
             println!("{}", line);
@@ -49,7 +63,7 @@ impl Executor {
         }
 
         while let Some(mut line) = err.next_line().await? {
-            for processor in &mut self.err_processors  {
+            for processor in &mut self.err_processors {
                 line = processor.process(line)?;
             }
             eprintln!("{}", line);

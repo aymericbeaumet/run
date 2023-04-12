@@ -29,7 +29,7 @@ impl Processor for Openai {
 
     async fn flush(&mut self) -> anyhow::Result<()> {
         eprintln!(
-            "\n+=================================[ ChatGPT ]==================================+"
+            "\n+==================================[ OpenAI ]==================================+"
         );
 
         let body = json!({
@@ -42,8 +42,9 @@ impl Processor for Openai {
           ]
         });
 
+        let url = format!("{}/v1/chat/completions", self.api_base_url);
         let resp = reqwest::Client::new()
-            .post("https://api.openai.com/v1/chat/completions")
+            .post(&url)
             .bearer_auth(&self.api_key)
             .json(&body)
             .send()
@@ -52,7 +53,7 @@ impl Processor for Openai {
         eprintln!(
             "|                                                                              |"
         );
-        let resp: OpenaiResponse = resp.json().await?;
+        let resp: Response = resp.json().await?;
         for line in textwrap::wrap(&resp.choices[0].message.content, 76) {
             eprintln!("| {:<76} |", line);
         }
@@ -69,7 +70,7 @@ impl Processor for Openai {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OpenaiResponse {
+struct Response {
     pub id: String,
     pub object: String,
     pub created: i64,
@@ -80,7 +81,7 @@ pub struct OpenaiResponse {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Usage {
+struct Usage {
     #[serde(rename = "prompt_tokens")]
     pub prompt_tokens: i64,
     #[serde(rename = "completion_tokens")]
@@ -91,7 +92,7 @@ pub struct Usage {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Choice {
+struct Choice {
     pub message: Message,
     #[serde(rename = "finish_reason")]
     pub finish_reason: String,
@@ -100,7 +101,7 @@ pub struct Choice {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Message {
+struct Message {
     pub role: String,
     pub content: String,
 }

@@ -8,6 +8,7 @@ edition = "2021"
 anyhow = "1.0.70"
 async-trait = "0.1.68"
 clap = { version = "4.2.1", features = ["derive", "env"] }
+futures = "0.3.28"
 indexmap = { version = "1.9.3", features = ["serde"] }
 log = "0.4.17"
 merge = "0.1.0"

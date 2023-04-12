@@ -1,35 +1,20 @@
-use anyhow::Context;
-use serde::Serialize;
-use std::ffi::OsStr;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::Stdio;
-use tokio::process::{Child, Command};
 use crate::executor::Executor;
 use crate::processors;
+use anyhow::Context;
+use futures::stream::FuturesUnordered;
+use futures::StreamExt;
+use serde::Serialize;
+use std::ffi::OsStr;
+use std::path::PathBuf;
+use tokio::process::Command;
 
 pub struct Runner {
     options: RunnerOptions,
-    executor: Executor,
 }
 
 impl Runner {
     pub fn new(options: RunnerOptions) -> Self {
-        let mut executor = Executor::default();
-
-        if let RunnerOpenai::Enabled {
-            api_base_url,
-            api_key,
-        } = &options.openai {
-            executor.push_err(Box::new(processors::Openai::new(api_base_url.clone(), api_key.clone())));
-        }
-
-        if let RunnerPrefix::Enabled = options.prefix {
-            executor.push_out(Box::new(processors::Prefix::new("[test]".to_string())));
-            executor.push_err(Box::new(processors::Prefix::new("[test]".to_string())));
-        }
-
-        Self { options, executor }
+        Self { options }
     }
 
     pub async fn run(&self) -> anyhow::Result<()> {
@@ -41,37 +26,21 @@ impl Runner {
     }
 
     async fn run_sequential(&self) -> anyhow::Result<()> {
-        for run in &self.options.commands {
-            // TODO: clean + refactor
-            let mut child = self.exec(&run.cmd, &run.workdir).await?;
-
-            //Pipeline::new(
-            //format!("[{}]", &run.cmd[0]),
-            //self.options.openai.api_key.clone(),
-            //)
-            //.process(child.stdout.take().unwrap(), child.stderr.take().unwrap())
-            //.await?;
-
-            child.wait().await?;
+        for cmd in &self.options.commands {
+            self.exec(cmd).await?;
         }
 
         Ok(())
     }
 
     async fn run_parallel(&self) -> anyhow::Result<()> {
-        let mut children = vec![];
-
-        for run in &self.options.commands {
-            let child = self.exec(&run.cmd, &run.workdir).await?;
-
-            //let _pipeline = Pipeline::new(format!("[{}]", id), self.openapi_api_key.clone());
-            // TODO: process with pipeline in a non-blocking manner
-
-            children.push(child);
+        let mut waits = FuturesUnordered::new();
+        for cmd in &self.options.commands {
+            waits.push(self.exec(cmd));
         }
 
-        for mut child in children {
-            child.wait().await?;
+        while let Some(res) = waits.next().await {
+            res?;
         }
 
         Ok(())
@@ -166,29 +135,29 @@ impl Runner {
             ))?;
         }
 
-        // TODO: report status code in the pane title
-        // TODO: report time to finish in the pane title
-
         Ok(())
     }
 
-    async fn exec<P: AsRef<Path> + std::fmt::Debug>(
-        &self,
-        cmd: &[String],
-        workdir: P,
-    ) -> anyhow::Result<Child> {
-        let mut child = Command::new(&cmd[0]);
+    async fn exec(&self, cmd: &RunnerCommand) -> anyhow::Result<()> {
+        let mut executor = Executor::default();
 
-        let child = child
-            .env_clear()
-            .args(&cmd[1..])
-            .current_dir(workdir.as_ref())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
+        if let RunnerOpenai::Enabled {
+            api_base_url,
+            api_key,
+        } = &self.options.openai
+        {
+            executor.push_err(processors::Openai::new(
+                api_base_url.clone(),
+                api_key.clone(),
+            ));
+        }
 
-        Ok(child)
+        if let RunnerPrefix::Enabled = self.options.prefix {
+            executor.push_out(processors::Prefix::new(format!("[{}]", cmd.cmd[0])));
+            executor.push_err(processors::Prefix::new(format!("[{}]", cmd.cmd[0])));
+        }
+
+        executor.exec(&cmd.cmd, &cmd.workdir).await
     }
 }
 
