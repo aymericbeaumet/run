@@ -1,4 +1,4 @@
-use crate::runner::{RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux, RunnerPrefixer};
+use crate::runner::{RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux, RunnerPrefix};
 use clap::Parser;
 use clap::ValueEnum;
 use merge::Merge;
@@ -26,8 +26,8 @@ pub struct Config {
     pub openai: Openai,
 
     #[command(flatten)]
-    #[serde(rename = "prefixer")]
-    pub prefixer: Prefixer,
+    #[serde(rename = "prefix")]
+    pub prefix: Prefix,
 
     #[command(flatten)]
     #[serde(rename = "tmux")]
@@ -103,20 +103,20 @@ pub enum Mode {
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields)]
-pub struct Prefixer {
+pub struct Prefix {
     #[arg(
-        long = "prefixer-enabled",
-        env = "RUN_CLI_PREFIXER_ENABLED",
+        long = "prefix-enabled",
+        env = "RUN_CLI_PREFIX_ENABLED",
         help = "Prefix each line from stdout and stderr with the command id"
     )]
     #[serde(rename = "enabled")]
-    pub prefixer_enabled: Option<bool>,
+    pub prefix_enabled: Option<bool>,
 }
 
-impl Default for Prefixer {
+impl Default for Prefix {
     fn default() -> Self {
         Self {
-            prefixer_enabled: Some(true),
+            prefix_enabled: Some(true),
         }
     }
 }
@@ -215,10 +215,10 @@ impl TryFrom<Config> for RunnerOptions {
             _ => RunnerOpenai::Disabled,
         };
 
-        let prefixer = if config.prefixer.prefixer_enabled.unwrap() {
-            RunnerPrefixer::Enabled
+        let prefix = if config.prefix.prefix_enabled.unwrap() {
+            RunnerPrefix::Enabled
         } else {
-            RunnerPrefixer::Disabled
+            RunnerPrefix::Disabled
         };
 
         let tmux = RunnerTmux {
@@ -232,7 +232,7 @@ impl TryFrom<Config> for RunnerOptions {
             commands,
             mode,
             openai,
-            prefixer,
+            prefix,
             tmux,
         })
     }

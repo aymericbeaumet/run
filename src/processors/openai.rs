@@ -1,101 +1,27 @@
+use crate::executor::Processor;
 use async_trait::async_trait;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::json;
-use tokio::io::AsyncRead;
-use tokio::io::{AsyncBufReadExt, BufReader};
 
-// TODO: optimization, do not redirect stdout/stderr if there are no processors to run
-
-#[async_trait]
-trait Processor: Send + Sync {
-    fn process(&mut self, line: String) -> anyhow::Result<String>;
-
-    async fn flush(&mut self) -> anyhow::Result<()> {
-        Ok(())
-    }
-}
-
-#[derive(Default)]
-pub struct Pipeline {
-    out_processors: Vec<Box<dyn Processor + Send + Sync>>,
-    err_processors: Vec<Box<dyn Processor + Send + Sync>>,
-}
-
-impl Pipeline {
-    pub fn new(prefix: String, openai_api_key: Option<String>) -> Self {
-        let mut p = Pipeline::default();
-
-        // Prepare out processors
-        p.out_processors.push(Box::new(Prefixer {
-            prefix: prefix.clone(),
-        }));
-
-        // Prepare err processors
-        if let Some(openai_api_key) = openai_api_key {
-            p.err_processors.push(Box::new(OpenaiProcessor {
-                lines: vec![],
-                api_key: openai_api_key,
-            }));
-        }
-        p.err_processors.push(Box::new(Prefixer { prefix }));
-
-        p
-    }
-
-    pub async fn process(
-        &mut self,
-        out: impl AsyncRead + Unpin,
-        err: impl AsyncRead + Unpin,
-    ) -> anyhow::Result<()> {
-        let mut out = BufReader::new(out).lines();
-        let mut err = BufReader::new(err).lines();
-
-        // TODO: read both streams in parallel
-
-        while let Some(mut line) = out.next_line().await? {
-            for processor in &mut self.out_processors {
-                line = processor.process(line)?;
-            }
-            println!("{}", line);
-        }
-
-        for processor in self.out_processors.iter_mut().rev() {
-            processor.flush().await?;
-        }
-
-        while let Some(mut line) = err.next_line().await? {
-            for processor in &mut self.err_processors {
-                line = processor.process(line)?;
-            }
-            eprintln!("{}", line);
-        }
-
-        for processor in &mut self.err_processors {
-            processor.flush().await?;
-        }
-
-        Ok(())
-    }
-}
-
-struct Prefixer {
-    prefix: String,
-}
-
-impl Processor for Prefixer {
-    fn process(&mut self, input: String) -> anyhow::Result<String> {
-        Ok(format!("{} {}", self.prefix, input))
-    }
-}
-
-struct OpenaiProcessor {
+pub struct Openai {
     lines: Vec<String>,
     api_key: String,
+    api_base_url: String,
+}
+
+impl Openai {
+    pub fn new(api_base_url: String, api_key: String) -> Self {
+        Self {
+            lines: vec![],
+            api_base_url,
+            api_key,
+        }
+    }
 }
 
 #[async_trait]
-impl Processor for OpenaiProcessor {
+impl Processor for Openai {
     fn process(&mut self, input: String) -> anyhow::Result<String> {
         self.lines.push(input.clone());
         Ok(input)

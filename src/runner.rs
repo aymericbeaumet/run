@@ -3,15 +3,33 @@ use serde::Serialize;
 use std::ffi::OsStr;
 use std::path::Path;
 use std::path::PathBuf;
+use std::process::Stdio;
 use tokio::process::{Child, Command};
+use crate::executor::Executor;
+use crate::processors;
 
 pub struct Runner {
     options: RunnerOptions,
+    executor: Executor,
 }
 
 impl Runner {
     pub fn new(options: RunnerOptions) -> Self {
-        Self { options }
+        let mut executor = Executor::default();
+
+        if let RunnerPrefix::Enabled = options.prefix {
+            executor.push_out(Box::new(processors::Prefix::new("[test]".to_string())));
+            executor.push_err(Box::new(processors::Prefix::new("[test]".to_string())));
+        }
+
+        if let RunnerOpenai::Enabled {
+            api_base_url,
+            api_key,
+        } = &options.openai {
+            executor.push_err(Box::new(processors::Openai::new(api_base_url.clone(), api_key.clone())));
+        }
+
+        Self { options, executor }
     }
 
     pub async fn run(&self) -> anyhow::Result<()> {
@@ -165,8 +183,8 @@ impl Runner {
             .env_clear()
             .args(&cmd[1..])
             .current_dir(workdir.as_ref())
-            //.stdout(Stdio::piped())
-            //.stderr(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn()
             .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
 
@@ -179,7 +197,7 @@ pub struct RunnerOptions {
     pub commands: Vec<RunnerCommand>,
     pub mode: RunnerMode,
     pub openai: RunnerOpenai,
-    pub prefixer: RunnerPrefixer,
+    pub prefix: RunnerPrefix,
     pub tmux: RunnerTmux,
 }
 
@@ -207,7 +225,7 @@ pub enum RunnerOpenai {
 }
 
 #[derive(Debug, Serialize)]
-pub enum RunnerPrefixer {
+pub enum RunnerPrefix {
     Disabled,
     Enabled,
 }

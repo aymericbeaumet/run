@@ -1,6 +1,7 @@
 mod config;
-mod pipeline;
+mod executor;
 mod runner;
+mod processors;
 
 use clap::Parser;
 use config::Config;
