@@ -43,10 +43,7 @@ struct Cli {
     )]
     pub command_check: bool,
 
-    #[arg(
-        long = "print-merged-config",
-        help = "Print the merged config on stdout and exit"
-    )]
+    #[arg(long = "print-config", help = "Print the config on stdout and exit")]
     pub command_print_config: bool,
 
     #[arg(

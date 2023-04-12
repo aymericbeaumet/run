@@ -104,7 +104,7 @@ pub enum Mode {
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields, default)]
 pub struct Prefix {
     #[arg(
         long = "prefix-enabled",

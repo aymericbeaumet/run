@@ -39,9 +39,14 @@ impl Executor {
         let child = child
             .env_clear()
             .args(&cmd[1..])
-            .current_dir(workdir.as_ref())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .current_dir(workdir.as_ref());
+
+        if !self.out_processors.is_empty() {
+            child.stdout(Stdio::piped());
+            child.stderr(Stdio::piped());
+        }
+
+        let child = child
             .spawn()
             .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
 
