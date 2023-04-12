@@ -79,7 +79,7 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let options = RunnerOptions::try_from(&config)?;
+    let options = RunnerOptions::try_from(config)?;
 
     if cli.command_print_options {
         serde_json::to_writer_pretty(std::io::stdout(), &options)?;

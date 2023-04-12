@@ -1,10 +1,8 @@
-//use crate::pipeline::Pipeline;
 use anyhow::Context;
 use serde::Serialize;
 use std::ffi::OsStr;
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::Stdio;
 use tokio::process::{Child, Command};
 
 pub struct Runner {
@@ -181,6 +179,7 @@ pub struct RunnerOptions {
     pub commands: Vec<RunnerCommand>,
     pub mode: RunnerMode,
     pub openai: RunnerOpenai,
+    pub prefixer: RunnerPrefixer,
     pub tmux: RunnerTmux,
 }
 
@@ -205,6 +204,12 @@ pub enum RunnerOpenai {
         api_key: String,
         api_base_url: String,
     },
+}
+
+#[derive(Debug, Serialize)]
+pub enum RunnerPrefixer {
+    Disabled,
+    Enabled,
 }
 
 #[derive(Debug, Serialize)]

@@ -1,4 +1,4 @@
-use crate::runner::{RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux};
+use crate::runner::{RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerTmux, RunnerPrefixer};
 use clap::Parser;
 use clap::ValueEnum;
 use merge::Merge;
@@ -25,8 +25,7 @@ pub struct Config {
         value_name = "COMMAND"
     )]
     #[serde(skip_deserializing)]
-    #[merge(strategy = merge::vec::append)]
-    pub commands: Vec<String>,
+    pub commands: Option<Vec<String>>,
 
     #[arg(skip)]
     #[serde(rename = "run")]
@@ -34,57 +33,73 @@ pub struct Config {
     pub runs: Vec<Command>,
 
     #[arg(short, long, value_enum, help = "Change the mode used to run commands")]
+    #[serde(rename = "mode")]
     pub mode: Option<Mode>,
 
     #[command(flatten)]
+    #[serde(rename = "openai")]
     pub openai: Openai,
 
     #[command(flatten)]
+    #[serde(rename = "prefixer")]
+    pub prefixer: Prefixer,
+
+    #[command(flatten)]
+    #[serde(rename = "tmux")]
     pub tmux: Tmux,
 
-    #[arg(long, help = "Change the working directory")]
+    #[arg(long, help = "Change the base working directory")]
+    #[serde(rename = "workdir")]
     pub workdir: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Default)]
 #[serde(deny_unknown_fields, default)]
 pub struct Command {
+    #[serde(rename = "cmd")]
     pub cmd: Vec<String>,
+
+    #[serde(rename = "description")]
     pub description: Option<String>,
+
+    #[serde(rename = "workdir")]
     pub workdir: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields, default)]
 pub struct Openai {
     #[arg(
         long = "openai-enabled",
         env = "RUN_CLI_OPENAI_ENABLED",
-        help = "Call the OpenAI API with the standard error output to try and give you advices"
+        help = "Call the OpenAI API with stderr to try and give you advices"
     )]
-    pub enabled: Option<bool>,
+    #[serde(rename = "enabled")]
+    pub openai_enabled: Option<bool>,
 
     #[arg(
         long = "openai-api-base-url",
         env = "RUN_CLI_OPENAI_API_BASE_URL",
         help = "The OpenAI API base url to use"
     )]
-    pub api_base_url: Option<String>,
+    #[serde(rename = "api_base_url")]
+    pub openai_api_base_url: Option<String>,
 
     #[arg(
         long = "openai-api-key",
         env = "RUN_CLI_OPENAI_API_KEY",
         help = "The OpenAI API key to use"
     )]
-    pub api_key: Option<String>,
+    #[serde(rename = "api_key")]
+    pub openai_api_key: Option<String>,
 }
 
 impl Default for Openai {
     fn default() -> Self {
         Self {
-            enabled: Some(false),
-            api_base_url: Some(String::from("https://api.openai.com")),
-            api_key: None,
+           openai_enabled: Some(false),
+           openai_api_base_url: Some(String::from("https://api.openai.com")),
+           openai_api_key: None,
         }
     }
 }
@@ -99,6 +114,26 @@ pub enum Mode {
 }
 
 #[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
+#[serde(deny_unknown_fields)]
+pub struct Prefixer {
+    #[arg(
+        long = "prefixer-enabled",
+        env = "RUN_CLI_PREFIXER_ENABLED",
+        help = "Add a prefix to the command output"
+    )]
+    #[serde(rename = "enabled")]
+    pub prefixer_enabled: Option<bool>,
+}
+
+impl Default for Prefixer {
+    fn default() -> Self {
+        Self {
+            prefixer_enabled: Some(true),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Tmux {
     #[arg(
@@ -106,37 +141,41 @@ pub struct Tmux {
         env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
         help = "Kill the existing tmux session if it already exists"
     )]
-    pub kill_duplicate_session: Option<bool>,
+    #[serde(rename = "kill_duplicate_session")]
+    pub tmux_kill_duplicate_session: Option<bool>,
 
     #[arg(
         long = "tmux-program",
         env = "RUN_CLI_TMUX_PROGRAM",
         help = "Specify which tmux binary to use"
     )]
-    pub program: Option<String>,
+    #[serde(rename = "program")]
+    pub tmux_program: Option<String>,
 
     #[arg(
         long = "tmux-session-prefix",
         env = "TMUX_SESSION_PREFIX",
         help = "Specify the tmux session prefix to use"
     )]
-    pub session_prefix: Option<String>,
+    #[serde(rename = "session_prefix")]
+    pub tmux_session_prefix: Option<String>,
 
     #[arg(
         long = "tmux-socket-path",
         env = "TMUX_SOCKET_PATH",
         help = "Specify the tmux socket path to use"
     )]
-    pub socket_path: Option<String>,
+    #[serde(rename = "socket_path")]
+    pub tmux_socket_path: Option<String>,
 }
 
 impl Default for Tmux {
     fn default() -> Self {
         Self {
-            kill_duplicate_session: Some(true),
-            program: Some("tmux".to_string()),
-            session_prefix: Some("run-".to_string()),
-            socket_path: Some("/tmp/tmux.run.sock".to_string()),
+           tmux_kill_duplicate_session: Some(true),
+           tmux_program: Some("tmux".to_string()),
+           tmux_session_prefix: Some("run-".to_string()),
+           tmux_socket_path: Some("/tmp/tmux.run.sock".to_string()),
         }
     }
 }
@@ -157,20 +196,17 @@ impl Config {
     }
 }
 
-impl TryFrom<&Config> for RunnerOptions {
+impl TryFrom<Config> for RunnerOptions {
     type Error = anyhow::Error;
 
-    fn try_from(config: &Config) -> Result<Self, Self::Error> {
+    fn try_from(config: Config) -> Result<Self, Self::Error> {
         let commands = config
             .runs
-            .iter()
+            .into_iter()
             .map(|run| RunnerCommand {
                 cmd: run.cmd.clone(),
                 description: run.description.clone(),
-                workdir: run
-                    .workdir
-                    .clone()
-                    .unwrap_or(config.workdir.clone().unwrap()),
+                workdir: run.workdir.unwrap_or(config.workdir.clone().unwrap()),
             })
             .collect();
 
@@ -180,25 +216,35 @@ impl TryFrom<&Config> for RunnerOptions {
             Mode::Tmux => RunnerMode::Tmux,
         };
 
-        let openai = match (config.openai.enabled, config.openai.api_key.as_ref()) {
-            (Some(enabled), Some(api_key)) if enabled => RunnerOpenai::Enabled {
+        let openai = match (
+            config.openai.openai_enabled.unwrap(),
+            config.openai.openai_api_key.as_ref(),
+        ) {
+            (true, Some(api_key)) => RunnerOpenai::Enabled {
                 api_key: api_key.clone(),
-                api_base_url: config.openai.api_base_url.clone().unwrap(),
+                api_base_url: config.openai.openai_api_base_url.clone().unwrap(),
             },
             _ => RunnerOpenai::Disabled,
         };
 
+        let prefixer = if config.prefixer.prefixer_enabled.unwrap() {
+            RunnerPrefixer::Enabled
+        } else {
+            RunnerPrefixer::Disabled
+        };
+
         let tmux = RunnerTmux {
-            kill_duplicate_session: config.tmux.kill_duplicate_session.unwrap(),
-            program: config.tmux.program.clone().unwrap(),
-            session_prefix: config.tmux.session_prefix.clone().unwrap(),
-            socket_path: config.tmux.socket_path.clone().unwrap(),
+            kill_duplicate_session: config.tmux.tmux_kill_duplicate_session.unwrap(),
+            program: config.tmux.tmux_program.clone().unwrap(),
+            session_prefix: config.tmux.tmux_session_prefix.clone().unwrap(),
+            socket_path: config.tmux.tmux_socket_path.unwrap(),
         };
 
         Ok(Self {
             commands,
             mode,
             openai,
+            prefixer,
             tmux,
         })
     }
