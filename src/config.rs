@@ -210,7 +210,7 @@ impl TryFrom<Config> for RunnerOptions {
             })
             .collect();
 
-        let mode = match config.mode.as_ref().unwrap() {
+        let mode = match config.mode.unwrap() {
             Mode::Sequential => RunnerMode::Sequential,
             Mode::Parallel => RunnerMode::Parallel,
             Mode::Tmux => RunnerMode::Tmux,
