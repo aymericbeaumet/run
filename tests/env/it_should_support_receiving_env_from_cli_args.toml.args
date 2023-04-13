@@ -1,0 +1,4 @@
+-e
+__RUN_CLI_FOO__=foo
+--env
+__RUN_CLI_BAR__=bar

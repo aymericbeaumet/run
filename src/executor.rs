@@ -37,17 +37,16 @@ impl Executor {
     where
         P: AsRef<Path> + std::fmt::Debug,
     {
-        let mut child = Command::new(&cmd[0]);
-        let child = child
-            .env_clear()
-            .args(&cmd[1..])
-            .current_dir(workdir.as_ref());
+        let capture_out = !self.out_processors.is_empty();
+        let capture_err = !self.err_processors.is_empty();
 
-        if !self.out_processors.is_empty() {
+        let mut child = Command::new(&cmd[0]); // TODO: move the program/args split beforehand
+        let child = child.args(&cmd[1..]).current_dir(workdir.as_ref());
+
+        if capture_out {
             child.stdout(Stdio::piped());
         }
-
-        if !self.err_processors.is_empty() {
+        if capture_err {
             child.stderr(Stdio::piped());
         }
 
@@ -56,8 +55,8 @@ impl Executor {
             .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
 
         let child_stdout = child.stdout.take();
-        let out_fut = tokio::spawn(async move {
-            if !self.out_processors.is_empty() {
+        let process_out = tokio::spawn(async move {
+            if capture_out {
                 if let Some(stdout) = child_stdout {
                     let mut out_reader = BufReader::new(stdout).lines();
 
@@ -77,8 +76,8 @@ impl Executor {
         });
 
         let child_stderr = child.stderr.take();
-        let err_fut = tokio::spawn(async move {
-            if !self.err_processors.is_empty() {
+        let process_err = tokio::spawn(async move {
+            if capture_err {
                 if let Some(stderr) = child_stderr {
                     let mut err_reader = BufReader::new(stderr).lines();
 
@@ -99,8 +98,8 @@ impl Executor {
 
         let _ = try_join3(
             child.wait().map_err(anyhow::Error::msg),
-            out_fut.map_err(anyhow::Error::msg),
-            err_fut.map_err(anyhow::Error::msg),
+            process_out.map_err(anyhow::Error::msg),
+            process_err.map_err(anyhow::Error::msg),
         )
         .await?;
 

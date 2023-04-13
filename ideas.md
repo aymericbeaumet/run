@@ -10,3 +10,4 @@
 - Scope the config at the global/file/run level (cli/env = global)
 - tmux: report status code in the pane title
 - tmux: report time to finish in the pane title
+- tmux: use `run -f /dev/null 'command' inside each panel (prefix, openai, watcher, etc)`
