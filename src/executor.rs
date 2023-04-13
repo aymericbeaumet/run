@@ -43,6 +43,9 @@ impl Executor {
 
         if !self.out_processors.is_empty() {
             child.stdout(Stdio::piped());
+        }
+
+        if !self.err_processors.is_empty() {
             child.stderr(Stdio::piped());
         }
 
@@ -50,32 +53,40 @@ impl Executor {
             .spawn()
             .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
 
-        let mut out = BufReader::new(child.stdout.unwrap()).lines();
-        let mut err = BufReader::new(child.stderr.unwrap()).lines();
-
         // TODO: read both streams in parallel
-        // TODO: do not catch stdout/stderr if no processors for stream
 
-        while let Some(mut line) = out.next_line().await? {
-            for processor in &mut self.out_processors {
-                line = processor.process(line)?;
+        if !self.out_processors.is_empty() {
+            if let Some(stdout) = child.stdout {
+                let mut out = BufReader::new(stdout).lines();
+
+                while let Some(mut line) = out.next_line().await? {
+                    for processor in &mut self.out_processors {
+                        line = processor.process(line)?;
+                    }
+                    println!("{}", line);
+                }
+
+                for processor in &mut self.out_processors {
+                    processor.flush().await?;
+                }
             }
-            println!("{}", line);
         }
 
-        for processor in &mut self.out_processors {
-            processor.flush().await?;
-        }
+        if !self.err_processors.is_empty() {
+            if let Some(stderr) = child.stderr {
+                let mut err = BufReader::new(stderr).lines();
 
-        while let Some(mut line) = err.next_line().await? {
-            for processor in &mut self.err_processors {
-                line = processor.process(line)?;
+                while let Some(mut line) = err.next_line().await? {
+                    for processor in &mut self.err_processors {
+                        line = processor.process(line)?;
+                    }
+                    eprintln!("{}", line);
+                }
+
+                for processor in &mut self.err_processors {
+                    processor.flush().await?;
+                }
             }
-            eprintln!("{}", line);
-        }
-
-        for processor in &mut self.err_processors {
-            processor.flush().await?;
         }
 
         Ok(())
