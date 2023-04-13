@@ -44,12 +44,9 @@ struct Cli {
     )]
     pub command_check: bool,
 
-    #[arg(long = "print-config", help = "Print the config on stdout and exit")]
-    pub command_print_config: bool,
-
     #[arg(
-        long = "print-runner-options",
-        help = "Print the final runner options on stdout and exit"
+        long = "print-options",
+        help = "Print the resolved options on stdout and exit"
     )]
     pub command_print_options: bool,
 }
@@ -79,16 +76,11 @@ async fn main() -> anyhow::Result<()> {
         });
     }
 
+    let options = RunnerOptions::try_from(config)?;
+
     if cli.command_check {
         return Ok(());
     }
-
-    if cli.command_print_config {
-        serde_json::to_writer_pretty(std::io::stdout(), &config)?;
-        return Ok(());
-    }
-
-    let options = RunnerOptions::try_from(config)?;
 
     if cli.command_print_options {
         serde_json::to_writer_pretty(std::io::stdout(), &options)?;

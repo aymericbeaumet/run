@@ -1,5 +1,6 @@
 use anyhow::Context;
 use async_trait::async_trait;
+use futures::future::try_join;
 use std::path::Path;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
@@ -53,41 +54,49 @@ impl Executor {
             .spawn()
             .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
 
-        // TODO: read both streams in parallel
+        let out = tokio::spawn(async move {
+            if !self.out_processors.is_empty() {
+                if let Some(stdout) = child.stdout {
+                    let mut out = BufReader::new(stdout).lines();
 
-        if !self.out_processors.is_empty() {
-            if let Some(stdout) = child.stdout {
-                let mut out = BufReader::new(stdout).lines();
+                    while let Some(mut line) = out.next_line().await? {
+                        for processor in &mut self.out_processors {
+                            line = processor.process(line)?;
+                        }
+                        println!("{}", line);
+                    }
 
-                while let Some(mut line) = out.next_line().await? {
                     for processor in &mut self.out_processors {
-                        line = processor.process(line)?;
+                        processor.flush().await?;
                     }
-                    println!("{}", line);
-                }
-
-                for processor in &mut self.out_processors {
-                    processor.flush().await?;
                 }
             }
-        }
 
-        if !self.err_processors.is_empty() {
-            if let Some(stderr) = child.stderr {
-                let mut err = BufReader::new(stderr).lines();
+            Ok::<(), anyhow::Error>(())
+        });
 
-                while let Some(mut line) = err.next_line().await? {
+        let err = tokio::spawn(async move {
+            if !self.err_processors.is_empty() {
+                if let Some(stderr) = child.stderr {
+                    let mut err = BufReader::new(stderr).lines();
+
+                    while let Some(mut line) = err.next_line().await? {
+                        for processor in &mut self.err_processors {
+                            line = processor.process(line)?;
+                        }
+                        eprintln!("{}", line);
+                    }
+
                     for processor in &mut self.err_processors {
-                        line = processor.process(line)?;
+                        processor.flush().await?;
                     }
-                    eprintln!("{}", line);
-                }
-
-                for processor in &mut self.err_processors {
-                    processor.flush().await?;
                 }
             }
-        }
+
+            Ok::<(), anyhow::Error>(())
+        });
+
+        let _ = try_join(out, err).await?;
 
         Ok(())
     }
