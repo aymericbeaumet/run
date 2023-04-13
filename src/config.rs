@@ -14,10 +14,15 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
-    #[arg(skip)]
-    #[serde(rename = "run")]
+    #[arg(
+        short,
+        long = "env",
+        help = "Append an environment variable to all commands. Can be called multiple times",
+        value_name = "KEY=VALUE"
+    )]
+    #[serde(rename = "env")]
     #[merge(strategy = merge::vec::append)]
-    pub runs: Vec<Command>,
+    pub envs: Vec<String>,
 
     #[arg(
         short,
@@ -37,6 +42,11 @@ pub struct Config {
     #[serde(rename = "prefix")]
     pub prefix: Prefix,
 
+    #[arg(skip)]
+    #[serde(rename = "run")]
+    #[merge(strategy = merge::vec::append)]
+    pub runs: Vec<Command>,
+
     #[command(flatten)]
     #[serde(rename = "tmux")]
     pub tmux: Tmux,
@@ -55,6 +65,9 @@ pub struct Config {
 pub struct Command {
     #[serde(rename = "cmd")]
     pub command_cmd: Vec<String>,
+
+    #[serde(rename = "env")]
+    pub command_envs: Vec<String>,
 
     #[serde(rename = "name")]
     pub command_name: Option<String>,
@@ -181,6 +194,10 @@ impl Config {
 
         Ok(config)
     }
+
+    pub fn merge(&mut self, other: Self) {
+        Merge::merge(self, other);
+    }
 }
 
 impl TryFrom<Config> for RunnerOptions {
@@ -190,6 +207,9 @@ impl TryFrom<Config> for RunnerOptions {
         let workdir = config
             .workdir
             .unwrap_or(std::env::current_dir().expect("infaillible"));
+        if !workdir.is_absolute() {
+            anyhow::bail!("workdir must be an absolute path");
+        }
 
         if config.runs.is_empty() {
             anyhow::bail!("no runs found in the config file or CLI arguments");
@@ -198,22 +218,37 @@ impl TryFrom<Config> for RunnerOptions {
             .runs
             .into_iter()
             .map(|run| {
-                let name = run
-                    .command_name
-                    .unwrap_or_else(|| run.command_cmd[0].clone());
+                let cmd = run.command_cmd.to_vec();
+
+                let description = run.command_description;
+
+                let envs: Vec<_> = config
+                    .envs
+                    .iter()
+                    .cloned()
+                    .chain(run.command_envs.into_iter())
+                    .collect();
+
+                let name = run.command_name.unwrap_or(run.command_cmd[0].clone());
+
+                let tags = run.command_tags;
+
+                let workdir = run
+                    .command_workdir
+                    .map(|w| {
+                        let mut abs = workdir.to_path_buf();
+                        abs.push(w);
+                        abs.canonicalize().expect("infaillible")
+                    })
+                    .unwrap_or(workdir.clone());
+
                 RunnerCommand {
-                    cmd: run.command_cmd,
+                    cmd,
+                    description,
+                    envs,
                     name,
-                    description: run.command_description,
-                    tags: run.command_tags,
-                    workdir: run
-                        .command_workdir
-                        .map(|w| {
-                            let mut abs = workdir.to_path_buf();
-                            abs.push(w);
-                            abs.canonicalize().expect("infaillible")
-                        })
-                        .unwrap_or(workdir.clone()),
+                    tags,
+                    workdir,
                 }
             })
             .collect();

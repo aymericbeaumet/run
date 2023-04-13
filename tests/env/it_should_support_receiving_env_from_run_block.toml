@@ -1,9 +1,9 @@
 [[run]]
 name = "foo"
 cmd = ["bash", "-c", "echo $__RUN_CLI_FOOBAR__"]
-env = { "__RUN_CLI_FOOBAR__": "foo" }
+env = [ "__RUN_CLI_FOOBAR__=foo" ]
 
 [[run]]
 name = "bar"
 cmd = ["bash", "-c", "echo $__RUN_CLI_FOOBAR__"]
-env = { "__RUN_CLI_FOOBAR__": "bar" }
+env = [ "__RUN_CLI_FOOBAR__=bar" ]

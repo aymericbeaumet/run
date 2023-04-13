@@ -1,4 +1,4 @@
-env = { __RUN_CLI_FOOBAR__ = "from_main_block" }
+env = [ "__RUN_CLI_FOOBAR__=from_main_block" ]
 
 [[run]]
 name = "p3"
