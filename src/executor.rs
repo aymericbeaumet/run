@@ -1,6 +1,7 @@
 use anyhow::Context;
 use async_trait::async_trait;
-use futures::future::try_join;
+use futures::future::try_join3;
+use futures::TryFutureExt;
 use std::path::Path;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
@@ -50,16 +51,17 @@ impl Executor {
             child.stderr(Stdio::piped());
         }
 
-        let child = child
+        let mut child = child
             .spawn()
             .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
 
-        let out = tokio::spawn(async move {
+        let child_stdout = child.stdout.take();
+        let out_fut = tokio::spawn(async move {
             if !self.out_processors.is_empty() {
-                if let Some(stdout) = child.stdout {
-                    let mut out = BufReader::new(stdout).lines();
+                if let Some(stdout) = child_stdout {
+                    let mut out_reader = BufReader::new(stdout).lines();
 
-                    while let Some(mut line) = out.next_line().await? {
+                    while let Some(mut line) = out_reader.next_line().await? {
                         for processor in &mut self.out_processors {
                             line = processor.process(line)?;
                         }
@@ -71,16 +73,16 @@ impl Executor {
                     }
                 }
             }
-
             Ok::<(), anyhow::Error>(())
         });
 
-        let err = tokio::spawn(async move {
+        let child_stderr = child.stderr.take();
+        let err_fut = tokio::spawn(async move {
             if !self.err_processors.is_empty() {
-                if let Some(stderr) = child.stderr {
-                    let mut err = BufReader::new(stderr).lines();
+                if let Some(stderr) = child_stderr {
+                    let mut err_reader = BufReader::new(stderr).lines();
 
-                    while let Some(mut line) = err.next_line().await? {
+                    while let Some(mut line) = err_reader.next_line().await? {
                         for processor in &mut self.err_processors {
                             line = processor.process(line)?;
                         }
@@ -92,11 +94,15 @@ impl Executor {
                     }
                 }
             }
-
             Ok::<(), anyhow::Error>(())
         });
 
-        let _ = try_join(out, err).await?;
+        let _ = try_join3(
+            child.wait().map_err(anyhow::Error::msg),
+            out_fut.map_err(anyhow::Error::msg),
+            err_fut.map_err(anyhow::Error::msg),
+        )
+        .await?;
 
         Ok(())
     }
