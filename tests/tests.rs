@@ -132,17 +132,14 @@ where
         .map(|pattern| format!("{}/{}", CARGO_MANIFEST_DIR, pattern))
         .flat_map(|pattern| glob(&pattern).unwrap().map(|entry| entry.unwrap()))
         .map(|file| {
-            let test_name = &file
-                .strip_prefix(CARGO_MANIFEST_DIR)
-                .unwrap()
-                .with_extension("");
+            let test_name = &file.strip_prefix(CARGO_MANIFEST_DIR).unwrap();
             let test_name = test_name.to_str().unwrap().to_string();
             (test_name, file)
         })
 }
 
 /// patch_env replaces $CARGO_MANIFEST_DIR with the actual path. This is useful as some path are
-/// actually absolute.
+/// actually absolute path, and we don't want to hardcode the absolute path in the test files.
 fn patch_env<S: AsRef<str>>(s: S) -> String {
     s.as_ref()
         .replace("$CARGO_MANIFEST_DIR", CARGO_MANIFEST_DIR)
