@@ -21,10 +21,10 @@ async fn main() -> anyhow::Result<()> {
         config.merge(Config::load("run.toml").await?);
     }
 
-    // And finally the defaults
-    config.merge(Config::default());
+    // The defaults are the lowest priority but don't need to be merged. As they are actually
+    // resolved in RunnerOptions::try_from.
 
-    // Append all the cli commands to the config
+    // Append all the cli commands
     for command in cli.commands {
         config.runs.push(Command {
             command_cmd: shell_words::split(&command)?,

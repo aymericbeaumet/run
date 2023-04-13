@@ -46,6 +46,6 @@ pub struct Cli {
 
 impl Cli {
     pub fn parse() -> Self {
-        Cli::parse()
+        <Self as clap::Parser>::parse()
     }
 }

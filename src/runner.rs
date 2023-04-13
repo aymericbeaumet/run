@@ -47,7 +47,8 @@ impl Runner {
     }
 
     async fn run_tmux(&self) -> anyhow::Result<()> {
-        let session = format!("{}{}", self.options.tmux.session_prefix, "01");
+        let session_id = "01"; // TODO: make this configurable/unique
+        let session = format!("{}{}", self.options.tmux.session_prefix, session_id);
 
         if self.options.tmux.kill_duplicate_session {
             if let Err(err) = self.tmux(["kill-session", "-t", &session]).await {
@@ -55,9 +56,9 @@ impl Runner {
             }
         }
 
-        for (i, run) in self.options.commands.iter().enumerate() {
-            let workdir = &run.workdir.to_string_lossy();
-            let cmd_str = &format!("{}; read", shell_words::join(&run.cmd));
+        for (i, cmd) in self.options.commands.iter().enumerate() {
+            let workdir = &cmd.workdir.to_string_lossy();
+            let cmd_str = &format!("{}; read", cmd.to_command_line());
 
             // create the pane
             if i == 0 {
@@ -69,7 +70,7 @@ impl Runner {
             }
 
             // set pane title
-            self.tmux(["select-pane", "-t", &session, "-T", &run.name])
+            self.tmux(["select-pane", "-t", &session, "-T", &cmd.name])
                 .await?;
 
             // select layout after spawning each command to avoid: https://stackoverflow.com/a/68362774/1071486
@@ -151,7 +152,9 @@ impl Runner {
             executor.push_err(processors::Prefix::new(format!("[{}]", &cmd.name)));
         }
 
-        executor.exec(&cmd.cmd, &cmd.workdir).await
+        executor
+            .exec(&cmd.program, &cmd.args, &cmd.workdir, cmd.envs.clone())
+            .await
     }
 }
 
@@ -166,12 +169,27 @@ pub struct RunnerOptions {
 
 #[derive(Debug, Serialize)]
 pub struct RunnerCommand {
-    pub cmd: Vec<String>,
+    pub program: String,
+    pub args: Vec<String>,
     pub description: Option<String>,
-    pub envs: Vec<String>,
+    pub envs: Vec<(String, String)>,
     pub name: String,
     pub tags: Vec<String>,
     pub workdir: PathBuf,
+}
+
+impl RunnerCommand {
+    fn to_command_line(&self) -> String {
+        let mut args = vec![];
+
+        args.push(self.program.as_str());
+
+        for arg in &self.args {
+            args.push(arg.as_str());
+        }
+
+        shell_words::join(args)
+    }
 }
 
 #[derive(Debug, Serialize)]

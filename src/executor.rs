@@ -2,6 +2,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use futures::future::try_join3;
 use futures::TryFutureExt;
+use std::ffi::OsStr;
 use std::path::Path;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
@@ -33,26 +34,41 @@ impl Executor {
             .push(Box::new(processor) as Box<dyn Processor + Send + Sync>);
     }
 
-    pub async fn exec<P>(mut self, cmd: &[String], workdir: P) -> anyhow::Result<()>
+    pub async fn exec<P, A, Arg, W, Env, K, V>(
+        mut self,
+        program: P,
+        args: A,
+        workdir: W,
+        envs: Env,
+    ) -> anyhow::Result<()>
     where
-        P: AsRef<Path> + std::fmt::Debug,
+        P: AsRef<OsStr> + std::fmt::Debug,
+        A: IntoIterator<Item = Arg>,
+        Arg: AsRef<OsStr>,
+        W: AsRef<Path> + std::fmt::Debug,
+        Env: IntoIterator<Item = (K, V)>,
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
     {
         let capture_out = !self.out_processors.is_empty();
         let capture_err = !self.err_processors.is_empty();
 
-        let mut child = Command::new(&cmd[0]); // TODO: move the program/args split beforehand
-        let child = child.args(&cmd[1..]).current_dir(workdir.as_ref());
+        let mut cmd = Command::new(&program);
+
+        cmd.args(args);
+        cmd.current_dir(workdir.as_ref());
+        cmd.envs(envs);
 
         if capture_out {
-            child.stdout(Stdio::piped());
+            cmd.stdout(Stdio::piped());
         }
         if capture_err {
-            child.stderr(Stdio::piped());
+            cmd.stderr(Stdio::piped());
         }
 
-        let mut child = child
+        let mut child = cmd
             .spawn()
-            .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
+            .with_context(|| format!("could not spawn {:?} in {:?}", &program, &workdir))?;
 
         let child_stdout = child.stdout.take();
         let process_out = tokio::spawn(async move {

@@ -218,16 +218,27 @@ impl TryFrom<Config> for RunnerOptions {
             .runs
             .into_iter()
             .map(|run| {
-                let cmd = run.command_cmd.to_vec();
+                let program = match run.command_cmd.get(0) {
+                    Some(p) => p.to_string(),
+                    _ => anyhow::bail!("no program found"),
+                };
+
+                let args = match run.command_cmd.get(1..) {
+                    Some(a) => a.to_vec(),
+                    _ => anyhow::bail!("no args found"),
+                };
 
                 let description = run.command_description;
 
                 let envs: Vec<_> = config
                     .envs
                     .iter()
-                    .cloned()
-                    .chain(run.command_envs.into_iter())
-                    .collect();
+                    .chain(run.command_envs.iter())
+                    .map(|kv| match kv.split_once('=') {
+                        Some((k, v)) => Ok((k.to_string(), v.to_string())),
+                        _ => anyhow::bail!("invalid environment variable: {}", kv),
+                    })
+                    .collect::<anyhow::Result<Vec<_>>>()?;
 
                 let name = run.command_name.unwrap_or(run.command_cmd[0].clone());
 
@@ -242,16 +253,17 @@ impl TryFrom<Config> for RunnerOptions {
                     })
                     .unwrap_or(workdir.clone());
 
-                RunnerCommand {
-                    cmd,
+                Ok(RunnerCommand {
+                    program,
+                    args,
                     description,
                     envs,
                     name,
                     tags,
                     workdir,
-                }
+                })
             })
-            .collect();
+            .collect::<anyhow::Result<Vec<_>>>()?;
 
         let mode = match config.mode.unwrap_or(Mode::Sequential) {
             Mode::Sequential => RunnerMode::Sequential,
