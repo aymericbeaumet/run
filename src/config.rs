@@ -52,6 +52,7 @@ pub struct Config {
         hide_possible_values = true,
         value_name = "true|false"
     )]
+    #[serde(rename = "raw")]
     pub raw: Option<Option<bool>>,
 
     #[arg(skip)]
@@ -225,7 +226,7 @@ impl TryFrom<Config> for RunnerOptions {
     type Error = anyhow::Error;
 
     fn try_from(config: Config) -> Result<Self, Self::Error> {
-        let raw = config.raw.flatten().unwrap_or(false);
+        let raw = resolve_bool(config.raw, false);
 
         let workdir = config
             .workdir
@@ -296,7 +297,7 @@ impl TryFrom<Config> for RunnerOptions {
 
         let openai = match (
             raw,
-            config.openai.openai_enabled.flatten().unwrap_or(false),
+            resolve_bool(config.openai.openai_enabled, false),
             config.openai.openai_api_key,
         ) {
             (false, true, Some(api_key)) => RunnerOpenai::Enabled {
@@ -309,17 +310,13 @@ impl TryFrom<Config> for RunnerOptions {
             _ => RunnerOpenai::Disabled,
         };
 
-        let prefix = match (raw, config.prefix.prefix_enabled.flatten().unwrap_or(true)) {
+        let prefix = match (raw, resolve_bool(config.prefix.prefix_enabled, true)) {
             (false, true) => RunnerPrefix::Enabled,
             _ => RunnerPrefix::Disabled,
         };
 
         let tmux = RunnerTmux {
-            kill_duplicate_session: config
-                .tmux
-                .tmux_kill_duplicate_session
-                .flatten()
-                .unwrap_or(true),
+            kill_duplicate_session: resolve_bool(config.tmux.tmux_kill_duplicate_session, true),
             program: config.tmux.tmux_program.unwrap_or("tmux".into()),
             session_prefix: config.tmux.tmux_session_prefix.unwrap_or("run-cli-".into()),
             socket_path: config
@@ -335,5 +332,13 @@ impl TryFrom<Config> for RunnerOptions {
             prefix,
             tmux,
         })
+    }
+}
+
+fn resolve_bool(opts: Option<Option<bool>>, default_value: bool) -> bool {
+    match opts {
+        Some(Some(b)) => b,
+        Some(None) => true,
+        None => default_value,
     }
 }
