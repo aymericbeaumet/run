@@ -1,6 +1,1 @@
-Error: TOML parse error at line 1, column 1
-  |
-1 | workdir = "/tmp"
-  | ^^^^^^^^^^^^^^^^
-missing field `run`
-
+Error: no runs found in the config file or CLI arguments

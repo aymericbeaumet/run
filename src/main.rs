@@ -1,89 +1,92 @@
 mod config;
+mod executor;
+mod processors;
 mod runner;
 
 use clap::Parser;
-use config::{Config, Mode, Run};
-use runner::{Runner, RunnerOpts};
+use config::{Command, Config};
+use merge::Merge;
+use runner::{Runner, RunnerOptions};
 use std::path::PathBuf;
 
 #[derive(Parser)]
-struct Args {
-    // positional arguments
-    #[arg(use_value_delimiter = true, value_delimiter = ',')]
-    selectors: Vec<String>,
+#[command(about = "
+run is a task runner.
 
-    // flag
+You can pass the commands directly for simple tasks:
+    $ run 'echo hello' 'ls /tmp'
+
+Or you can use a config file for more complex setups:
+    $ run -f run.toml
+
+For more information: https://aymericbeaumet.gitbook.io/run/")]
+struct Cli {
     #[arg(
         short,
-        long = "command",
-        value_name = "CMD",
-        help = "Append an additional command to run"
+        long = "file",
+        help = "Specify the config file to load (default is to load run.toml in the current directory, unless at least one COMMAND is passed)",
+        value_name = "FILE"
     )]
-    commands: Vec<String>,
+    pub file: Option<PathBuf>,
 
-    // flag
     #[arg(
-        short,
-        long,
-        help = "Specify the config file to use (default: run.toml in the current directory)"
+        help = "Append a command to run. Can be called multiple times. Providing at least one command will prevent the default config file from being loaded",
+        value_name = "COMMAND"
     )]
-    file: Option<PathBuf>,
+    pub commands: Vec<String>,
 
-    // flag
+    #[command(flatten)]
+    config: Config,
+
     #[arg(
-        short,
-        long,
-        value_enum,
-        help = "Change the mode to use to run commands"
+        long = "check",
+        help = "Start in check mode to validate the config and exit"
     )]
-    mode: Option<Mode>,
+    pub command_check: bool,
 
-    // --check command
-    #[arg(long, help = "Start run in check mode")]
-    check: bool,
-
-    // --print-config command
-    #[arg(long, help = "Print the resolved run config on stdout")]
-    print_config: bool,
+    #[arg(
+        long = "print-options",
+        help = "Print the resolved options on stdout and exit"
+    )]
+    pub command_print_options: bool,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Parse arguments
-    let args = Args::try_parse_from(std::env::args_os())?;
+    let cli = Cli::parse();
 
-    // Find and parse config
-    let mut config = Config::load(args.file).await?;
+    // The highest priority is the cli/env config
+    let mut config = cli.config;
 
-    // Override config with CLI flags
-    if let Some(mode) = args.mode {
-        config.mode = mode;
+    // Then comes the config file
+    if let Some(file) = cli.file {
+        config.merge(Config::load(file).await?);
+    } else if cli.commands.is_empty() {
+        config.merge(Config::load("run.toml").await?);
     }
 
-    // Override config with additional runs
-    for (i, cmd) in args.commands.into_iter().enumerate() {
-        config.runs.insert(
-            format!("cli-{}", i),
-            Run {
-                cmd: vec![cmd],       // TODO: not correct, properly parse cmd
-                ..Default::default()  // no other fields can be set from CLI
-            },
-        );
+    // And finally the defaults
+    config.merge(Config::default());
+
+    // Append all the cli commands to the config
+    for command in cli.commands {
+        config.runs.push(Command {
+            command_cmd: shell_words::split(&command)?,
+            ..Default::default()
+        });
     }
 
-    if args.check {
-        // noop
-        Ok(())
-    } else if args.print_config {
-        println!("{}", toml::to_string_pretty(&config)?);
-        Ok(())
-    } else {
-        let runner = Runner::new(
-            config,
-            RunnerOpts {
-                required_tags: args.selectors, // TODO: not correct, properly parse selectors
-            },
-        );
-        runner.run().await
+    let options = RunnerOptions::try_from(config)?;
+
+    if cli.command_check {
+        return Ok(());
     }
+
+    if cli.command_print_options {
+        serde_json::to_writer_pretty(std::io::stdout(), &options)?;
+        return Ok(());
+    }
+
+    let runner = Runner::new(options);
+    runner.run().await
 }

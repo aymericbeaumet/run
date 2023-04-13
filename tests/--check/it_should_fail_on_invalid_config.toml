@@ -1,2 +1,2 @@
-[run.install]
+[[run]]
 cmd = "npm install"

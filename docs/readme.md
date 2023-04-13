@@ -1,3 +1,3 @@
 # Home
 
-Welcome to run's documentation!
+Welcome to run's documentation.

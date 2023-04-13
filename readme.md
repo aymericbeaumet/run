@@ -20,3 +20,12 @@ machine._
 ```
 cargo install -f --git https://github.com/aymericbeaumet/run
 ```
+
+## Precedence
+
+From the highest to the lowest precedence.
+
+1. CLI args
+2. Env var
+3. Config
+4. Defaults

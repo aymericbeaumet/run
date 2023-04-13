@@ -50,7 +50,7 @@ async fn run_tests() -> anyhow::Result<()> {
 }
 
 async fn check_example<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
-    let output = run(&file, ["--check"]).await?;
+    let output = exec(&file, ["--check"]).await?;
 
     if !output.status.success() {
         let stderr = std::str::from_utf8(&output.stderr)?;
@@ -69,8 +69,8 @@ async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
         bail!("none of .stdout or .stderr found");
     }
 
-    // run and get output
-    let output = run(&file, args.lines()).await?;
+    // exec and get output
+    let output = exec(&file, args.lines()).await?;
     let stdout = std::str::from_utf8(&output.stdout)?;
     let stderr = std::str::from_utf8(&output.stderr)?;
 
@@ -101,18 +101,17 @@ async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn run<P, I, S>(file: P, args: I) -> anyhow::Result<Output>
+async fn exec<P, I, S>(file: P, args: I) -> anyhow::Result<Output>
 where
     P: AsRef<Path>,
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_run"));
-
+    cmd.env_clear();
     cmd.arg("-f");
     cmd.arg(file.as_ref());
     cmd.args(args);
-
     Ok(cmd.output().await?)
 }
 

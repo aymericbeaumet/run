@@ -1,28 +1,105 @@
-use clap::ValueEnum;
-use serde::{Deserialize, Serialize};
-use std::{
-    ops::Deref,
-    path::{Path, PathBuf},
+use crate::runner::{
+    RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
 };
+use clap::Parser;
+use clap::ValueEnum;
+use merge::Merge;
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
-pub type Runs = indexmap::map::IndexMap<String, Run>;
-pub type Tags = indexmap::set::IndexSet<String>;
+/*
+ * Shared configuration for the command line interface and the TOML configuration file.
+ */
 
-#[derive(Debug, Serialize, Deserialize, Default)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
+#[serde(deny_unknown_fields, default)]
 pub struct Config {
-    #[serde(default)]
-    pub mode: Mode,
+    #[arg(skip)]
     #[serde(rename = "run")]
-    pub runs: Runs,
-    #[serde(default)]
+    #[merge(strategy = merge::vec::append)]
+    pub runs: Vec<Command>,
+
+    #[arg(
+        short,
+        long,
+        value_enum,
+        env = "RUN_CLI_MODE",
+        help = "Change the mode used to run commands"
+    )]
+    #[serde(rename = "mode")]
+    pub mode: Option<Mode>,
+
+    #[command(flatten)]
+    #[serde(rename = "openai")]
+    pub openai: Openai,
+
+    #[command(flatten)]
+    #[serde(rename = "prefix")]
+    pub prefix: Prefix,
+
+    #[command(flatten)]
+    #[serde(rename = "tmux")]
     pub tmux: Tmux,
-    #[serde(default)]
-    pub workdir: Workdir,
+
+    #[arg(
+        long,
+        env = "RUN_CLI_WORKDIR",
+        help = "Change the base working directory"
+    )]
+    #[serde(rename = "workdir")]
+    pub workdir: Option<PathBuf>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, ValueEnum, Default)]
-#[serde(deny_unknown_fields, rename_all = "lowercase")]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields, default)]
+pub struct Command {
+    #[serde(rename = "cmd")]
+    pub command_cmd: Vec<String>,
+
+    #[serde(rename = "name")]
+    pub command_name: Option<String>,
+
+    #[serde(rename = "description")]
+    pub command_description: Option<String>,
+
+    #[serde(rename = "tags")]
+    pub command_tags: Vec<String>,
+
+    #[serde(rename = "workdir")]
+    pub command_workdir: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
+#[serde(deny_unknown_fields, default)]
+pub struct Openai {
+    #[arg(
+        long = "openai-enabled",
+        env = "RUN_CLI_OPENAI_ENABLED",
+        help = "Call the OpenAI API with stderr to try and give you advices",
+        value_parser = clap::builder::BoolishValueParser::new(),
+    )]
+    #[serde(rename = "enabled")]
+    pub openai_enabled: Option<bool>,
+
+    #[arg(
+        long = "openai-api-base-url",
+        env = "RUN_CLI_OPENAI_API_BASE_URL",
+        help = "The OpenAI API base url to use"
+    )]
+    #[serde(rename = "api_base_url")]
+    pub openai_api_base_url: Option<String>,
+
+    #[arg(
+        long = "openai-api-key",
+        env = "RUN_CLI_OPENAI_API_KEY",
+        help = "The OpenAI API key to use"
+    )]
+    #[serde(rename = "api_key")]
+    pub openai_api_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, ValueEnum)]
+#[serde(rename_all = "lowercase")]
 pub enum Mode {
     #[default]
     Sequential,
@@ -30,110 +107,159 @@ pub enum Mode {
     Tmux,
 }
 
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
+#[serde(deny_unknown_fields, default)]
+pub struct Prefix {
+    #[arg(
+        long = "prefix-enabled",
+        env = "RUN_CLI_PREFIX_ENABLED",
+        help = "Prefix each line from stdout and stderr with the command id",
+        value_parser = clap::builder::BoolishValueParser::new(),
+    )]
+    #[serde(rename = "enabled")]
+    pub prefix_enabled: Option<bool>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
+#[serde(deny_unknown_fields, default)]
+pub struct Tmux {
+    #[arg(
+        long = "tmux-kill-duplicate-session",
+        env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
+        help = "Kill the existing tmux session if it already exists",
+        value_parser = clap::builder::BoolishValueParser::new(),
+    )]
+    #[serde(rename = "kill_duplicate_session")]
+    pub tmux_kill_duplicate_session: Option<bool>,
+
+    #[arg(
+        long = "tmux-program",
+        env = "RUN_CLI_TMUX_PROGRAM",
+        help = "Specify which tmux binary to use"
+    )]
+    #[serde(rename = "program")]
+    pub tmux_program: Option<String>,
+
+    #[arg(
+        long = "tmux-session-prefix",
+        env = "TMUX_SESSION_PREFIX",
+        help = "Specify the tmux session prefix to use"
+    )]
+    #[serde(rename = "session_prefix")]
+    pub tmux_session_prefix: Option<String>,
+
+    #[arg(
+        long = "tmux-socket-path",
+        env = "TMUX_SOCKET_PATH",
+        help = "Specify the tmux socket path to use"
+    )]
+    #[serde(rename = "socket_path")]
+    pub tmux_socket_path: Option<String>,
+}
+
 impl Config {
-    pub async fn load<P: AsRef<Path>>(relpath: Option<P>) -> anyhow::Result<Config> {
+    pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
+        // Find the absolute path to the config file
         let mut config_path = std::env::current_dir()?;
-        if let Some(relpath) = relpath {
-            config_path.push(relpath);
-        }
+        config_path.push(relpath);
         if std::fs::metadata(&config_path)?.is_dir() {
             config_path.push("run.toml");
         }
         let config_path = config_path.canonicalize()?;
 
+        // Load configuration
         let config_str = tokio::fs::read_to_string(&config_path).await?;
         let mut config: Config = toml::from_str(&config_str)?;
 
-        // if workdir is not set, we set it to the directory of the config file
-        let config_dir = config_path
-            .parent()
-            .expect("infaillible with an existing file")
-            .to_path_buf();
-        if config.workdir.is_none() {
-            config.workdir.set(config_dir);
-        } else {
-            let mut abs = config_dir;
-            abs.push(&config.workdir);
-            config.workdir.set(abs);
+        // Make sure the workdir is resolved relatively to the config file
+        let mut workdir = config_path.parent().expect("infaillible").to_path_buf();
+        if let Some(w) = config.workdir.as_ref() {
+            workdir.push(w); // use provided workdir if found
         }
+        let workdir = workdir.canonicalize()?;
+        config.workdir = Some(workdir);
 
         Ok(config)
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
-#[serde(deny_unknown_fields)]
-pub struct Run {
-    pub cmd: Vec<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub workdir: Option<PathBuf>,
-    #[serde(default)]
-    pub tags: Tags,
-}
+impl TryFrom<Config> for RunnerOptions {
+    type Error = anyhow::Error;
 
-impl Run {
-    pub fn title<S: AsRef<str>>(&self, id: S) -> String {
-        self.description
-            .as_ref()
-            .map(|desc| format!("{}: {}", id.as_ref(), desc))
-            .unwrap_or(id.as_ref().to_string())
-    }
-}
+    fn try_from(config: Config) -> Result<Self, Self::Error> {
+        let workdir = config
+            .workdir
+            .unwrap_or(std::env::current_dir().expect("infaillible"));
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Tmux {
-    #[serde(default)]
-    pub kill_duplicate_session: bool,
-    #[serde(default)]
-    pub program: String,
-    #[serde(default)]
-    pub session_prefix: String,
-    #[serde(default)]
-    pub socket_path: String,
-}
-
-impl Default for Tmux {
-    fn default() -> Self {
-        Tmux {
-            kill_duplicate_session: true,
-            program: "tmux".to_string(),
-            session_prefix: "run-".to_string(),
-            socket_path: "/tmp/tmux.run.sock".to_string(),
+        if config.runs.is_empty() {
+            anyhow::bail!("no runs found in the config file or CLI arguments");
         }
-    }
-}
+        let commands = config
+            .runs
+            .into_iter()
+            .map(|run| {
+                let name = run
+                    .command_name
+                    .unwrap_or_else(|| run.command_cmd[0].clone());
+                RunnerCommand {
+                    cmd: run.command_cmd,
+                    name,
+                    description: run.command_description,
+                    tags: run.command_tags,
+                    workdir: run
+                        .command_workdir
+                        .map(|w| {
+                            let mut abs = workdir.to_path_buf();
+                            abs.push(w);
+                            abs.canonicalize().expect("infaillible")
+                        })
+                        .unwrap_or(workdir.clone()),
+                }
+            })
+            .collect();
 
-#[derive(Debug, Serialize, Deserialize, Default, Clone)]
-#[serde(deny_unknown_fields)]
-pub struct Workdir(Option<PathBuf>);
+        let mode = match config.mode.unwrap_or(Mode::Sequential) {
+            Mode::Sequential => RunnerMode::Sequential,
+            Mode::Parallel => RunnerMode::Parallel,
+            Mode::Tmux => RunnerMode::Tmux,
+        };
 
-impl Workdir {
-    pub fn set(&mut self, workdir: PathBuf) {
-        assert!(
-            workdir.is_absolute(),
-            "implementation error: must always be absolute"
-        );
-        self.0.replace(workdir);
-    }
+        let openai = match (
+            config.openai.openai_enabled.unwrap_or(false),
+            config.openai.openai_api_key,
+        ) {
+            (true, Some(api_key)) => RunnerOpenai::Enabled {
+                api_key,
+                api_base_url: config
+                    .openai
+                    .openai_api_base_url
+                    .unwrap_or("https://api.openai.com".into()),
+            },
+            _ => RunnerOpenai::Disabled,
+        };
 
-    fn is_none(&self) -> bool {
-        self.0.is_none()
-    }
-}
+        let prefix = if config.prefix.prefix_enabled.unwrap_or(true) {
+            RunnerPrefix::Enabled
+        } else {
+            RunnerPrefix::Disabled
+        };
 
-impl AsRef<Path> for Workdir {
-    fn as_ref(&self) -> &Path {
-        self.0.as_ref().expect("implementation error: always set")
-    }
-}
+        let tmux = RunnerTmux {
+            kill_duplicate_session: config.tmux.tmux_kill_duplicate_session.unwrap_or(true),
+            program: config.tmux.tmux_program.unwrap_or("tmux".into()),
+            session_prefix: config.tmux.tmux_session_prefix.unwrap_or("run-cli-".into()),
+            socket_path: config
+                .tmux
+                .tmux_socket_path
+                .unwrap_or("/tmp/tmux.run_cli.sock".into()),
+        };
 
-impl Deref for Workdir {
-    type Target = Path;
-
-    fn deref(&self) -> &Self::Target {
-        self.0.as_ref().expect("implementation error: always set")
+        Ok(Self {
+            commands,
+            mode,
+            openai,
+            prefix,
+            tmux,
+        })
     }
 }

@@ -3,12 +3,15 @@
 
 mode = "tmux"
 
-[run.curl]
+[[run]]
+name = "curl"
 description = "fetch the current ip address"
 cmd = ["curl", "icanhazip.com"]
 
-[run.uname]
+[[run]]
+name = "uname"
 cmd = ["uname", "-a"]
 
-[run.df]
+[[run]]
+name = "df"
 cmd = ["df", "-h"]

@@ -1,46 +1,12 @@
-Just random ideas as they flow in my brain.
-
-- Allow to pass N run files as cli args
-- Add support for remote runes (e.g.: over https)
+- Add support for remote runs (e.g.: over https)
 - Detect http://....:... patterns in stdout, and add them to panel title in tmux
 - Add a "wait_for" condition to config to allow waiting for a specific state (e.g.: http//.../health returns 200)
 - Allow to use the `run #install #dev` shortcut instead of `run -t install -t dev`
 - Allow to configure options for specific tags
 - Automatic support for node_modules/.bin
 - Support env expansion in commands
-- Offer to send stderr to chatgpt to get suggestions
-- Test --workdir cli flag (require .toml.args support in tests)
 - Add a --dry-run flag that basically prints the commands instead of running
-- Add a --dump flag that prints the whole config instead of running
-
-Maybe support those options in run files?
-
-```
-# load_dotenv = true
-# root = ../www
-# environment = { NODE_ENV = "production" }
-
-[init]]
-cmd = ""
-watch = true
-include = []
-exclude = []
-clear = true
-
-[[test]]
-cmd = ""
-
-[[dev]]
-cmd = ""
-
-[[run]]
-cmd = "ls"
-watch = true
-
-[[run]]
-cmd = ["ls"]
-once = true
-tags = ["test"]
-after = ["tag1"]
-before = ["tag2"]
-```
+- Add null-ls support in neovim (run check?)
+- Scope the config at the global/file/run level (cli/env = global)
+- tmux: report status code in the pane title
+- tmux: report time to finish in the pane title

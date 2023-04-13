@@ -1,4 +1,2 @@
----[ one ]---
----[ two ]---
-two
-one
+[two] two
+[one] one

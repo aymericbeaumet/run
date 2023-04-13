@@ -3,11 +3,14 @@
 
 mode = "sequential"
 
-[run.one]
+[[run]]
+name = "one"
 cmd = ["bash", "-c", "echo one"]
 
-[run.two]
+[[run]]
+name = "two"
 cmd = ["bash", "-c", "echo two"]
 
-[run.three]
+[[run]]
+name = "three"
 cmd = ["bash", "-c", "echo three"]

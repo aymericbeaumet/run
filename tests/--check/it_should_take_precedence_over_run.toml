@@ -1,2 +1,2 @@
-[run.echo]
+[[run]]
 cmd = ["echo", "ok"]

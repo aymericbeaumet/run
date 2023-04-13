@@ -1,4 +1,4 @@
 workdir = "./fixtures/a"
 
-[run.ls]
+[[run]]
 cmd = ["ls"]
