@@ -188,6 +188,9 @@ impl TryFrom<Config> for RunnerOptions {
             .workdir
             .unwrap_or(std::env::current_dir().expect("infaillible"));
 
+        if config.runs.is_empty() {
+            anyhow::bail!("no runs found in the config file or CLI arguments");
+        }
         let commands = config
             .runs
             .into_iter()

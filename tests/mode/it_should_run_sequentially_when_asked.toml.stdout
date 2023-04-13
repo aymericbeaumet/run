@@ -1,4 +1,2 @@
----[ one ]---
-one
----[ two ]---
-two
+[echo] one
+[echo] two

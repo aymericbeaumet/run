@@ -1,4 +1,2 @@
----[ one ]---
----[ two ]---
-two
-one
+[bash] two
+[bash] one
