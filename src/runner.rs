@@ -47,10 +47,7 @@ impl Runner {
     }
 
     async fn run_tmux(&self) -> anyhow::Result<()> {
-        let session = format!(
-            "{}{}",
-            self.options.tmux.session_prefix, "01" /* uuid::Uuid::new_v4() */
-        );
+        let session = format!("{}{}", self.options.tmux.session_prefix, "01");
 
         if self.options.tmux.kill_duplicate_session {
             if let Err(err) = self.tmux(["kill-session", "-t", &session]).await {
