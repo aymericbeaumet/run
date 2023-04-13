@@ -66,7 +66,7 @@ pub struct Config {
     #[arg(
         long,
         env = "RUN_CLI_WORKDIR",
-        help = "Change the base working directory"
+        help = "Change the base working directory of all commands"
     )]
     #[serde(rename = "workdir")]
     pub workdir: Option<PathBuf>,
@@ -176,7 +176,7 @@ pub struct Tmux {
 
     #[arg(
         long = "tmux-session-prefix",
-        env = "TMUX_SESSION_PREFIX",
+        env = "RUN_CLI_TMUX_SESSION_PREFIX",
         help = "Specify the tmux session prefix to use"
     )]
     #[serde(rename = "session_prefix")]
@@ -184,7 +184,7 @@ pub struct Tmux {
 
     #[arg(
         long = "tmux-socket-path",
-        env = "TMUX_SOCKET_PATH",
+        env = "RUN_CLI_TMUX_SOCKET_PATH",
         help = "Specify the tmux socket path to use"
     )]
     #[serde(rename = "socket_path")]
