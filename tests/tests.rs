@@ -35,9 +35,12 @@ async fn run_tests() -> anyhow::Result<()> {
     for (test_name, file) in list_files(["tests/**/*.toml"]) {
         println!("[test] {}", &test_name);
         set.spawn(async move {
-            run_test(&file)
-                .await
-                .with_context(|| format!("test failed: {}", &test_name))?;
+            run_test(&file).await.with_context(|| {
+                format!(
+                    "test failed. Reproduce with `cargo run -- -f {}`",
+                    &test_name
+                )
+            })?;
             Ok::<(), anyhow::Error>(())
         });
     }

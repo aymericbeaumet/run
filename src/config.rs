@@ -21,7 +21,7 @@ pub struct Config {
         value_name = "KEY=VALUE"
     )]
     #[serde(rename = "env")]
-    #[merge(strategy = merge::vec::append)]
+    #[merge(strategy = merge::vec::prepend)] // highest priority is at the end
     pub envs: Vec<String>,
 
     #[arg(
@@ -212,7 +212,7 @@ impl TryFrom<Config> for RunnerOptions {
         }
 
         if config.runs.is_empty() {
-            anyhow::bail!("no runs found in the config file or CLI arguments");
+            anyhow::bail!("no commands found in the config file or CLI arguments");
         }
         let commands = config
             .runs
