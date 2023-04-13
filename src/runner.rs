@@ -72,7 +72,7 @@ impl Runner {
             }
 
             // set pane title
-            self.tmux(["select-pane", "-t", &session, "-T", &run.cmd[0]])
+            self.tmux(["select-pane", "-t", &session, "-T", &run.name])
                 .await?;
 
             // select layout after spawning each command to avoid: https://stackoverflow.com/a/68362774/1071486
@@ -150,8 +150,8 @@ impl Runner {
         }
 
         if let RunnerPrefix::Enabled = self.options.prefix {
-            executor.push_out(processors::Prefix::new(format!("[{}]", cmd.cmd[0])));
-            executor.push_err(processors::Prefix::new(format!("[{}]", cmd.cmd[0])));
+            executor.push_out(processors::Prefix::new(format!("[{}]", &cmd.name)));
+            executor.push_err(processors::Prefix::new(format!("[{}]", &cmd.name)));
         }
 
         executor.exec(&cmd.cmd, &cmd.workdir).await
@@ -170,7 +170,9 @@ pub struct RunnerOptions {
 #[derive(Debug, Serialize)]
 pub struct RunnerCommand {
     pub cmd: Vec<String>,
+    pub name: String,
     pub description: Option<String>,
+    pub tags: Vec<String>,
     pub workdir: PathBuf,
 }
 

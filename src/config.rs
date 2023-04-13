@@ -56,6 +56,9 @@ pub struct Command {
     #[serde(rename = "cmd")]
     pub command_cmd: Vec<String>,
 
+    #[serde(rename = "name")]
+    pub command_name: Option<String>,
+
     #[serde(rename = "description")]
     pub command_description: Option<String>,
 
@@ -194,17 +197,24 @@ impl TryFrom<Config> for RunnerOptions {
         let commands = config
             .runs
             .into_iter()
-            .map(|run| RunnerCommand {
-                cmd: run.command_cmd,
-                description: run.command_description,
-                workdir: run
-                    .command_workdir
-                    .map(|w| {
-                        let mut abs = workdir.to_path_buf();
-                        abs.push(w);
-                        abs.canonicalize().expect("infaillible")
-                    })
-                    .unwrap_or(workdir.clone()),
+            .map(|run| {
+                let name = run
+                    .command_name
+                    .unwrap_or_else(|| run.command_cmd[0].clone());
+                RunnerCommand {
+                    cmd: run.command_cmd,
+                    name,
+                    description: run.command_description,
+                    tags: run.command_tags,
+                    workdir: run
+                        .command_workdir
+                        .map(|w| {
+                            let mut abs = workdir.to_path_buf();
+                            abs.push(w);
+                            abs.canonicalize().expect("infaillible")
+                        })
+                        .unwrap_or(workdir.clone()),
+                }
             })
             .collect();
 
