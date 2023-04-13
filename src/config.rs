@@ -42,6 +42,18 @@ pub struct Config {
     #[serde(rename = "prefix")]
     pub prefix: Prefix,
 
+    #[arg(
+        short,
+        long,
+        env = "RUN_CLI_RAW",
+        help = "Output only stdout and stderr. Disabling all processors (prefix, openai, etc)",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    pub raw: Option<bool>,
+
     #[arg(skip)]
     #[serde(rename = "run")]
     #[merge(strategy = merge::vec::append)]
@@ -89,7 +101,10 @@ pub struct Openai {
         long = "openai-enabled",
         env = "RUN_CLI_OPENAI_ENABLED",
         help = "Call the OpenAI API with stderr to try and give you advices",
+        // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
     )]
     #[serde(rename = "enabled")]
     pub openai_enabled: Option<bool>,
@@ -127,7 +142,10 @@ pub struct Prefix {
         long = "prefix-enabled",
         env = "RUN_CLI_PREFIX_ENABLED",
         help = "Prefix each line from stdout and stderr with the command id",
+        // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
     )]
     #[serde(rename = "enabled")]
     pub prefix_enabled: Option<bool>,
@@ -140,7 +158,10 @@ pub struct Tmux {
         long = "tmux-kill-duplicate-session",
         env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
         help = "Kill the existing tmux session if it already exists",
+        // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
     )]
     #[serde(rename = "kill_duplicate_session")]
     pub tmux_kill_duplicate_session: Option<bool>,
@@ -272,10 +293,11 @@ impl TryFrom<Config> for RunnerOptions {
         };
 
         let openai = match (
+            config.raw,
             config.openai.openai_enabled.unwrap_or(false),
             config.openai.openai_api_key,
         ) {
-            (true, Some(api_key)) => RunnerOpenai::Enabled {
+            (Some(false), true, Some(api_key)) => RunnerOpenai::Enabled {
                 api_key,
                 api_base_url: config
                     .openai
@@ -285,10 +307,9 @@ impl TryFrom<Config> for RunnerOptions {
             _ => RunnerOpenai::Disabled,
         };
 
-        let prefix = if config.prefix.prefix_enabled.unwrap_or(true) {
-            RunnerPrefix::Enabled
-        } else {
-            RunnerPrefix::Disabled
+        let prefix = match (config.raw, config.prefix.prefix_enabled.unwrap_or(true)) {
+            (Some(false), true) => RunnerPrefix::Enabled,
+            _ => RunnerPrefix::Disabled,
         };
 
         let tmux = RunnerTmux {
