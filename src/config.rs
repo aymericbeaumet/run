@@ -19,7 +19,13 @@ pub struct Config {
     #[merge(strategy = merge::vec::append)]
     pub runs: Vec<Command>,
 
-    #[arg(short, long, value_enum, help = "Change the mode used to run commands")]
+    #[arg(
+        short,
+        long,
+        value_enum,
+        env = "RUN_CLI_MODE",
+        help = "Change the mode used to run commands"
+    )]
     #[serde(rename = "mode")]
     pub mode: Option<Mode>,
 
@@ -35,7 +41,11 @@ pub struct Config {
     #[serde(rename = "tmux")]
     pub tmux: Tmux,
 
-    #[arg(long, help = "Change the base working directory")]
+    #[arg(
+        long,
+        env = "RUN_CLI_WORKDIR",
+        help = "Change the base working directory"
+    )]
     #[serde(rename = "workdir")]
     pub workdir: Option<PathBuf>,
 }

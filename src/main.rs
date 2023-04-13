@@ -10,18 +10,26 @@ use runner::{Runner, RunnerOptions};
 use std::path::PathBuf;
 
 #[derive(Parser)]
+#[command(about = "
+run is a task runner.
+
+You can pass the commands directly for simple tasks:
+    $ run 'echo hello' 'ls /tmp'
+
+Or you can use a config file for more complex setups:
+    $ run -f run.toml
+
+For more information: https://aymericbeaumet.gitbook.io/run/")]
 struct Cli {
     #[arg(
         short,
         long = "file",
-        help = "Specify the config file to use (default is to load run.toml in the current directory, unless at least one COMMAND is passed)",
+        help = "Specify the config file to load (default is to load run.toml in the current directory, unless at least one COMMAND is passed)",
         value_name = "FILE"
     )]
     pub file: Option<PathBuf>,
 
     #[arg(
-        short = 'c',
-        long = "command",
         help = "Append a command to run. Can be called multiple times. Providing at least one command will prevent the default config file from being loaded",
         value_name = "COMMAND"
     )]
@@ -48,9 +56,9 @@ struct Cli {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let cli = Cli::try_parse_from(std::env::args_os())?;
+    let cli = Cli::parse();
 
-    // The highest priority is the cli
+    // The highest priority is the cli/env config
     let mut config = cli.config;
 
     // Then comes the config file
