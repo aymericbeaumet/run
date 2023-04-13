@@ -1,0 +1,5 @@
+env = [ "__RUN_CLI_FOOBAR__=from_main_block" ]
+
+[[run]]
+name = "p1"
+cmd = ["bash", "-c", "echo $__RUN_CLI_FOOBAR__"]

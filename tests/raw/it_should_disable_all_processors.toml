@@ -1,0 +1,7 @@
+raw = true
+
+[[run]]
+cmd = ["echo", "foobar"]
+
+[[run]]
+cmd = ["echo", "barfoo"]

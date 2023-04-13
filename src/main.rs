@@ -1,59 +1,15 @@
+mod cli;
 mod config;
 mod executor;
 mod processors;
 mod runner;
 
-use clap::Parser;
 use config::{Command, Config};
-use merge::Merge;
 use runner::{Runner, RunnerOptions};
-use std::path::PathBuf;
-
-#[derive(Parser)]
-#[command(about = "
-run is a task runner.
-
-You can pass the commands directly for simple tasks:
-    $ run 'echo hello' 'ls /tmp'
-
-Or you can use a config file for more complex setups:
-    $ run -f run.toml
-
-For more information: https://aymericbeaumet.gitbook.io/run/")]
-struct Cli {
-    #[arg(
-        short,
-        long = "file",
-        help = "Specify the config file to load (default is to load run.toml in the current directory, unless at least one COMMAND is passed)",
-        value_name = "FILE"
-    )]
-    pub file: Option<PathBuf>,
-
-    #[arg(
-        help = "Append a command to run. Can be called multiple times. Providing at least one command will prevent the default config file from being loaded",
-        value_name = "COMMAND"
-    )]
-    pub commands: Vec<String>,
-
-    #[command(flatten)]
-    config: Config,
-
-    #[arg(
-        long = "check",
-        help = "Start in check mode to validate the config and exit"
-    )]
-    pub command_check: bool,
-
-    #[arg(
-        long = "print-options",
-        help = "Print the resolved options on stdout and exit"
-    )]
-    pub command_print_options: bool,
-}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let cli = Cli::parse();
+    let cli = cli::Cli::parse();
 
     // The highest priority is the cli/env config
     let mut config = cli.config;
@@ -65,10 +21,10 @@ async fn main() -> anyhow::Result<()> {
         config.merge(Config::load("run.toml").await?);
     }
 
-    // And finally the defaults
-    config.merge(Config::default());
+    // The defaults are the lowest priority but don't need to be merged. As they are actually
+    // resolved in RunnerOptions::try_from.
 
-    // Append all the cli commands to the config
+    // Append all the cli commands
     for command in cli.commands {
         config.runs.push(Command {
             command_cmd: shell_words::split(&command)?,

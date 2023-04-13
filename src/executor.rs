@@ -2,6 +2,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use futures::future::try_join3;
 use futures::TryFutureExt;
+use std::ffi::OsStr;
 use std::path::Path;
 use std::process::Stdio;
 use tokio::io::{AsyncBufReadExt, BufReader};
@@ -33,31 +34,45 @@ impl Executor {
             .push(Box::new(processor) as Box<dyn Processor + Send + Sync>);
     }
 
-    pub async fn exec<P>(mut self, cmd: &[String], workdir: P) -> anyhow::Result<()>
+    pub async fn exec<P, A, Arg, W, Env, K, V>(
+        mut self,
+        program: P,
+        args: A,
+        workdir: W,
+        envs: Env,
+    ) -> anyhow::Result<()>
     where
-        P: AsRef<Path> + std::fmt::Debug,
+        P: AsRef<OsStr> + std::fmt::Debug,
+        A: IntoIterator<Item = Arg>,
+        Arg: AsRef<OsStr>,
+        W: AsRef<Path> + std::fmt::Debug,
+        Env: IntoIterator<Item = (K, V)>,
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
     {
-        let mut child = Command::new(&cmd[0]);
-        let child = child
-            .env_clear()
-            .args(&cmd[1..])
-            .current_dir(workdir.as_ref());
+        let capture_out = !self.out_processors.is_empty();
+        let capture_err = !self.err_processors.is_empty();
 
-        if !self.out_processors.is_empty() {
-            child.stdout(Stdio::piped());
+        let mut cmd = Command::new(&program);
+
+        cmd.args(args);
+        cmd.current_dir(workdir.as_ref());
+        cmd.envs(envs);
+
+        if capture_out {
+            cmd.stdout(Stdio::piped());
+        }
+        if capture_err {
+            cmd.stderr(Stdio::piped());
         }
 
-        if !self.err_processors.is_empty() {
-            child.stderr(Stdio::piped());
-        }
-
-        let mut child = child
+        let mut child = cmd
             .spawn()
-            .with_context(|| format!("could not spawn {:?} in {:?}", &cmd, &workdir))?;
+            .with_context(|| format!("could not spawn {:?} in {:?}", &program, &workdir))?;
 
         let child_stdout = child.stdout.take();
-        let out_fut = tokio::spawn(async move {
-            if !self.out_processors.is_empty() {
+        let process_out = tokio::spawn(async move {
+            if capture_out {
                 if let Some(stdout) = child_stdout {
                     let mut out_reader = BufReader::new(stdout).lines();
 
@@ -77,8 +92,8 @@ impl Executor {
         });
 
         let child_stderr = child.stderr.take();
-        let err_fut = tokio::spawn(async move {
-            if !self.err_processors.is_empty() {
+        let process_err = tokio::spawn(async move {
+            if capture_err {
                 if let Some(stderr) = child_stderr {
                     let mut err_reader = BufReader::new(stderr).lines();
 
@@ -99,8 +114,8 @@ impl Executor {
 
         let _ = try_join3(
             child.wait().map_err(anyhow::Error::msg),
-            out_fut.map_err(anyhow::Error::msg),
-            err_fut.map_err(anyhow::Error::msg),
+            process_out.map_err(anyhow::Error::msg),
+            process_err.map_err(anyhow::Error::msg),
         )
         .await?;
 

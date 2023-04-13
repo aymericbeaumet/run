@@ -14,10 +14,15 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
-    #[arg(skip)]
-    #[serde(rename = "run")]
-    #[merge(strategy = merge::vec::append)]
-    pub runs: Vec<Command>,
+    #[arg(
+        short,
+        long = "env",
+        help = "Append an environment variable to all commands. Can be called multiple times",
+        value_name = "KEY=VALUE"
+    )]
+    #[serde(rename = "env")]
+    #[merge(strategy = merge::vec::prepend)] // highest priority is at the end
+    pub envs: Vec<String>,
 
     #[arg(
         short,
@@ -37,6 +42,24 @@ pub struct Config {
     #[serde(rename = "prefix")]
     pub prefix: Prefix,
 
+    #[arg(
+        short,
+        long,
+        env = "RUN_CLI_RAW",
+        help = "Output only stdout and stderr. Disabling all processors (prefix, openai, etc)",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "raw")]
+    pub raw: Option<Option<bool>>,
+
+    #[arg(skip)]
+    #[serde(rename = "run")]
+    #[merge(strategy = merge::vec::append)]
+    pub runs: Vec<Command>,
+
     #[command(flatten)]
     #[serde(rename = "tmux")]
     pub tmux: Tmux,
@@ -44,7 +67,7 @@ pub struct Config {
     #[arg(
         long,
         env = "RUN_CLI_WORKDIR",
-        help = "Change the base working directory"
+        help = "Change the base working directory of all commands"
     )]
     #[serde(rename = "workdir")]
     pub workdir: Option<PathBuf>,
@@ -55,6 +78,9 @@ pub struct Config {
 pub struct Command {
     #[serde(rename = "cmd")]
     pub command_cmd: Vec<String>,
+
+    #[serde(rename = "env")]
+    pub command_envs: Vec<String>,
 
     #[serde(rename = "name")]
     pub command_name: Option<String>,
@@ -76,10 +102,13 @@ pub struct Openai {
         long = "openai-enabled",
         env = "RUN_CLI_OPENAI_ENABLED",
         help = "Call the OpenAI API with stderr to try and give you advices",
+        // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
     )]
     #[serde(rename = "enabled")]
-    pub openai_enabled: Option<bool>,
+    pub openai_enabled: Option<Option<bool>>,
 
     #[arg(
         long = "openai-api-base-url",
@@ -114,10 +143,13 @@ pub struct Prefix {
         long = "prefix-enabled",
         env = "RUN_CLI_PREFIX_ENABLED",
         help = "Prefix each line from stdout and stderr with the command id",
+        // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
     )]
     #[serde(rename = "enabled")]
-    pub prefix_enabled: Option<bool>,
+    pub prefix_enabled: Option<Option<bool>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
@@ -127,10 +159,13 @@ pub struct Tmux {
         long = "tmux-kill-duplicate-session",
         env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
         help = "Kill the existing tmux session if it already exists",
+        // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
     )]
     #[serde(rename = "kill_duplicate_session")]
-    pub tmux_kill_duplicate_session: Option<bool>,
+    pub tmux_kill_duplicate_session: Option<Option<bool>>,
 
     #[arg(
         long = "tmux-program",
@@ -142,7 +177,7 @@ pub struct Tmux {
 
     #[arg(
         long = "tmux-session-prefix",
-        env = "TMUX_SESSION_PREFIX",
+        env = "RUN_CLI_TMUX_SESSION_PREFIX",
         help = "Specify the tmux session prefix to use"
     )]
     #[serde(rename = "session_prefix")]
@@ -150,7 +185,7 @@ pub struct Tmux {
 
     #[arg(
         long = "tmux-socket-path",
-        env = "TMUX_SOCKET_PATH",
+        env = "RUN_CLI_TMUX_SOCKET_PATH",
         help = "Specify the tmux socket path to use"
     )]
     #[serde(rename = "socket_path")]
@@ -181,42 +216,78 @@ impl Config {
 
         Ok(config)
     }
+
+    pub fn merge(&mut self, other: Self) {
+        Merge::merge(self, other);
+    }
 }
 
 impl TryFrom<Config> for RunnerOptions {
     type Error = anyhow::Error;
 
     fn try_from(config: Config) -> Result<Self, Self::Error> {
+        let raw = resolve_bool(config.raw, false);
+
         let workdir = config
             .workdir
             .unwrap_or(std::env::current_dir().expect("infaillible"));
+        if !workdir.is_absolute() {
+            anyhow::bail!("workdir must be an absolute path");
+        }
 
         if config.runs.is_empty() {
-            anyhow::bail!("no runs found in the config file or CLI arguments");
+            anyhow::bail!("no commands found in the config file or CLI arguments");
         }
         let commands = config
             .runs
             .into_iter()
             .map(|run| {
-                let name = run
-                    .command_name
-                    .unwrap_or_else(|| run.command_cmd[0].clone());
-                RunnerCommand {
-                    cmd: run.command_cmd,
+                let program = match run.command_cmd.get(0) {
+                    Some(p) => p.to_string(),
+                    _ => anyhow::bail!("no program found"),
+                };
+
+                let args = match run.command_cmd.get(1..) {
+                    Some(a) => a.to_vec(),
+                    _ => anyhow::bail!("no args found"),
+                };
+
+                let description = run.command_description;
+
+                let envs: Vec<_> = config
+                    .envs
+                    .iter()
+                    .chain(run.command_envs.iter())
+                    .map(|kv| match kv.split_once('=') {
+                        Some((k, v)) => Ok((k.to_string(), v.to_string())),
+                        _ => anyhow::bail!("invalid environment variable: {}", kv),
+                    })
+                    .collect::<anyhow::Result<Vec<_>>>()?;
+
+                let name = run.command_name.unwrap_or(run.command_cmd[0].clone());
+
+                let tags = run.command_tags;
+
+                let workdir = run
+                    .command_workdir
+                    .map(|w| {
+                        let mut abs = workdir.to_path_buf();
+                        abs.push(w);
+                        abs.canonicalize().expect("infaillible")
+                    })
+                    .unwrap_or(workdir.clone());
+
+                Ok(RunnerCommand {
+                    program,
+                    args,
+                    description,
+                    envs,
                     name,
-                    description: run.command_description,
-                    tags: run.command_tags,
-                    workdir: run
-                        .command_workdir
-                        .map(|w| {
-                            let mut abs = workdir.to_path_buf();
-                            abs.push(w);
-                            abs.canonicalize().expect("infaillible")
-                        })
-                        .unwrap_or(workdir.clone()),
-                }
+                    tags,
+                    workdir,
+                })
             })
-            .collect();
+            .collect::<anyhow::Result<Vec<_>>>()?;
 
         let mode = match config.mode.unwrap_or(Mode::Sequential) {
             Mode::Sequential => RunnerMode::Sequential,
@@ -225,10 +296,11 @@ impl TryFrom<Config> for RunnerOptions {
         };
 
         let openai = match (
-            config.openai.openai_enabled.unwrap_or(false),
+            raw,
+            resolve_bool(config.openai.openai_enabled, false),
             config.openai.openai_api_key,
         ) {
-            (true, Some(api_key)) => RunnerOpenai::Enabled {
+            (false, true, Some(api_key)) => RunnerOpenai::Enabled {
                 api_key,
                 api_base_url: config
                     .openai
@@ -238,14 +310,13 @@ impl TryFrom<Config> for RunnerOptions {
             _ => RunnerOpenai::Disabled,
         };
 
-        let prefix = if config.prefix.prefix_enabled.unwrap_or(true) {
-            RunnerPrefix::Enabled
-        } else {
-            RunnerPrefix::Disabled
+        let prefix = match (raw, resolve_bool(config.prefix.prefix_enabled, true)) {
+            (false, true) => RunnerPrefix::Enabled,
+            _ => RunnerPrefix::Disabled,
         };
 
         let tmux = RunnerTmux {
-            kill_duplicate_session: config.tmux.tmux_kill_duplicate_session.unwrap_or(true),
+            kill_duplicate_session: resolve_bool(config.tmux.tmux_kill_duplicate_session, true),
             program: config.tmux.tmux_program.unwrap_or("tmux".into()),
             session_prefix: config.tmux.tmux_session_prefix.unwrap_or("run-cli-".into()),
             socket_path: config
@@ -261,5 +332,13 @@ impl TryFrom<Config> for RunnerOptions {
             prefix,
             tmux,
         })
+    }
+}
+
+fn resolve_bool(opts: Option<Option<bool>>, default_value: bool) -> bool {
+    match opts {
+        Some(Some(b)) => b,
+        Some(None) => true,
+        None => default_value,
     }
 }

@@ -1,0 +1,2 @@
+-e
+__RUN_CLI_FOOBAR__=from_cli_args
