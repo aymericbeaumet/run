@@ -52,7 +52,7 @@ pub struct Config {
         hide_possible_values = true,
         value_name = "true|false"
     )]
-    pub raw: Option<bool>,
+    pub raw: Option<Option<bool>>,
 
     #[arg(skip)]
     #[serde(rename = "run")]
@@ -107,7 +107,7 @@ pub struct Openai {
         value_name = "true|false"
     )]
     #[serde(rename = "enabled")]
-    pub openai_enabled: Option<bool>,
+    pub openai_enabled: Option<Option<bool>>,
 
     #[arg(
         long = "openai-api-base-url",
@@ -148,7 +148,7 @@ pub struct Prefix {
         value_name = "true|false"
     )]
     #[serde(rename = "enabled")]
-    pub prefix_enabled: Option<bool>,
+    pub prefix_enabled: Option<Option<bool>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
@@ -164,7 +164,7 @@ pub struct Tmux {
         value_name = "true|false"
     )]
     #[serde(rename = "kill_duplicate_session")]
-    pub tmux_kill_duplicate_session: Option<bool>,
+    pub tmux_kill_duplicate_session: Option<Option<bool>>,
 
     #[arg(
         long = "tmux-program",
@@ -225,6 +225,8 @@ impl TryFrom<Config> for RunnerOptions {
     type Error = anyhow::Error;
 
     fn try_from(config: Config) -> Result<Self, Self::Error> {
+        let raw = config.raw.flatten().unwrap_or(false);
+
         let workdir = config
             .workdir
             .unwrap_or(std::env::current_dir().expect("infaillible"));
@@ -293,11 +295,11 @@ impl TryFrom<Config> for RunnerOptions {
         };
 
         let openai = match (
-            config.raw,
-            config.openai.openai_enabled.unwrap_or(false),
+            raw,
+            config.openai.openai_enabled.flatten().unwrap_or(false),
             config.openai.openai_api_key,
         ) {
-            (Some(false), true, Some(api_key)) => RunnerOpenai::Enabled {
+            (false, true, Some(api_key)) => RunnerOpenai::Enabled {
                 api_key,
                 api_base_url: config
                     .openai
@@ -307,13 +309,17 @@ impl TryFrom<Config> for RunnerOptions {
             _ => RunnerOpenai::Disabled,
         };
 
-        let prefix = match (config.raw, config.prefix.prefix_enabled.unwrap_or(true)) {
-            (Some(false), true) => RunnerPrefix::Enabled,
+        let prefix = match (raw, config.prefix.prefix_enabled.flatten().unwrap_or(true)) {
+            (false, true) => RunnerPrefix::Enabled,
             _ => RunnerPrefix::Disabled,
         };
 
         let tmux = RunnerTmux {
-            kill_duplicate_session: config.tmux.tmux_kill_duplicate_session.unwrap_or(true),
+            kill_duplicate_session: config
+                .tmux
+                .tmux_kill_duplicate_session
+                .flatten()
+                .unwrap_or(true),
             program: config.tmux.tmux_program.unwrap_or("tmux".into()),
             session_prefix: config.tmux.tmux_session_prefix.unwrap_or("run-cli-".into()),
             socket_path: config
