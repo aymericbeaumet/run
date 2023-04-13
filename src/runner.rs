@@ -59,11 +59,8 @@ impl Runner {
         }
 
         for (i, run) in self.options.commands.iter().enumerate() {
-            let program = &run.cmd[0];
-            let args = &run.cmd[1..];
-
             let workdir = &run.workdir.to_string_lossy();
-            let cmd_str = &format!("{} {}; read", program, args.join(" ")); // TODO: make it more robust
+            let cmd_str = &format!("{}; read", shell_words::join(&run.cmd));
 
             // create the pane
             if i == 0 {

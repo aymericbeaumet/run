@@ -1,13 +1,13 @@
 mode = "tmux"
 
-[run.install]
+[[run]]
 tags = ["install"]
 cmd = ["npm", "install"]
 
-[run.redis]
+[[run]]
 tags = ["dev"]
 cmd = ["docker", "run", "--rm", "-p", "127.0.0.1:6379:6379", "redis:6.2.11-alpine3.17"]
 
-[run.node]
+[[run]]
 tags = ["dev"]
 cmd = ["node", "."]

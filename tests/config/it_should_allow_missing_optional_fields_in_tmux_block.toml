@@ -3,5 +3,5 @@ mode = "sequential"
 [tmux]
 program = "/usr/local/bin/tmux"
 
-[run.echo]
+[[run]]
 cmd = ["echo", "ok"]

@@ -4,7 +4,7 @@ mod processors;
 mod runner;
 
 use clap::Parser;
-use config::Config;
+use config::{Command, Config};
 use merge::Merge;
 use runner::{Runner, RunnerOptions};
 use std::path::PathBuf;
@@ -62,6 +62,14 @@ async fn main() -> anyhow::Result<()> {
 
     // And finally the defaults
     config.merge(Config::default());
+
+    // Append all the cli commands to the config
+    for command in cli.commands {
+        config.runs.push(Command {
+            command_cmd: shell_words::split(&command)?,
+            ..Default::default()
+        });
+    }
 
     if cli.command_check {
         return Ok(());

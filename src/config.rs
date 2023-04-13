@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
  * Shared configuration for the command line interface and the TOML configuration file.
  */
 
-#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Config {
     #[arg(skip)]
@@ -40,23 +40,23 @@ pub struct Config {
     pub workdir: Option<PathBuf>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Parser, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields, default)]
 pub struct Command {
-    #[arg(skip)]
     #[serde(rename = "cmd")]
     pub command_cmd: Vec<String>,
 
-    #[arg(skip)]
     #[serde(rename = "description")]
     pub command_description: Option<String>,
 
-    #[arg(skip)]
+    #[serde(rename = "tags")]
+    pub command_tags: Vec<String>,
+
     #[serde(rename = "workdir")]
     pub command_workdir: Option<PathBuf>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Openai {
     #[arg(
@@ -85,17 +85,7 @@ pub struct Openai {
     pub openai_api_key: Option<String>,
 }
 
-impl Default for Openai {
-    fn default() -> Self {
-        Self {
-            openai_enabled: Some(false),
-            openai_api_base_url: Some(String::from("https://api.openai.com")),
-            openai_api_key: None,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, ValueEnum, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
     #[default]
@@ -104,7 +94,7 @@ pub enum Mode {
     Tmux,
 }
 
-#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Prefix {
     #[arg(
@@ -117,15 +107,7 @@ pub struct Prefix {
     pub prefix_enabled: Option<bool>,
 }
 
-impl Default for Prefix {
-    fn default() -> Self {
-        Self {
-            prefix_enabled: Some(true),
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Parser, Clone, Merge)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
 #[serde(deny_unknown_fields, default)]
 pub struct Tmux {
     #[arg(
@@ -162,17 +144,6 @@ pub struct Tmux {
     pub tmux_socket_path: Option<String>,
 }
 
-impl Default for Tmux {
-    fn default() -> Self {
-        Self {
-            tmux_kill_duplicate_session: Some(true),
-            tmux_program: Some("tmux".to_string()),
-            tmux_session_prefix: Some("run-cli-".to_string()),
-            tmux_socket_path: Some("/tmp/tmux.run_cli.sock".to_string()),
-        }
-    }
-}
-
 impl Config {
     pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
         // Find the absolute path to the config file
@@ -188,7 +159,7 @@ impl Config {
         let mut config: Config = toml::from_str(&config_str)?;
 
         // Make sure the workdir is resolved relatively to the config file
-        let mut workdir = config_path.parent().unwrap().to_path_buf();
+        let mut workdir = config_path.parent().expect("infaillible").to_path_buf();
         if let Some(w) = config.workdir.as_ref() {
             workdir.push(w); // use provided workdir if found
         }
@@ -203,6 +174,10 @@ impl TryFrom<Config> for RunnerOptions {
     type Error = anyhow::Error;
 
     fn try_from(config: Config) -> Result<Self, Self::Error> {
+        let workdir = config
+            .workdir
+            .unwrap_or(std::env::current_dir().expect("infaillible"));
+
         let commands = config
             .runs
             .into_iter()
@@ -211,38 +186,49 @@ impl TryFrom<Config> for RunnerOptions {
                 description: run.command_description,
                 workdir: run
                     .command_workdir
-                    .unwrap_or_else(|| config.workdir.clone().unwrap()),
+                    .map(|w| {
+                        let mut abs = workdir.to_path_buf();
+                        abs.push(w);
+                        abs.canonicalize().expect("infaillible")
+                    })
+                    .unwrap_or(workdir.clone()),
             })
             .collect();
 
-        let mode = match config.mode.unwrap() {
+        let mode = match config.mode.unwrap_or(Mode::Sequential) {
             Mode::Sequential => RunnerMode::Sequential,
             Mode::Parallel => RunnerMode::Parallel,
             Mode::Tmux => RunnerMode::Tmux,
         };
 
         let openai = match (
-            config.openai.openai_enabled.unwrap(),
+            config.openai.openai_enabled.unwrap_or(false),
             config.openai.openai_api_key,
         ) {
             (true, Some(api_key)) => RunnerOpenai::Enabled {
                 api_key,
-                api_base_url: config.openai.openai_api_base_url.unwrap(),
+                api_base_url: config
+                    .openai
+                    .openai_api_base_url
+                    .unwrap_or("https://api.openai.com".into()),
             },
             _ => RunnerOpenai::Disabled,
         };
 
-        let prefix = if config.prefix.prefix_enabled.unwrap() {
+        let prefix = if config.prefix.prefix_enabled.unwrap_or(true) {
             RunnerPrefix::Enabled
         } else {
             RunnerPrefix::Disabled
         };
 
         let tmux = RunnerTmux {
-            kill_duplicate_session: config.tmux.tmux_kill_duplicate_session.unwrap(),
-            program: config.tmux.tmux_program.unwrap(),
-            session_prefix: config.tmux.tmux_session_prefix.unwrap(),
-            socket_path: config.tmux.tmux_socket_path.unwrap(),
+            kill_duplicate_session: config.tmux.tmux_kill_duplicate_session.unwrap_or(true),
+            program: config.tmux.tmux_program.unwrap_or("tmux".into()),
+            session_prefix: config.tmux.tmux_session_prefix.unwrap_or("run-cli-".into()),
+            socket_path: config
+                .tmux
+                .tmux_socket_path
+                .unwrap_or("/tmp/tmux.run_cli.sock".into()),
         };
 
         Ok(Self {

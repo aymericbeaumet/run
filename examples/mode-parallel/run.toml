@@ -3,11 +3,11 @@
 
 mode = "parallel"
 
-[run.one]
+[[run]]
 cmd = ["bash", "-c", "sleep 2; echo one"]
 
-[run.two]
+[[run]]
 cmd = ["bash", "-c", "sleep 1; echo two"]
 
-[run.three]
+[[run]]
 cmd = ["bash", "-c", "sleep 0; echo three"]

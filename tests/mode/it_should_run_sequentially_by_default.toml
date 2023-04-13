@@ -1,5 +1,5 @@
-[run.one]
+[[run]]
 cmd = ["echo", "one"]
 
-[run.two]
+[[run]]
 cmd = ["echo", "two"]

@@ -2,5 +2,5 @@
 # and printing a simple message on stdout when that happens. It's here to
 # demonstrate run ability to properly forward signals.
 
-[run.bash]
+[[run]]
 cmd = ["bash", "-c", "echo 'Try to press Ctrl-C...'; trap 'echo Interrupted!' SIGINT; read"]

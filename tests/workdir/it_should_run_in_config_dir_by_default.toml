@@ -1,2 +1,2 @@
-[run.ls]
+[[run]]
 cmd = ["ls", "./fixtures"]
