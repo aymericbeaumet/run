@@ -14,25 +14,18 @@ struct Cli {
     #[arg(
         short,
         long = "file",
-        help = "Specify the config file(s) to use (default: load run.toml in the current directory, unless at least one COMMAND or one FILE is passed)",
+        help = "Specify the config file to use (default is to load run.toml in the current directory, unless at least one COMMAND is passed)",
         value_name = "FILE"
     )]
-    pub files: Vec<PathBuf>,
+    pub file: Option<PathBuf>,
 
     #[arg(
         short = 'c',
         long = "command",
-        help = "Register a command to run. Can be called multiple times",
+        help = "Append a command to run. Can be called multiple times. Providing at least one command will prevent the default config file from being loaded",
         value_name = "COMMAND"
     )]
     pub commands: Vec<String>,
-
-    #[arg(
-        help = "Only run the commands matching the given selectors",
-        use_value_delimiter = true,
-        value_delimiter = ','
-    )] // positional arguments
-    selectors: Vec<String>,
 
     #[command(flatten)]
     config: Config,
@@ -57,21 +50,18 @@ struct Cli {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::try_parse_from(std::env::args_os())?;
 
-    // If no commands and no config files are passed, load run.toml in the current directory.
-    // Otherwise, use the default config.
-    let mut config = if cli.commands.is_empty() && cli.files.is_empty() {
-        Config::load("run.toml").await?
-    } else {
-        Config::default()
-    };
+    // The highest priority is the cli
+    let mut config = cli.config;
 
-    // Then load the additional config files
-    for file in &cli.files {
+    // Then comes the config file
+    if let Some(file) = cli.file {
         config.merge(Config::load(file).await?);
+    } else if cli.commands.is_empty() {
+        config.merge(Config::load("run.toml").await?);
     }
 
-    // And finally the cli/env
-    config.merge(cli.config);
+    // And finally the defaults
+    config.merge(Config::default());
 
     if cli.command_check {
         return Ok(());

@@ -187,12 +187,10 @@ impl Config {
         let config_str = tokio::fs::read_to_string(&config_path).await?;
         let mut config: Config = toml::from_str(&config_str)?;
 
-        // Make sure the workdir is present and absolute
-        let mut workdir = std::env::current_dir()?;
+        // Make sure the workdir is resolved relatively to the config file
+        let mut workdir = config_path.parent().unwrap().to_path_buf();
         if let Some(w) = config.workdir.as_ref() {
             workdir.push(w); // use provided workdir if found
-        } else {
-            workdir.push(config_path.parent().unwrap()); // fallback to config file dir
         }
         let workdir = workdir.canonicalize()?;
         config.workdir = Some(workdir);
