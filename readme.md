@@ -12,7 +12,14 @@
 ## Quickstart
 
 ```bash
-run --mode=tmux --watch 'cargo test' 'cargo run'
+# go
+run -m tmux --watch 'go run .'
+
+# node.js
+run -m tmux --watch 'docker-compose up' 'npm run dev'
+
+# rust
+run -m tmux --watch 'cargo test' 'cargo run'
 ```
 
 For more examples, have a look at the [examples directory](./examples).
