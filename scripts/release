@@ -19,11 +19,11 @@ fi
 
 # bump version
 cargo set-version --bump "$bump"
-version="$(grep '^version = "[^"]*"$' Cargo.toml | cut '-d"' -f 2)"
+version="$(grep -m1 '^version' Cargo.toml | cut '-d"' -f 2)"
 tag="v$version"
 
 # commit changes
-git add Cargo.toml
+git add Cargo.toml Cargo.lock
 git commit -m "Release $tag"
 
 # create and push tag
