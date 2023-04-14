@@ -17,15 +17,11 @@ if [ "$branch" != master ]; then
 	#exit 3
 fi
 
-# bump version
+# bump, commit, tag, and push
 cargo set-version --bump "$bump"
 version="$(grep -m1 '^version' Cargo.toml | cut '-d"' -f 2)"
 tag="v$version"
-
-# commit changes
 git add Cargo.toml Cargo.lock
 git commit -m "Release $tag"
-
-# create and push tag
 git tag -a "$tag" -m "Release $tag"
 git push --atomic origin "$branch" "$tag"
