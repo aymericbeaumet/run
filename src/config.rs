@@ -60,6 +60,17 @@ pub struct Config {
     #[merge(strategy = merge::vec::append)]
     pub runs: Vec<Command>,
 
+    #[arg(
+        short,
+        long,
+        env = "RUN_CLI_TAGS",
+        help = "Filter to only run the commands matching at least one of the given tags. Can be comma-separated or passed multiple times",
+        value_name = "TAG[,TAG]...",
+        use_value_delimiter = true
+    )]
+    #[merge(strategy = merge::vec::append)]
+    pub tags: Vec<String>,
+
     #[command(flatten)]
     #[serde(rename = "tmux")]
     pub tmux: Tmux,
@@ -315,6 +326,8 @@ impl TryFrom<Config> for RunnerOptions {
             _ => RunnerPrefix::Disabled,
         };
 
+        let tags = config.tags;
+
         let tmux = RunnerTmux {
             kill_duplicate_session: resolve_bool(config.tmux.tmux_kill_duplicate_session, true),
             program: config.tmux.tmux_program.unwrap_or("tmux".into()),
@@ -330,6 +343,7 @@ impl TryFrom<Config> for RunnerOptions {
             mode,
             openai,
             prefix,
+            tags,
             tmux,
         })
     }

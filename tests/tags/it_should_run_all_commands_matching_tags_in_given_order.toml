@@ -1,0 +1,13 @@
+tags = ["c", "b", "a"]
+
+[[run]]
+tags = ["a", "b"]
+cmd = ["echo", "a"]
+
+[[run]]
+tags = ["b", "c"]
+cmd = ["echo", "b"]
+
+[[run]]
+tags = ["c"]
+cmd = ["echo", "c"]
