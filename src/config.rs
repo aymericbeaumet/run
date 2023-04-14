@@ -274,7 +274,7 @@ impl TryFrom<Config> for RunnerOptions {
                     })
                     .collect::<anyhow::Result<Vec<_>>>()?;
 
-                let name = run.command_name.unwrap_or(run.command_cmd[0].clone());
+                let name = run.command_name.unwrap_or(program.clone());
 
                 let tags = run.command_tags;
 
