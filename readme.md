@@ -27,7 +27,11 @@ For more examples, have a look at the [examples directory](./examples).
 
 ## Install
 
-_todo_
+```bash
+# todo
+```
+
+Visit [the documentation](https://aymericbeaumet.gitbook.io/run/installation) for an exhaustive list of the installation methods.
 
 ## Documentation
 

@@ -8,7 +8,7 @@ _todo_
 
 _todo_
 
-## Using git
+## Using the Rust toolchain
 
 _This method requires the [Rust
 toolchain](https://www.rust-lang.org/tools/install) to be installed on your
