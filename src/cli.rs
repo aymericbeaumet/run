@@ -12,7 +12,7 @@ You can pass the commands directly for simple tasks:
 Or you can use a config file for more complex setups:
     $ run -f run.toml
 
-For more information: https://aymericbeaumet.gitbook.io/run/")]
+For more information: https://www.run-cli.org")]
 pub struct Cli {
     #[arg(
         short,

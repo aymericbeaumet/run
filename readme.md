@@ -31,8 +31,8 @@ For more examples, have a look at the [examples directory](./examples).
 # todo
 ```
 
-Visit [the documentation](https://aymericbeaumet.gitbook.io/run/installation) for an exhaustive list of the installation methods.
+Visit [the documentation](https://www.run-cli.org/installation) for an exhaustive list of the installation methods.
 
 ## Documentation
 
-For more information about the project, including installation, getting started, and many other topics, have look at https://aymericbeaumet.gitbook.io/run/.
+For more information about the project, including installation, getting started, and many other topics, have look at: [https://www.run-cli.org](https://www.run-cli.org)
