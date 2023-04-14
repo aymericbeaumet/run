@@ -1,11 +1,25 @@
-# run [![GitHub Actions](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml/badge.svg)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml)
+[![GitHub Actions](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml/badge.svg)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml)
 
-[run](https://github.com/aymericbeaumet/run) is a tool allowing to easily manage processes you have to run when working on a project. For example to work on your app you need to: start the frontend, start the backend, start the database, run the migrations, etc. This is done via a simple `run.toml` file. See the [examples](./examples) to understand how you could integrate it in your workflow.
+# run
 
-## Key Features
+[run](https://github.com/aymericbeaumet/run) is a simple, standalone tool that manages for you the processes you have to run when working on any project.
+
+## Features
 
 - Lightweight: single non-bloated binary
 - Portable: works on Linux, macOS and Windows
+
+## Quickstart
+
+```bash
+run --mode=tmux --watch 'cargo test' 'cargo run'
+```
+
+For more examples, have a look at the [examples directory](./examples).
+
+## Install
+
+_todo_
 
 ## Documentation
 
