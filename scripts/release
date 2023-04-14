@@ -1,0 +1,16 @@
+#!/bin/bash
+
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")" || exit 1
+
+if [ $# -ne 2 ]; then
+	echo "usage: $0 <version>" >&2
+	exit 2
+fi
+
+version="$1"
+
+cargo set-version "$version"
+git add Cargo.toml
+git commit -m "Release $version"
+git tag -a "v$version" -m "Release $version"
+git push origin "v$version"
