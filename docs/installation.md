@@ -6,7 +6,7 @@ _todo_
 
 ## Using the Rust toolchain
 
-![Crates.io](https://img.shields.io/crates/v/run-cli)
+[![Crates.io](https://img.shields.io/crates/v/run-cli)](https://crates.io/crates/run-cli)
 
 _This method requires the [Rust
 toolchain](https://www.rust-lang.org/tools/install) to be installed on your
