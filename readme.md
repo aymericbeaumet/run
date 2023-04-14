@@ -7,6 +7,7 @@
 ## Features
 
 - Lightweight: single non-bloated binary
+- Convenient: native tmux integration for unmatched productivity
 - Portable: works on Linux, macOS and Windows
 
 ## Quickstart
