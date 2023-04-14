@@ -1,8 +1,6 @@
-[![GitHub Actions](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml/badge.svg)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml)
+# run [![GitHub Actions](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml/badge.svg)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml) ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/aymericbeaumet/run-cli?label=version)
 
-# run
-
-[run](https://github.com/aymericbeaumet/run) is a simple, standalone tool that manages for you the processes you have to run when working on any project.
+[run](https://github.com/aymericbeaumet/run) is a simple, standalone tool that manages your processes for any project.
 
 ## Features
 

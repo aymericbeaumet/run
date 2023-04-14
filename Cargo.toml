@@ -5,9 +5,13 @@ license = "MIT"
 version = "0.0.5"
 repository = "https://github.com/aymericbeaumet/run"
 homepage = "https://www.run-cli.org"
-documentation = "https://www.run-cli.org"
+documentation = "https://docs.rs/run-cli"
 authors = ["Aymeric Beaumet <hi@aymericbeaumet.com>"]
 edition = "2021"
+
+[[bin]]
+name = "run"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.70"
