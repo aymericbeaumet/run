@@ -3,22 +3,59 @@ use crate::processors;
 use anyhow::Context;
 use futures::stream::FuturesUnordered;
 use futures::StreamExt;
+use itertools::Itertools;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use tokio::process::Command;
 
 pub struct Runner {
-    options: RunnerOptions,
+    commands: Vec<RunnerCommand>,
+    mode: RunnerMode,
+    openai: RunnerOpenai,
+    prefix: RunnerPrefix,
+    tmux: RunnerTmux,
 }
 
 impl Runner {
     pub fn new(options: RunnerOptions) -> Self {
-        Self { options }
+        let tags_priority: HashMap<String, usize> = options
+            .tags
+            .into_iter()
+            .enumerate()
+            .rev()
+            .map(|(i, tag)| (tag, i))
+            .collect();
+
+        let commands = if tags_priority.is_empty() {
+            options.commands
+        } else {
+            options
+                .commands
+                .into_iter()
+                .filter(|cmd| {
+                    !cmd.tags.is_empty() && cmd.tags.iter().any(|t| tags_priority.contains_key(t))
+                })
+                .sorted_by(|a, b| {
+                    let a_tags = a.tags.iter().filter_map(|t| tags_priority.get(t));
+                    let b_tags = b.tags.iter().filter_map(|t| tags_priority.get(t));
+                    a_tags.cmp(b_tags)
+                })
+                .collect()
+        };
+
+        Self {
+            commands,
+            mode: options.mode,
+            openai: options.openai,
+            prefix: options.prefix,
+            tmux: options.tmux,
+        }
     }
 
     pub async fn run(&self) -> anyhow::Result<()> {
-        match self.options.mode {
+        match self.mode {
             RunnerMode::Sequential => self.run_sequential().await,
             RunnerMode::Parallel => self.run_parallel().await,
             RunnerMode::Tmux => self.run_tmux().await,
@@ -26,7 +63,7 @@ impl Runner {
     }
 
     async fn run_sequential(&self) -> anyhow::Result<()> {
-        for cmd in &self.options.commands {
+        for cmd in &self.commands {
             self.exec(cmd).await?;
         }
 
@@ -35,7 +72,7 @@ impl Runner {
 
     async fn run_parallel(&self) -> anyhow::Result<()> {
         let mut waits = FuturesUnordered::new();
-        for cmd in &self.options.commands {
+        for cmd in &self.commands {
             waits.push(self.exec(cmd));
         }
 
@@ -48,15 +85,15 @@ impl Runner {
 
     async fn run_tmux(&self) -> anyhow::Result<()> {
         let session_id = "01"; // TODO: make this configurable/unique
-        let session = format!("{}{}", self.options.tmux.session_prefix, session_id);
+        let session = format!("{}{}", self.tmux.session_prefix, session_id);
 
-        if self.options.tmux.kill_duplicate_session {
+        if self.tmux.kill_duplicate_session {
             if let Err(err) = self.tmux(["kill-session", "-t", &session]).await {
                 println!("[debug] failed to kill duplicate session: {}", err); // TODO: use log library
             }
         }
 
-        for (i, cmd) in self.options.commands.iter().enumerate() {
+        for (i, cmd) in self.commands.iter().enumerate() {
             let workdir = &cmd.workdir.to_string_lossy();
             let cmd_str = &format!("{}; read", cmd.to_command_line());
 
@@ -114,13 +151,13 @@ impl Runner {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        let mut cmd = Command::new(&self.options.tmux.program);
-        cmd.args(["-S", &self.options.tmux.socket_path]);
+        let mut cmd = Command::new(&self.tmux.program);
+        cmd.args(["-S", &self.tmux.socket_path]);
         cmd.args(args);
 
         let mut child = cmd
             .spawn()
-            .with_context(|| format!("could not spawn {:?}", &self.options.tmux.program))?;
+            .with_context(|| format!("could not spawn {:?}", &self.tmux.program))?;
 
         let status = child.wait().await?;
         if !status.success() {
@@ -139,7 +176,7 @@ impl Runner {
         if let RunnerOpenai::Enabled {
             api_base_url,
             api_key,
-        } = &self.options.openai
+        } = &self.openai
         {
             executor.push_err(processors::Openai::new(
                 api_base_url.clone(),
@@ -147,7 +184,7 @@ impl Runner {
             ));
         }
 
-        if let RunnerPrefix::Enabled = self.options.prefix {
+        if let RunnerPrefix::Enabled = self.prefix {
             executor.push_out(processors::Prefix::new(format!("[{}]", &cmd.name)));
             executor.push_err(processors::Prefix::new(format!("[{}]", &cmd.name)));
         }
@@ -164,6 +201,7 @@ pub struct RunnerOptions {
     pub mode: RunnerMode,
     pub openai: RunnerOpenai,
     pub prefix: RunnerPrefix,
+    pub tags: Vec<String>,
     pub tmux: RunnerTmux,
 }
 

@@ -1,0 +1,8 @@
+tags = ["a"]
+
+[[run]]
+cmd = ["echo", "not tagged: should be skipped"]
+
+[[run]]
+tags = ["a"]
+cmd = ["echo", "tagged!"]
