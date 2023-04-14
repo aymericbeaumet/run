@@ -62,14 +62,13 @@ pub struct Config {
 
     #[arg(
         short,
-        long,
+        long = "tags",
         env = "RUN_CLI_TAGS",
         help = "Filter to only run the commands matching at least one of the given tags. Can be comma-separated or passed multiple times",
         value_name = "TAG[,TAG]...",
         use_value_delimiter = true
     )]
-    #[merge(strategy = merge::vec::append)]
-    pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
 
     #[command(flatten)]
     #[serde(rename = "tmux")]
@@ -326,7 +325,7 @@ impl TryFrom<Config> for RunnerOptions {
             _ => RunnerPrefix::Disabled,
         };
 
-        let tags = config.tags;
+        let tags = config.tags.unwrap_or_default();
 
         let tmux = RunnerTmux {
             kill_duplicate_session: resolve_bool(config.tmux.tmux_kill_duplicate_session, true),
