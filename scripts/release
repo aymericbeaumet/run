@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")" || exit 1
 
 if [ $# -ne 1 ]; then
@@ -7,8 +9,6 @@ if [ $# -ne 1 ]; then
 	exit 2
 fi
 bump="$1"
-
-set -ex
 
 # make sure we are on the master branch
 branch="$(git rev-parse --abbrev-ref HEAD)"
