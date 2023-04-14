@@ -3,16 +3,29 @@
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")" || exit 1
 
 if [ $# -ne 1 ]; then
-	echo "usage: $0 <version>" >&2
+	echo "usage: $0 <major|minor|patch>" >&2
 	exit 2
 fi
-
-version="$1"
+bump="$1"
 
 set -ex
 
-cargo set-version "$version"
+# make sure we are on the master branch
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" != master ]; then
+	echo "error: not on master branch" >&2
+	exit 3
+fi
+
+# bump version
+cargo set-version --bump "$bump"
+version="$(grep '^version = "[^"]*"$' Cargo.toml | cut '-d"' -f 2)"
+tag="v$version"
+
+# commit changes
 git add Cargo.toml
-git commit -m "Release $version"
-git tag -a "v$version" -m "Release $version"
-git push origin "v$version"
+git commit -m "Release $tag"
+
+# create and push tag
+git tag -a "$tag" -m "Release $tag"
+git push origin "$tag"
