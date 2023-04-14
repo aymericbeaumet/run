@@ -110,7 +110,7 @@ where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
 {
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_run"));
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_run-cli"));
     cmd.env_clear();
     cmd.arg("-f");
     cmd.arg(file.as_ref());
