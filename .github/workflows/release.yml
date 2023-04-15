@@ -12,15 +12,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout
+      - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: rustup
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
 
-      - name: cache rust
+      - name: Prepare Rust cache
         uses: Swatinem/rust-cache@v2
 
       - name: cargo publish
