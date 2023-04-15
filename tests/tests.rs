@@ -155,5 +155,5 @@ fn patch_env<S: AsRef<str>>(s: S) -> String {
 }
 
 fn patch_eol<S: AsRef<str>>(s: S) -> String {
-    s.as_ref().to_owned().replace("\r\n", "\n")
+    s.as_ref().replace("\r\n", "\n")
 }
