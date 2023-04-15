@@ -20,6 +20,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Windows Subsystem for Linux
+        if: runner.os == 'Windows'
+        uses: Vampire/setup-wsl@v2
+
       - name: checkout
         uses: actions/checkout@v3
 
@@ -40,10 +44,6 @@ jobs:
 
       - name: cargo build
         run: cargo build --all-targets --all-features --verbose
-
-      - name: Windows Subsystem for Linux
-        if: runner.os == 'Windows'
-        uses: Vampire/setup-wsl@v2
 
       - name: cargo test
         run: cargo test --all-targets --all-features --verbose
