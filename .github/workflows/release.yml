@@ -20,7 +20,7 @@ jobs:
         with:
           toolchain: stable
 
-      - name: cache
+      - name: cache rust
         uses: Swatinem/rust-cache@v2
 
       - name: cargo publish
