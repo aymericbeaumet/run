@@ -11,6 +11,10 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   ci:
     strategy:
@@ -53,4 +57,3 @@ jobs:
         with:
           command: test
           args: --all-targets --all-features --verbose
-        shell: bash
