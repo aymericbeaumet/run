@@ -8,12 +8,12 @@ use std::{path::Path, process::Output};
 use tokio::process::Command;
 
 #[tokio::test(flavor = "multi_thread")]
-async fn check_examples() -> anyhow::Result<()> {
+async fn run_examples_checks() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
     for (test_name, file) in list_files(["examples/*/run.toml"]) {
         set.spawn(async move {
-            check_example(&file)
+            example_check(&file)
                 .await
                 .with_context(|| format!("example failed: {}", &test_name))?;
             Ok::<String, anyhow::Error>(test_name)
@@ -29,12 +29,12 @@ async fn check_examples() -> anyhow::Result<()> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn run_tests() -> anyhow::Result<()> {
+async fn run_e2e_tests() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
     for (test_name, file) in list_files(["tests/**/*.toml"]) {
         set.spawn(async move {
-            run_test(&file)
+            e2e_test(&file)
                 .await
                 .with_context(|| format!("test failed: {}", &test_name))?;
             Ok::<String, anyhow::Error>(test_name)
@@ -49,7 +49,7 @@ async fn run_tests() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn check_example<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
+async fn example_check<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     let output = exec(&file, ["--check"]).await?;
 
     if !output.status.success() {
@@ -60,7 +60,7 @@ async fn check_example<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
+async fn e2e_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     let args = read_file(&file, ".args").await.unwrap_or_default();
     let expected_stdout = read_file(&file, ".stdout")
         .await

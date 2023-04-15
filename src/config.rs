@@ -1,6 +1,7 @@
 use crate::runner::{
     RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
 };
+use anyhow::Context;
 use clap::Parser;
 use clap::ValueEnum;
 use merge::Merge;
@@ -204,31 +205,61 @@ pub struct Tmux {
 
 impl Config {
     pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
-        // Find the absolute path to the config file
-        let mut config_path = std::env::current_dir()?;
-        config_path.push(relpath);
-        if std::fs::metadata(&config_path)?.is_dir() {
-            config_path.push("run.toml");
-        }
-        let config_path = config_path.canonicalize()?;
+        let config_path = Self::resolve_absolute_config_path(&relpath).with_context(|| {
+            format!(
+                "failed to resolve the absolute config file path from input {}",
+                relpath.as_ref().display()
+            )
+        })?;
 
-        // Load configuration
-        let config_str = tokio::fs::read_to_string(&config_path).await?;
-        let mut config: Config = toml::from_str(&config_str)?;
+        let mut config = Self::load_config_toml(&config_path)
+            .await
+            .with_context(|| {
+                format!(
+                    "failed to load the config file at {}",
+                    config_path.display()
+                )
+            })?;
 
-        // Make sure the workdir is resolved relatively to the config file
-        let mut workdir = config_path.parent().expect("infaillible").to_path_buf();
-        if let Some(w) = config.workdir.as_ref() {
-            workdir.push(w); // use provided workdir if found
-        }
-        let workdir = workdir.canonicalize()?;
-        config.workdir = Some(workdir);
+        config.set_absolute_workdir(&config_path).with_context(|| {
+            format!(
+                "failed to set absolute workdir path from config file {}",
+                config_path.display()
+            )
+        })?;
 
         Ok(config)
     }
 
     pub fn merge(&mut self, other: Self) {
         Merge::merge(self, other);
+    }
+
+    fn resolve_absolute_config_path<P: AsRef<Path>>(relpath: P) -> anyhow::Result<PathBuf> {
+        let mut config_path = std::env::current_dir()?;
+        config_path.push(relpath);
+        if std::fs::metadata(&config_path)?.is_dir() {
+            config_path.push("run.toml");
+        }
+        Ok(config_path.canonicalize()?)
+    }
+
+    async fn load_config_toml<P: AsRef<Path>>(abspath: P) -> anyhow::Result<Config> {
+        let config_str = tokio::fs::read_to_string(&abspath).await?;
+        Ok(toml::from_str(&config_str)?)
+    }
+
+    fn set_absolute_workdir<P: AsRef<Path>>(&mut self, config_path: P) -> anyhow::Result<()> {
+        let mut workdir = config_path
+            .as_ref()
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!("config file has no parent directory"))?
+            .to_owned();
+        if let Some(w) = self.workdir.as_ref() {
+            workdir.push(w); // use provided workdir if found
+        }
+        self.workdir = Some(workdir.canonicalize()?);
+        Ok(())
     }
 }
 
