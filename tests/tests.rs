@@ -12,17 +12,17 @@ async fn check_examples() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
     for (test_name, file) in list_files(["examples/*/run.toml"]) {
-        println!("[example] {}", &test_name);
         set.spawn(async move {
             check_example(&file)
                 .await
                 .with_context(|| format!("example failed: {}", &test_name))?;
-            Ok::<(), anyhow::Error>(())
+            Ok::<String, anyhow::Error>(test_name)
         });
     }
 
     while let Some(Ok(joined)) = set.join_next().await {
-        joined?;
+        let test_name = joined?;
+        println!("[ok] {}", &test_name);
     }
 
     Ok(())
@@ -33,20 +33,17 @@ async fn run_tests() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
     for (test_name, file) in list_files(["tests/**/*.toml"]) {
-        println!("[test] {}", &test_name);
         set.spawn(async move {
-            run_test(&file).await.with_context(|| {
-                format!(
-                    "test failed. Reproduce with `cargo run -- -f {}`",
-                    &test_name
-                )
-            })?;
-            Ok::<(), anyhow::Error>(())
+            run_test(&file)
+                .await
+                .with_context(|| format!("test failed: {}", &test_name))?;
+            Ok::<String, anyhow::Error>(test_name)
         });
     }
 
     while let Some(Ok(joined)) = set.join_next().await {
-        joined?;
+        let test_name = joined?;
+        println!("[ok] {}", &test_name);
     }
 
     Ok(())
