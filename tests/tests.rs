@@ -142,12 +142,14 @@ where
 /// 0. it trims the string
 /// 1. it replaces $CARGO_MANIFEST_DIR with the actual path. This is useful as some path are
 ///    actually absolute path, and we don't want to hardcode the absolute path in the test files.
-/// 2. it replaces the windows EOL with unix EOL. This is useful as the tests are written on linux.
-/// 3. it replaces the backslash with forward slash. This is useful as the tests are written on linux.
+/// 2. it deletes windows extended length marker (\\?\)
+/// 3. it replaces the windows EOL with unix EOL
+/// 4. it replaces the backslash with forward slash
 fn patch<S: AsRef<str>>(s: S) -> String {
     s.as_ref()
         .trim()
         .replace("$CARGO_MANIFEST_DIR", CARGO_MANIFEST_DIR)
+        .replace("\\\\?\\", "")
         .replace("\r\n", "\n")
         .replace('\\', "/")
 }
