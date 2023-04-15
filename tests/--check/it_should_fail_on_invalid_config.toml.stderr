@@ -6,4 +6,3 @@ Caused by:
     2 | cmd = "npm install"
       |       ^^^^^^^^^^^^^
     invalid type: string "npm install", expected a sequence
-    
