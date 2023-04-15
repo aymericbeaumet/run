@@ -7,20 +7,27 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   release-crate:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v3
 
-      - uses: actions-rs/toolchain@v1
+      - name: rustup
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
           toolchain: stable
 
-      - uses: Swatinem/rust-cache@v2
+      - name: cache
+        uses: Swatinem/rust-cache@v2
 
-      - run: cargo publish --locked
+      - name: cargo publish
+        run: cargo publish --locked
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
