@@ -19,41 +19,28 @@ jobs:
   ci:
     strategy:
       matrix:
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain
         with:
-          profile: minimal
           toolchain: stable
-          components: rustfmt, clippy
+          components: [rustfmt, clippy]
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --check --verbose
+      - name: rustfmt
+        run: cargo fmt --all --check --verbose
 
       - name: cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-targets --all-features --verbose -- --deny warnings
+        run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
 
       - name: cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-targets --all-features --verbose
+        run: cargo build --all-targets --all-features --verbose
 
       - name: cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-targets --all-features --verbose
+        run: cargo test --all-targets --all-features --verbose
