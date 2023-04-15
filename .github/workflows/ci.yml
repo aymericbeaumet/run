@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Windows Subsystem for Linux
-        if: runner.os == 'Windows'
+        if: matrix.os == 'windows-latest'
         uses: Vampire/setup-wsl@v2
 
       - name: checkout
@@ -47,4 +47,4 @@ jobs:
 
       - name: cargo test
         run: cargo test --all-targets --all-features --verbose
-        shell: ${{ runner.os == 'Windows' && 'wsl-bash' || 'bash' }}
+        shell: ${{ matrix.os == 'windows-latest' && 'wsl-bash' || 'bash' }}
