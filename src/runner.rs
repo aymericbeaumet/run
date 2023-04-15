@@ -152,7 +152,8 @@ impl Runner {
         S: AsRef<OsStr>,
     {
         let mut cmd = Command::new(&self.tmux.program);
-        cmd.args(["-S", &self.tmux.socket_path]);
+        cmd.args(["-S"]);
+        cmd.args([&self.tmux.socket_path]);
         cmd.args(args);
 
         let mut child = cmd
@@ -257,5 +258,5 @@ pub struct RunnerTmux {
     pub kill_duplicate_session: bool,
     pub program: String,
     pub session_prefix: String,
-    pub socket_path: String,
+    pub socket_path: PathBuf,
 }

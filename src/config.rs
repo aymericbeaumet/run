@@ -200,7 +200,7 @@ pub struct Tmux {
         help = "Specify the tmux socket path to use"
     )]
     #[serde(rename = "socket_path")]
-    pub tmux_socket_path: Option<String>,
+    pub tmux_socket_path: Option<PathBuf>,
 }
 
 impl Config {
@@ -365,7 +365,7 @@ impl TryFrom<Config> for RunnerOptions {
             socket_path: config
                 .tmux
                 .tmux_socket_path
-                .unwrap_or("/tmp/tmux.run_cli.sock".into()),
+                .unwrap_or_else(|| { std::env::temp_dir().join("tmux.run_cli.sock") }),
         };
 
         Ok(Self {
