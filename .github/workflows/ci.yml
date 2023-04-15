@@ -20,8 +20,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Windows Subsystem for Linux
-        if: matrix.os == 'windows-latest'
+      - if: ${{ matrix.os == 'windows-latest' }}
+        name: Windows Subsystem for Linux
         uses: Vampire/setup-wsl@v2
 
       - name: checkout
