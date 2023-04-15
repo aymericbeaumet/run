@@ -1,2 +1,2 @@
 [[run]]
-cmd = ["echo", "ok"]
+cmd = ["bash", "-c", "echo ok"]
