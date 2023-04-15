@@ -65,8 +65,14 @@ async fn check_example<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
 
 async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     let args = read_file(&file, ".args").await.unwrap_or_default();
-    let expected_stdout = read_file(&file, ".stdout").await;
-    let expected_stderr = read_file(&file, ".stderr").await;
+    let expected_stdout = read_file(&file, ".stdout")
+        .await
+        .map(patch_env)
+        .map(patch_eol);
+    let expected_stderr = read_file(&file, ".stderr")
+        .await
+        .map(patch_env)
+        .map(patch_eol);
 
     if expected_stdout.is_none() && expected_stderr.is_none() {
         bail!("none of .stdout or .stderr found");
@@ -74,29 +80,29 @@ async fn run_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
 
     // exec and get output
     let output = exec(&file, args.lines()).await?;
-    let stdout = std::str::from_utf8(&output.stdout)?;
-    let stderr = std::str::from_utf8(&output.stderr)?;
+    let stdout = patch_eol(std::str::from_utf8(&output.stdout)?);
+    let stderr = patch_eol(std::str::from_utf8(&output.stderr)?);
 
     if !output.status.success() && expected_stderr.is_none() {
         bail!("unexpectedly failed with: {}", stderr);
     }
 
     // assert stdout
-    if let Some(expected) = expected_stdout.map(patch_env) {
+    if let Some(expected) = expected_stdout {
         if expected != stdout {
             bail!(format!(
                 "stdout does not match: {}",
-                StrComparison::new(&expected, stdout)
+                StrComparison::new(&expected, &stdout)
             ));
         }
     }
 
     // assert stderr
-    if let Some(expected) = expected_stderr.map(patch_env) {
+    if let Some(expected) = expected_stderr {
         if expected != stderr {
             bail!(format!(
                 "stderr does not match: {}",
-                StrComparison::new(&expected, stderr)
+                StrComparison::new(&expected, &stderr)
             ));
         }
     }
@@ -146,4 +152,8 @@ where
 fn patch_env<S: AsRef<str>>(s: S) -> String {
     s.as_ref()
         .replace("$CARGO_MANIFEST_DIR", CARGO_MANIFEST_DIR)
+}
+
+fn patch_eol<S: AsRef<str>>(s: S) -> String {
+    s.as_ref().to_owned().replace("\r\n", "\n")
 }
