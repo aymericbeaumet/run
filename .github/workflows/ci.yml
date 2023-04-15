@@ -45,6 +45,11 @@ jobs:
       - name: cargo build
         run: cargo build --all-targets --all-features --verbose
 
-      - name: cargo test
+      - if: ${{ matrix.os == 'windows-latest' }}
+        name: cargo test
         run: cargo test --all-targets --all-features --verbose
-        shell: ${{ matrix.os == 'windows-latest' && 'wsl-bash' || 'bash' }}
+        shell: wsl-bash
+
+      - if: ${{ matrix.os != 'windows-latest' }}
+        name: cargo test
+        run: cargo test --all-targets --all-features --verbose
