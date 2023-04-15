@@ -62,14 +62,8 @@ async fn example_check<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
 
 async fn e2e_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     let args = read_file(&file, ".args").await.unwrap_or_default();
-    let expected_stdout = read_file(&file, ".stdout")
-        .await
-        .map(patch_env)
-        .map(patch_eol);
-    let expected_stderr = read_file(&file, ".stderr")
-        .await
-        .map(patch_env)
-        .map(patch_eol);
+    let expected_stdout = read_file(&file, ".stdout").await.map(patch);
+    let expected_stderr = read_file(&file, ".stderr").await.map(patch);
 
     if expected_stdout.is_none() && expected_stderr.is_none() {
         bail!("none of .stdout or .stderr found");
@@ -77,8 +71,8 @@ async fn e2e_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
 
     // exec and get output
     let output = exec(&file, args.lines()).await?;
-    let stdout = patch_eol(std::str::from_utf8(&output.stdout)?);
-    let stderr = patch_eol(std::str::from_utf8(&output.stderr)?);
+    let stdout = patch(std::str::from_utf8(&output.stdout)?);
+    let stderr = patch(std::str::from_utf8(&output.stderr)?);
 
     if !output.status.success() && expected_stderr.is_none() {
         bail!("unexpectedly failed with: {}", stderr);
@@ -144,13 +138,14 @@ where
         })
 }
 
-/// patch_env replaces $CARGO_MANIFEST_DIR with the actual path. This is useful as some path are
-/// actually absolute path, and we don't want to hardcode the absolute path in the test files.
-fn patch_env<S: AsRef<str>>(s: S) -> String {
+/// patch performs a few operations to make sure the tests run nicely on all platforms:
+/// 1. it replaces $CARGO_MANIFEST_DIR with the actual path. This is useful as some path are
+///    actually absolute path, and we don't want to hardcode the absolute path in the test files.
+/// 2. it replaces the windows EOL with unix EOL. This is useful as the tests are written on linux.
+/// 3. it replaces the backslash with forward slash. This is useful as the tests are written on linux.
+fn patch<S: AsRef<str>>(s: S) -> String {
     s.as_ref()
         .replace("$CARGO_MANIFEST_DIR", CARGO_MANIFEST_DIR)
-}
-
-fn patch_eol<S: AsRef<str>>(s: S) -> String {
-    s.as_ref().replace("\r\n", "\n")
+        .replace("\r\n", "\n")
+        .replace('\\', "/")
 }
