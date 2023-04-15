@@ -53,3 +53,4 @@ jobs:
         with:
           command: test
           args: --all-targets --all-features --verbose
+        shell: bash
