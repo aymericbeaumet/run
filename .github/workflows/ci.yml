@@ -33,17 +33,17 @@ jobs:
           toolchain: stable
           components: rustfmt,clippy
 
-      #- name: cache rust
-        #uses: Swatinem/rust-cache@v2
+      - name: cache rust
+        uses: Swatinem/rust-cache@v2
 
-      #- name: cargo fmt
-        #run: cargo fmt --all --check --verbose
+      - name: cargo fmt
+        run: cargo fmt --all --check --verbose
 
-      #- name: cargo clippy
-        #run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
+      - name: cargo clippy
+        run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
 
-      #- name: cargo build
-        #run: cargo build --all-targets --all-features --verbose
+      - name: cargo build
+        run: cargo build --all-targets --all-features --verbose
 
       - if: ${{ matrix.os != 'windows-latest' }}
         name: cargo test (unix)
