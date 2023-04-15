@@ -365,7 +365,7 @@ impl TryFrom<Config> for RunnerOptions {
             socket_path: config
                 .tmux
                 .tmux_socket_path
-                .unwrap_or_else(|| { std::env::temp_dir().join("tmux.run_cli.sock") }),
+                .unwrap_or_else(|| std::env::temp_dir().join("tmux.run_cli.sock")),
         };
 
         Ok(Self {
