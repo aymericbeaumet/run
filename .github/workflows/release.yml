@@ -7,10 +7,6 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   release-crate:
     runs-on: ubuntu-latest

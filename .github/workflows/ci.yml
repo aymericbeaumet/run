@@ -11,10 +11,6 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   ci:
     strategy:
@@ -45,5 +41,10 @@ jobs:
       - name: cargo build
         run: cargo build --all-targets --all-features --verbose
 
+      - name: Windows Subsystem for Linux
+        if: runner.os == 'Windows'
+        uses: Vampire/setup-wsl@v2
+
       - name: cargo test
         run: cargo test --all-targets --all-features --verbose
+        shell: ${{ runner.os == 'Windows' && 'wsl-bash' || 'bash' }}
