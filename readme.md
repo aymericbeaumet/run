@@ -1,4 +1,6 @@
-# run [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/aymericbeaumet/run/ci.yml?branch=master&logo=github)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/aymericbeaumet/run/ci.yml?branch=master&logo=github)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml) [![Crates.io](https://img.shields.io/crates/v/run-cli)](https://crates.io/crates/run-cli) [![GitHub](https://img.shields.io/github/license/aymericbeaumet/run)](https://github.com/aymericbeaumet/run-cli/blob/master/license.md)
+
+# run
 
 run is a simple, standalone tool that manages your processes for any project.
 
