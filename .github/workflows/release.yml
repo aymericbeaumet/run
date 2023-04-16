@@ -21,23 +21,35 @@ jobs:
           draft: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  populate-release:
+  build-release:
     needs: [create-release]
     strategy:
       matrix:
         include:
+          # arm64
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
           - target: aarch64-apple-darwin
             os: macos-latest
+          # amd64
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
           - target: x86_64-apple-darwin
             os: macos-latest
+          - target: x86_64-pc-windows-gnu
+            os: windows-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+          # i686
+          - target: i686-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: i686-pc-windows-gnu
+            os: windows-latest
+          - target: i686-pc-windows-msvc
+            os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - uses: taiki-e/install-action@cross
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: run
@@ -45,7 +57,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   publish-crate:
-    needs: [populate-release]
+    needs: [build-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -53,9 +65,3 @@ jobs:
       #- run: cargo publish --locked
       #  env:
       #    CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-  publish-npm:
-    needs: [populate-release]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
