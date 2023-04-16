@@ -40,7 +40,7 @@ impl Executor {
         args: A,
         workdir: W,
         envs: Env,
-    ) -> anyhow::Result<()>
+    ) -> anyhow::Result<std::process::ExitStatus>
     where
         P: AsRef<OsStr> + std::fmt::Debug,
         A: IntoIterator<Item = Arg>,
@@ -50,12 +50,13 @@ impl Executor {
         K: AsRef<OsStr>,
         V: AsRef<OsStr>,
     {
+        let args: Vec<_> = args.into_iter().collect();
         let capture_out = !self.out_processors.is_empty();
         let capture_err = !self.err_processors.is_empty();
 
         let mut cmd = Command::new(&program);
 
-        cmd.args(args);
+        cmd.args(&args);
         cmd.current_dir(workdir.as_ref());
         cmd.envs(envs);
 
@@ -112,13 +113,13 @@ impl Executor {
             Ok::<(), anyhow::Error>(())
         });
 
-        let _ = try_join3(
+        let (status, _, _) = try_join3(
             child.wait().map_err(anyhow::Error::msg),
             process_out.map_err(anyhow::Error::msg),
             process_err.map_err(anyhow::Error::msg),
         )
         .await?;
 
-        Ok(())
+        Ok(status)
     }
 }

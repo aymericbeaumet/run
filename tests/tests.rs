@@ -165,7 +165,7 @@ fn patch<S: AsRef<str>>(s: S) -> String {
 fn install_local_coreutils() -> PathBuf {
     const CRATE_NAME: &str = "coreutils";
     const CRATE_VERSION: &str = "0.0.18";
-    const CRATE_FEATURES: &[&str] = &["cat", "echo", "ls", "printenv", "timeout"];
+    const CRATE_FEATURES: &[&str] = &["echo", "ls", "printenv", "sleep"];
 
     let root = PathBuf::new()
         .join(env!("CARGO_MANIFEST_DIR"))

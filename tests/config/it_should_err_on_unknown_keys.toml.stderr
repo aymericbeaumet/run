@@ -5,4 +5,4 @@ Caused by:
       |
     1 | __unknown_key__ = true
       | ^^^^^^^^^^^^^^^
-    unknown field `__unknown_key__`, expected one of `env`, `mode`, `openai`, `prefix`, `raw`, `run`, `tags`, `tmux`, `workdir`
+    unknown field `__unknown_key__`, expected one of `env`, `log`, `mode`, `openai`, `prefix`, `raw`, `run`, `tags`, `tmux`, `workdir`

@@ -1,2 +1,2 @@
-[finish first] timeout: sending signal TERM to command 'coreutils'
-[finish second] timeout: sending signal TERM to command 'coreutils'
+[finish first] coreutils sleep 0.1s terminated with status code 0
+[finish second] coreutils sleep 0.2s terminated with status code 0

@@ -1,5 +1,5 @@
 use crate::runner::{
-    RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
+    RunnerCommand, RunnerLog, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
 };
 use anyhow::Context;
 use clap::Parser;
@@ -24,6 +24,10 @@ pub struct Config {
     #[serde(rename = "env")]
     #[merge(strategy = merge::vec::prepend)] // highest priority is at the end
     pub envs: Vec<String>,
+
+    #[command(flatten)]
+    #[serde(rename = "log")]
+    pub log: Log,
 
     #[arg(
         short,
@@ -104,6 +108,46 @@ pub struct Command {
 
     #[serde(rename = "workdir")]
     pub command_workdir: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
+#[serde(deny_unknown_fields, default)]
+pub struct Log {
+    #[arg(
+        long = "log-enabled",
+        env = "RUN_CLI_LOG_ENABLED",
+        help = "Whether the logs should be enabled",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "enabled")]
+    pub log_enabled: Option<Option<bool>>,
+
+    #[arg(
+        long = "log-spawns",
+        env = "RUN_CLI_LOG_SPAWNS",
+        help = "Whether the spawns should be logged",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "spawns")]
+    pub log_spawns: Option<Option<bool>>,
+
+    #[arg(
+        long = "log-terminations",
+        env = "RUN_CLI_LOG_TERMINATIONS",
+        help = "Whether the terminations should be logged",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "terminations")]
+    pub log_terminations: Option<Option<bool>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
@@ -330,6 +374,12 @@ impl TryFrom<Config> for RunnerOptions {
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 
+        let log_enabled = resolve_bool(config.log.log_enabled, true);
+        let log = RunnerLog {
+            spawns: resolve_bool(config.log.log_spawns, log_enabled && false),
+            terminations: resolve_bool(config.log.log_terminations, log_enabled && true),
+        };
+
         let mode = match config.mode.unwrap_or(Mode::Sequential) {
             Mode::Sequential => RunnerMode::Sequential,
             Mode::Parallel => RunnerMode::Parallel,
@@ -370,6 +420,7 @@ impl TryFrom<Config> for RunnerOptions {
 
         Ok(Self {
             commands,
+            log,
             mode,
             openai,
             prefix,
