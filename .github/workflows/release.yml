@@ -20,21 +20,21 @@ jobs:
       matrix:
         target:
           # linux
-          - aarch64-unknown-linux-gnu
-          - x86_64-unknown-linux-gnu
-          - i686-unknown-linux-gnu
+          - { os: ubuntu-latest, triplet: aarch64-unknown-linux-gnu }
+          - { os: ubuntu-latest, triplet: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, triplet: i686-unknown-linux-gnu }
           # macos
-          - aarch64-apple-darwin
-          - x86_64-apple-darwin
+          - { os: macos-latest, triplet: aarch64-apple-darwin }
+          - { os: macos-latest, triplet: x86_64-apple-darwin }
           # windows
-          - x86_64-pc-windows-gnu
-          - i686-pc-windows-gnu
-    runs-on: ubuntu-latest
+          #- { triplet: x86_64-pc-windows-gnu
+          #- { triplet: i686-pc-windows-gnu
+    runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo install -f cross
-      - run: cross build --target ${{ matrix.target }}
+      - run: cross build --target ${{ matrix.target.triplet }}
 
   publish-crate:
     needs: [release-github]
