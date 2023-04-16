@@ -4,15 +4,9 @@ permissions:
   contents: write
 
 on:
-  pull_request:
-    branches: ["**"]
   push:
-    branches: ["master"]
-
-#on:
-#  push:
-#    tags:
-#      - "v*.*.*"
+    tags:
+      - "v*.*.*"
 
 env:
   CARGO_TERM_COLOR: always
