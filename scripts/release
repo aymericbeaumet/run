@@ -14,7 +14,7 @@ bump="$1"
 branch="$(git rev-parse --abbrev-ref HEAD)"
 if [ "$branch" != master ]; then
 	echo "error: not on master branch" >&2
-	#exit 3
+	exit 3
 fi
 
 # bump, commit, tag, and push
