@@ -169,7 +169,12 @@ fn install_local_coreutils() -> PathBuf {
 
     let root = PathBuf::new()
         .join(env!("CARGO_MANIFEST_DIR"))
-        .join(format!(".bin/{}@{}#{}", CRATE_NAME, CRATE_VERSION, CRATE_FEATURES.join(",")));
+        .join(format!(
+            ".bin/{}@{}#{}",
+            CRATE_NAME,
+            CRATE_VERSION,
+            CRATE_FEATURES.join(",")
+        ));
 
     if !root.is_dir() {
         let _ = std::fs::remove_dir_all(&root);
