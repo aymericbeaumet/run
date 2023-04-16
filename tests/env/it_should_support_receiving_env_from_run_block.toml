@@ -1,9 +1,9 @@
 [[run]]
 name = "foo"
-cmd = ["printenv", "__RUN_CLI_FOOBAR__"]
+cmd = ["coreutils", "printenv", "__RUN_CLI_FOOBAR__"]
 env = [ "__RUN_CLI_FOOBAR__=foo" ]
 
 [[run]]
 name = "bar"
-cmd = ["printenv", "__RUN_CLI_FOOBAR__"]
+cmd = ["coreutils", "printenv", "__RUN_CLI_FOOBAR__"]
 env = [ "__RUN_CLI_FOOBAR__=bar" ]

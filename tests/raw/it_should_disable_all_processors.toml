@@ -1,7 +1,7 @@
 raw = true
 
 [[run]]
-cmd = ["echo", "foobar"]
+cmd = ["coreutils", "echo", "foobar"]
 
 [[run]]
-cmd = ["echo", "barfoo"]
+cmd = ["coreutils", "echo", "barfoo"]

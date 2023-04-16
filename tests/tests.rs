@@ -7,6 +7,10 @@ use std::path::PathBuf;
 use std::{path::Path, process::Output};
 use tokio::process::Command;
 
+lazy_static::lazy_static! {
+    static ref COREUTILS_PATH: PathBuf = install_local_coreutils();
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn run_examples_checks() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
@@ -108,9 +112,14 @@ where
     S: AsRef<OsStr>,
 {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_run"));
+
+    cmd.env("PATH", COREUTILS_PATH.to_str().unwrap());
+
     cmd.arg("-f");
     cmd.arg(file.as_ref());
+
     cmd.args(args);
+
     Ok(cmd.output().await?)
 }
 
@@ -151,4 +160,32 @@ fn patch<S: AsRef<str>>(s: S) -> String {
         .replace("\\\\?\\", "")
         .replace("\r\n", "\n")
         .replace('\\', "/")
+}
+
+fn install_local_coreutils() -> PathBuf {
+    const CRATE_NAME: &str = "coreutils";
+    const CRATE_VERSION: &str = "0.0.18";
+    const CRATE_FEATURES: &[&str] = &["cat", "echo", "ls", "printenv", "timeout"];
+
+    let root = PathBuf::new()
+        .join(env!("CARGO_MANIFEST_DIR"))
+        .join(format!(".bin/{}@{}#{}", CRATE_NAME, CRATE_VERSION, CRATE_FEATURES.join(",")));
+
+    if !root.is_dir() {
+        let _ = std::fs::remove_dir_all(&root);
+        let mut cmd = std::process::Command::new(env!("CARGO"));
+        cmd.arg("install");
+        cmd.arg("--debug");
+        cmd.arg("--root");
+        cmd.arg(&root);
+        cmd.arg("--version");
+        cmd.arg(CRATE_VERSION);
+        cmd.arg("--no-default-features");
+        cmd.arg("--features");
+        cmd.arg(CRATE_FEATURES.join(" "));
+        cmd.arg(CRATE_NAME);
+        cmd.output().unwrap();
+    }
+
+    root.join("bin")
 }

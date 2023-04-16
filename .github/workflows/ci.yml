@@ -32,10 +32,6 @@ jobs:
       - name: Prepare Rust cache
         uses: Swatinem/rust-cache@v2
 
-      - if: matrix.os == 'windows-latest'
-        name: Install coreutils (windows)
-        run: cargo install -f coreutils@v0.0.18
-
       - name: cargo fmt
         run: cargo fmt --all --check --verbose
 

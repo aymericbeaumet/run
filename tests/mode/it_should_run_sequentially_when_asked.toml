@@ -1,7 +1,9 @@
 mode = "sequential"
 
 [[run]]
-cmd = ["echo", "one"]
+name = "echo"
+cmd = ["coreutils", "echo", "one"]
 
 [[run]]
-cmd = ["echo", "two"]
+name = "echo"
+cmd = ["coreutils", "echo", "two"]

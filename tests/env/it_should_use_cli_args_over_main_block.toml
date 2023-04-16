@@ -2,4 +2,4 @@ env = [ "__RUN_CLI_FOOBAR__=from_main_block" ]
 
 [[run]]
 name = "p1"
-cmd = ["printenv", "__RUN_CLI_FOOBAR__"]
+cmd = ["coreutils", "printenv", "__RUN_CLI_FOOBAR__"]

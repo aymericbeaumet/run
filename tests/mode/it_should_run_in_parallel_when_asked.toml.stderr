@@ -1,2 +1,2 @@
-[finish first] timeout: sending signal TERM to command ‘cat’
-[finish second] timeout: sending signal TERM to command ‘cat’
+[finish first] timeout: sending signal TERM to command 'coreutils'
+[finish second] timeout: sending signal TERM to command 'coreutils'
