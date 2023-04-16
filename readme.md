@@ -1,6 +1,8 @@
 # run [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/aymericbeaumet/run/ci.yml?branch=master&logo=github)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml)
 
-[run](https://github.com/aymericbeaumet/run) is a simple, standalone tool that manages your processes for any project.
+run is a simple, standalone tool that manages your processes for any project.
+
+Learn more at the [run](https://www.run-cli.org) website.
 
 ## Features
 
