@@ -37,4 +37,4 @@ Visit [the documentation](https://www.run-cli.org/installation) for an exhaustiv
 
 ## Documentation
 
-For more information about the project, including installation, getting started, and many other topics, have look at: [https://www.run-cli.org](https://www.run-cli.org)
+For more information about the project, including installation, getting started, and many other topics, have look at the [run](https://www.run-cli.org) website.
