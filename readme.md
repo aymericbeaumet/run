@@ -33,7 +33,7 @@ For more examples, have a look at the [examples directory](./examples).
 # todo
 ```
 
-Visit [the documentation](https://www.run-cli.org/installation) for an exhaustive list of the installation methods.
+Visit [the install documentation](https://www.run-cli.org/installation) for an exhaustive list of the installation methods.
 
 ## Documentation
 
