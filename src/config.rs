@@ -376,8 +376,8 @@ impl TryFrom<Config> for RunnerOptions {
 
         let log_enabled = resolve_bool(config.log.log_enabled, true);
         let log = RunnerLog {
-            spawns: resolve_bool(config.log.log_spawns, log_enabled && false),
-            terminations: resolve_bool(config.log.log_terminations, log_enabled && true),
+            spawns: log_enabled && resolve_bool(config.log.log_spawns, false),
+            terminations: log_enabled && resolve_bool(config.log.log_terminations, true),
         };
 
         let mode = match config.mode.unwrap_or(Mode::Sequential) {
