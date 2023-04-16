@@ -2,8 +2,8 @@ mode = "parallel"
 
 [[run]]
 name = "finish second"
-cmd = ["coreutils", "timeout", "-v", "0.2s", "coreutils", "cat"]
+cmd = ["coreutils", "timeout", "--foreground", "--verbose", "0.2s", "coreutils", "cat"]
 
 [[run]]
 name = "finish first"
-cmd = ["coreutils", "timeout", "-v", "0.1s", "coreutils", "cat"]
+cmd = ["coreutils", "timeout", "--foreground", "--verbose", "0.1s", "coreutils", "cat"]
