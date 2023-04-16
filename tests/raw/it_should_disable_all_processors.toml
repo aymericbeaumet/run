@@ -1,7 +1,7 @@
 raw = true
 
 [[run]]
-cmd = ["bash", "-c", "echo foobar"]
+cmd = ["echo", "foobar"]
 
 [[run]]
-cmd = ["bash", "-c", "echo barfoo"]
+cmd = ["echo", "barfoo"]

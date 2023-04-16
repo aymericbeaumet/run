@@ -1,5 +1,4 @@
 workdir = "./fixtures/a"
 
 [[run]]
-name = "ls"
-cmd = ["bash", "-c", "ls"]
+cmd = ["ls"]

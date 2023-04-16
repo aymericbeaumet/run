@@ -4,4 +4,4 @@ mode = "sequential"
 program = "/usr/local/bin/tmux"
 
 [[run]]
-cmd = ["bash", "-c", "echo ok"]
+cmd = ["echo", "ok"]

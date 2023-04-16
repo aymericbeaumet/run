@@ -2,12 +2,12 @@ tags = ["c", "b", "a"]
 
 [[run]]
 tags = ["a"]
-cmd = ["bash", "-c", "echo a"]
+cmd = ["echo", "a"]
 
 [[run]]
 tags = ["b"]
-cmd = ["bash", "-c", "echo b"]
+cmd = ["echo", "b"]
 
 [[run]]
 tags = ["c"]
-cmd = ["bash", "-c", "echo c"]
+cmd = ["echo", "c"]

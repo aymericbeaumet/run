@@ -11,3 +11,5 @@
 - tmux: report status code in the pane title
 - tmux: report time to finish in the pane title
 - tmux: use `run -f /dev/null 'command' inside each panel (prefix, openai, watcher, etc)`
+- Add support for secret management (vault, aws secrets, etc)
+- Add support for micro-services discovery (k8s, consul, docker, etc)

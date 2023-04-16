@@ -108,7 +108,6 @@ where
     S: AsRef<OsStr>,
 {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_run"));
-    cmd.env_clear();
     cmd.arg("-f");
     cmd.arg(file.as_ref());
     cmd.args(args);

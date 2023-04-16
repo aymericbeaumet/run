@@ -1,7 +1,7 @@
 mode = "sequential"
 
 [[run]]
-cmd = ["bash", "-c", "echo one"]
+cmd = ["echo", "one"]
 
 [[run]]
-cmd = ["bash", "-c", "echo two"]
+cmd = ["echo", "two"]

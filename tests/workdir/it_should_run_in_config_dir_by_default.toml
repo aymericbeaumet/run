@@ -1,3 +1,2 @@
 [[run]]
-name = "ls"
-cmd = ["bash", "-c", "ls ./fixtures"]
+cmd = ["ls", "./fixtures"]
