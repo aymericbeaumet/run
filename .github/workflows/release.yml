@@ -34,7 +34,6 @@ jobs:
       - uses: dtolnay/install@master
         with:
           crate: cross
-      - run: cargo install -f cross
       - run: cross build --target ${{ matrix.target }}
 
   publish-crate:
