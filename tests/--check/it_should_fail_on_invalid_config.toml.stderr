@@ -1,6 +1,8 @@
-Error: TOML parse error at line 2, column 7
-  |
-2 | cmd = "npm install"
-  |       ^^^^^^^^^^^^^
-invalid type: string "npm install", expected a sequence
+Error: failed to load the config file at $CARGO_MANIFEST_DIR/tests/--check/it_should_fail_on_invalid_config.toml
 
+Caused by:
+    TOML parse error at line 2, column 7
+      |
+    2 | cmd = "npm install"
+      |       ^^^^^^^^^^^^^
+    invalid type: string "npm install", expected a sequence

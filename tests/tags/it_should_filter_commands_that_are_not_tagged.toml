@@ -1,8 +1,10 @@
 tags = ["a"]
 
 [[run]]
-cmd = ["echo", "not tagged: should be skipped"]
+name = "echo"
+cmd = ["coreutils", "echo", "not tagged: should be skipped"]
 
 [[run]]
+name = "echo"
 tags = ["a"]
-cmd = ["echo", "tagged!"]
+cmd = ["coreutils", "echo", "tagged!"]

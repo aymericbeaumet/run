@@ -1,7 +1,7 @@
 [[run]]
 name = "foo"
-cmd = ["bash", "-c", "echo $__RUN_CLI_FOO__"]
+cmd = ["coreutils", "printenv", "__RUN_CLI_FOO__"]
 
 [[run]]
 name = "bar"
-cmd = ["bash", "-c", "echo $__RUN_CLI_BAR__"]
+cmd = ["coreutils", "printenv", "__RUN_CLI_BAR__"]

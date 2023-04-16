@@ -8,41 +8,44 @@ on:
   schedule:
     - cron: "00 00 * * *"
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout source code
+        uses: actions/checkout@v3
 
-      - uses: actions-rs/toolchain@v1
+      - name: Restore local binaries cache
+        uses: actions/cache@v3
         with:
-          profile: minimal
-          toolchain: stable
-          components: rustfmt, clippy
+          path: .bin
+          key: ${{ runner.os }}-${{ runner.arch }}-local-binaries
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: rustfmt,clippy
+
+      - name: Restore Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --check
+        run: cargo fmt --all --check --verbose
 
       - name: cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-targets --all-features -- --deny warnings
+        run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
 
       - name: cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-targets --all-features --release
+        run: cargo build --all-targets --all-features --verbose
 
       - name: cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-targets --all-features
+        run: cargo test --all-targets --all-features --verbose

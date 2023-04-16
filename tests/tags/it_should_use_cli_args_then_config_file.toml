@@ -2,12 +2,15 @@ tags = ["c", "b", "a"]
 
 [[run]]
 tags = ["a"]
-cmd = ["echo", "a"]
+name = "echo"
+cmd = ["coreutils", "echo", "a"]
 
 [[run]]
 tags = ["b"]
-cmd = ["echo", "b"]
+name = "echo"
+cmd = ["coreutils", "echo", "b"]
 
 [[run]]
 tags = ["c"]
-cmd = ["echo", "c"]
+name = "echo"
+cmd = ["coreutils", "echo", "c"]

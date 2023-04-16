@@ -1,6 +1,8 @@
-Error: TOML parse error at line 1, column 1
-  |
-1 | __unknown_key__ = true
-  | ^^^^^^^^^^^^^^^
-unknown field `__unknown_key__`, expected one of `env`, `mode`, `openai`, `prefix`, `raw`, `run`, `tags`, `tmux`, `workdir`
+Error: failed to load the config file at $CARGO_MANIFEST_DIR/tests/config/it_should_err_on_unknown_keys.toml
 
+Caused by:
+    TOML parse error at line 1, column 1
+      |
+    1 | __unknown_key__ = true
+      | ^^^^^^^^^^^^^^^
+    unknown field `__unknown_key__`, expected one of `env`, `log`, `mode`, `openai`, `prefix`, `raw`, `run`, `tags`, `tmux`, `workdir`

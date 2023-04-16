@@ -993,6 +993,7 @@ dependencies = [
  "futures",
  "glob",
  "itertools",
+ "lazy_static",
  "merge",
  "pretty_assertions",
  "reqwest",

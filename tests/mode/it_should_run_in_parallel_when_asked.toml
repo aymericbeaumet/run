@@ -1,9 +1,9 @@
 mode = "parallel"
 
 [[run]]
-name = "one"
-cmd = ["bash", "-c", "sleep 0.1 && echo one"]
+name = "finish second"
+cmd = ["coreutils", "sleep", "0.2s"]
 
 [[run]]
-name = "two"
-cmd = ["bash", "-c", "sleep 0.0 && echo two"]
+name = "finish first"
+cmd = ["coreutils", "sleep", "0.1s"]

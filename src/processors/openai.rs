@@ -49,12 +49,16 @@ impl Processor for Openai {
             .json(&body)
             .send()
             .await?;
+        let json: Response = resp.json().await?;
+
+        let Some(choice) = json.choices.get(0) else {
+            anyhow::bail!("No choice returned by OpenAI");
+        };
 
         eprintln!(
             "|                                                                              |"
         );
-        let resp: Response = resp.json().await?;
-        for line in textwrap::wrap(&resp.choices[0].message.content, 76) {
+        for line in textwrap::wrap(&choice.message.content, 76) {
             eprintln!("| {:<76} |", line);
         }
         eprintln!(

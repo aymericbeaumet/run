@@ -1,0 +1,3 @@
+--log-enabled=false
+--log-spawns=true
+--log-terminations=true

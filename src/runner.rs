@@ -8,10 +8,12 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
+use std::process::ExitStatus;
 use tokio::process::Command;
 
 pub struct Runner {
     commands: Vec<RunnerCommand>,
+    log: RunnerLog,
     mode: RunnerMode,
     openai: RunnerOpenai,
     prefix: RunnerPrefix,
@@ -47,6 +49,7 @@ impl Runner {
 
         Self {
             commands,
+            log: options.log,
             mode: options.mode,
             openai: options.openai,
             prefix: options.prefix,
@@ -152,7 +155,8 @@ impl Runner {
         S: AsRef<OsStr>,
     {
         let mut cmd = Command::new(&self.tmux.program);
-        cmd.args(["-S", &self.tmux.socket_path]);
+        cmd.args(["-S"]);
+        cmd.args([&self.tmux.socket_path]);
         cmd.args(args);
 
         let mut child = cmd
@@ -171,6 +175,7 @@ impl Runner {
     }
 
     async fn exec(&self, cmd: &RunnerCommand) -> anyhow::Result<()> {
+        let prefix = format!("[{}]", &cmd.name);
         let mut executor = Executor::default();
 
         if let RunnerOpenai::Enabled {
@@ -185,19 +190,56 @@ impl Runner {
         }
 
         if let RunnerPrefix::Enabled = self.prefix {
-            executor.push_out(processors::Prefix::new(format!("[{}]", &cmd.name)));
-            executor.push_err(processors::Prefix::new(format!("[{}]", &cmd.name)));
+            executor.push_out(processors::Prefix::new(prefix.clone()));
+            executor.push_err(processors::Prefix::new(prefix.clone()));
         }
 
-        executor
+        if self.log.spawns {
+            eprintln!("{}", Self::format_spawn(&prefix, &cmd.program, &cmd.args));
+        }
+
+        let status = executor
             .exec(&cmd.program, &cmd.args, &cmd.workdir, cmd.envs.clone())
-            .await
+            .await?;
+
+        if self.log.terminations {
+            eprintln!(
+                "{}",
+                Self::format_termination(&prefix, &cmd.program, &cmd.args, &status)
+            );
+        }
+
+        Ok(())
+    }
+
+    fn format_spawn(prefix: &str, program: &str, args: &[String]) -> String {
+        format!("{} {} {} spawned", prefix, program, shell_words::join(args))
+    }
+
+    fn format_termination(
+        prefix: &str,
+        program: &str,
+        args: &[String],
+        status: &ExitStatus,
+    ) -> String {
+        let status = match status.code() {
+            Some(code) => format!("status code {}", code),
+            None => "an unknown status".to_owned(),
+        };
+        format!(
+            "{} {} {} terminated with {}",
+            prefix,
+            program,
+            shell_words::join(args),
+            status
+        )
     }
 }
 
 #[derive(Debug, Serialize)]
 pub struct RunnerOptions {
     pub commands: Vec<RunnerCommand>,
+    pub log: RunnerLog,
     pub mode: RunnerMode,
     pub openai: RunnerOpenai,
     pub prefix: RunnerPrefix,
@@ -231,6 +273,12 @@ impl RunnerCommand {
 }
 
 #[derive(Debug, Serialize)]
+pub struct RunnerLog {
+    pub spawns: bool,
+    pub terminations: bool,
+}
+
+#[derive(Debug, Serialize)]
 pub enum RunnerMode {
     Sequential,
     Parallel,
@@ -257,5 +305,5 @@ pub struct RunnerTmux {
     pub kill_duplicate_session: bool,
     pub program: String,
     pub session_prefix: String,
-    pub socket_path: String,
+    pub socket_path: PathBuf,
 }

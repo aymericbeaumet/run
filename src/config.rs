@@ -1,6 +1,7 @@
 use crate::runner::{
-    RunnerCommand, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
+    RunnerCommand, RunnerLog, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
 };
+use anyhow::Context;
 use clap::Parser;
 use clap::ValueEnum;
 use merge::Merge;
@@ -23,6 +24,10 @@ pub struct Config {
     #[serde(rename = "env")]
     #[merge(strategy = merge::vec::prepend)] // highest priority is at the end
     pub envs: Vec<String>,
+
+    #[command(flatten)]
+    #[serde(rename = "log")]
+    pub log: Log,
 
     #[arg(
         short,
@@ -103,6 +108,46 @@ pub struct Command {
 
     #[serde(rename = "workdir")]
     pub command_workdir: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
+#[serde(deny_unknown_fields, default)]
+pub struct Log {
+    #[arg(
+        long = "log-enabled",
+        env = "RUN_CLI_LOG_ENABLED",
+        help = "Set to false to disable all logs (does not affect processes outputs)",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "enabled")]
+    pub log_enabled: Option<Option<bool>>,
+
+    #[arg(
+        long = "log-spawns",
+        env = "RUN_CLI_LOG_SPAWNS",
+        help = "Whether the spawn messages should be logged",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "spawns")]
+    pub log_spawns: Option<Option<bool>>,
+
+    #[arg(
+        long = "log-terminations",
+        env = "RUN_CLI_LOG_TERMINATIONS",
+        help = "Whether the termination messages should be logged",
+        // boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "terminations")]
+    pub log_terminations: Option<Option<bool>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
@@ -199,36 +244,66 @@ pub struct Tmux {
         help = "Specify the tmux socket path to use"
     )]
     #[serde(rename = "socket_path")]
-    pub tmux_socket_path: Option<String>,
+    pub tmux_socket_path: Option<PathBuf>,
 }
 
 impl Config {
     pub async fn load<P: AsRef<Path>>(relpath: P) -> anyhow::Result<Config> {
-        // Find the absolute path to the config file
-        let mut config_path = std::env::current_dir()?;
-        config_path.push(relpath);
-        if std::fs::metadata(&config_path)?.is_dir() {
-            config_path.push("run.toml");
-        }
-        let config_path = config_path.canonicalize()?;
+        let config_path = Self::resolve_absolute_config_path(&relpath).with_context(|| {
+            format!(
+                "failed to resolve the absolute config file path from input {}",
+                relpath.as_ref().display()
+            )
+        })?;
 
-        // Load configuration
-        let config_str = tokio::fs::read_to_string(&config_path).await?;
-        let mut config: Config = toml::from_str(&config_str)?;
+        let mut config = Self::load_config_toml(&config_path)
+            .await
+            .with_context(|| {
+                format!(
+                    "failed to load the config file at {}",
+                    config_path.display()
+                )
+            })?;
 
-        // Make sure the workdir is resolved relatively to the config file
-        let mut workdir = config_path.parent().expect("infaillible").to_path_buf();
-        if let Some(w) = config.workdir.as_ref() {
-            workdir.push(w); // use provided workdir if found
-        }
-        let workdir = workdir.canonicalize()?;
-        config.workdir = Some(workdir);
+        config.set_absolute_workdir(&config_path).with_context(|| {
+            format!(
+                "failed to set absolute workdir path from config file {}",
+                config_path.display()
+            )
+        })?;
 
         Ok(config)
     }
 
     pub fn merge(&mut self, other: Self) {
         Merge::merge(self, other);
+    }
+
+    fn resolve_absolute_config_path<P: AsRef<Path>>(relpath: P) -> anyhow::Result<PathBuf> {
+        let mut config_path = std::env::current_dir()?;
+        config_path.push(relpath);
+        if std::fs::metadata(&config_path)?.is_dir() {
+            config_path.push("run.toml");
+        }
+        Ok(config_path.canonicalize()?)
+    }
+
+    async fn load_config_toml<P: AsRef<Path>>(abspath: P) -> anyhow::Result<Config> {
+        let config_str = tokio::fs::read_to_string(&abspath).await?;
+        Ok(toml::from_str(&config_str)?)
+    }
+
+    fn set_absolute_workdir<P: AsRef<Path>>(&mut self, config_path: P) -> anyhow::Result<()> {
+        let mut workdir = config_path
+            .as_ref()
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!("config file has no parent directory"))?
+            .to_owned();
+        if let Some(w) = self.workdir.as_ref() {
+            workdir.push(w); // use provided workdir if found
+        }
+        self.workdir = Some(workdir.canonicalize()?);
+        Ok(())
     }
 }
 
@@ -299,6 +374,12 @@ impl TryFrom<Config> for RunnerOptions {
             })
             .collect::<anyhow::Result<Vec<_>>>()?;
 
+        let log_enabled = resolve_bool(config.log.log_enabled, true);
+        let log = RunnerLog {
+            spawns: log_enabled && resolve_bool(config.log.log_spawns, false),
+            terminations: log_enabled && resolve_bool(config.log.log_terminations, true),
+        };
+
         let mode = match config.mode.unwrap_or(Mode::Sequential) {
             Mode::Sequential => RunnerMode::Sequential,
             Mode::Parallel => RunnerMode::Parallel,
@@ -334,11 +415,12 @@ impl TryFrom<Config> for RunnerOptions {
             socket_path: config
                 .tmux
                 .tmux_socket_path
-                .unwrap_or("/tmp/tmux.run_cli.sock".into()),
+                .unwrap_or_else(|| std::env::temp_dir().join("tmux.run_cli.sock")),
         };
 
         Ok(Self {
             commands,
+            log,
             mode,
             openai,
             prefix,
