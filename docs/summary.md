@@ -11,6 +11,9 @@
 ## User Guide
 
 - [Configuration File](./user-guide/configuration.md)
+- [Go project](./user-guide/go-project.md)
+- [Node.js project](./user-guide/node-project.md)
+- [Rust project](./user-guide/rust-project.md)
 
 ## Misc
 

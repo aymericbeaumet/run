@@ -1,6 +1,10 @@
-# run [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/aymericbeaumet/run/ci.yml?branch=master&logo=github)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/aymericbeaumet/run/ci.yml?branch=master&logo=github)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml) [![Crates.io](https://img.shields.io/crates/v/run-cli)](https://crates.io/crates/run-cli) [![GitHub](https://img.shields.io/github/license/aymericbeaumet/run)](https://github.com/aymericbeaumet/run-cli/blob/master/license.md)
 
-[run](https://github.com/aymericbeaumet/run) is a simple, standalone tool that manages your processes for any project.
+# run
+
+run is a simple, standalone tool that manages your processes for any project.
+
+Learn more at the [run](https://www.run-cli.org) website.
 
 ## Features
 
@@ -29,8 +33,8 @@ For more examples, have a look at the [examples directory](./examples).
 # todo
 ```
 
-Visit [the documentation](https://www.run-cli.org/installation) for an exhaustive list of the installation methods.
+Visit [the install documentation](https://www.run-cli.org/installation) for an exhaustive list of the installation methods.
 
 ## Documentation
 
-For more information about the project, including installation, getting started, and many other topics, have look at: [https://www.run-cli.org](https://www.run-cli.org)
+For more information about the project, including installation, getting started, and many other topics, have look at the [run](https://www.run-cli.org) website.
