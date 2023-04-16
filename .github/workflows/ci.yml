@@ -26,7 +26,7 @@ jobs:
       - name: Restore local binaries cache
         uses: actions/cache@v3
         with:
-          path: [".bin"]
+          path: .bin
           key: ${{ runner.os }}-${{ runner.arch }}-local-binaries
 
       - name: Install Rust
