@@ -1,14 +1,14 @@
 name: ci
 
-on:
-  pull_request:
-    branches: ["**"]
-    paths-ignore: ["**/*.md"]
-  push:
-    branches: ["master"]
-    paths-ignore: ["**/*.md"]
-  schedule:
-    - cron: "00 00 * * *"
+#on:
+#pull_request:
+#branches: ["**"]
+#paths-ignore: ["**/*.md"]
+#push:
+#branches: ["master"]
+#paths-ignore: ["**/*.md"]
+#schedule:
+#- cron: "00 00 * * *"
 
 env:
   CARGO_TERM_COLOR: always

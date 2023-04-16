@@ -1,29 +1,52 @@
 name: release
 
 on:
+  pull_request:
+    branches: ["**"]
   push:
-    tags:
-      - "v*.*.*"
+    branches: ["master"]
+
+#on:
+#  push:
+#    tags:
+#      - "v*.*.*"
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  release-crate:
+  release-github:
+    strategy:
+      matrix:
+        target:
+          # linux
+          - aarch64-unknown-linux-gnu
+          - x86_64-unknown-linux-gnu
+          - i686-unknown-linux-gnu
+          # macos
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+          # windows
+          - x86_64-pc-windows-gnu
+          - i686-pc-windows-gnu
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install -f cross
+      - run: cross build --target {{ matrix.target }}
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-
-      - name: Restore Rust cache
-        uses: Swatinem/rust-cache@v2
-
-      - name: cargo publish
-        run: cargo publish --locked
+  publish-crate:
+    needs: [release-github]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo publish --locked
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  publish-npm:
+    needs: [release-github]
+    runs-on: ubuntu-latest
+    steps:
