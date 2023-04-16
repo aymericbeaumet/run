@@ -23,13 +23,19 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
+      - name: Restore local binaries cache
+        uses: actions/cache@v3
+        with:
+          path: [".bin"]
+          key: ${{ runner.os }}-${{ runner.arch }}-local-binaries
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           components: rustfmt,clippy
 
-      - name: Prepare Rust cache
+      - name: Restore Rust cache
         uses: Swatinem/rust-cache@v2
 
       - name: cargo fmt
