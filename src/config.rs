@@ -116,7 +116,7 @@ pub struct Log {
     #[arg(
         long = "log-enabled",
         env = "RUN_CLI_LOG_ENABLED",
-        help = "Whether the logs should be enabled",
+        help = "Set to false to disable all logs (does not affect processes outputs)",
         // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
@@ -128,7 +128,7 @@ pub struct Log {
     #[arg(
         long = "log-spawns",
         env = "RUN_CLI_LOG_SPAWNS",
-        help = "Whether the spawns should be logged",
+        help = "Whether the spawns messages should be logged",
         // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
@@ -140,7 +140,7 @@ pub struct Log {
     #[arg(
         long = "log-terminations",
         env = "RUN_CLI_LOG_TERMINATIONS",
-        help = "Whether the terminations should be logged",
+        help = "Whether the terminations messages should be logged",
         // boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
