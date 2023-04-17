@@ -22,10 +22,10 @@ cargo install -f --git https://github.com/aymericbeaumet/run
 
 ## Using npm
 
-[![npm](https://img.shields.io/npm/v/@run-cli/run-cli)](https://www.npmjs.com/package/@run-cli/run-cli)
+[![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
 
 ```bash
-npm install -D @run-cli/run-cli
-yarn add -D @run-cli/run-cli
-pnpm add -D @run-cli/run-cli
+npm install -D @run-cli/run
+yarn add -D @run-cli/run
+pnpm add -D @run-cli/run
 ```
