@@ -20,6 +20,7 @@
     "run": "./bin/run"
   },
   "scripts": {
+    "prepack": "cp ../../readme.md ../../license.md .",
     "postinstall": "node ./postinstall.js"
   },
   "dependencies": {
