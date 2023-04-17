@@ -27,7 +27,11 @@ module.exports = class Wrapper {
         );
       }
       res.pipe(fileStream).on("finish", () => {
-        console.log("Downloaded", filepath + suffix);
+        fs.rm(filepath, { force: true }, () => {
+          fs.rename(filepath + suffix, filepath, () => {
+            console.log("Done!");
+          });
+        });
       });
     });
   };
