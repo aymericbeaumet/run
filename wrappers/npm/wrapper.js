@@ -83,7 +83,6 @@ module.exports = class Wrapper {
   }
 
   static _extractArchive(filepath, cb) {
-    console.log({ filepath });
     if (filepath.endsWith(".tar.gz") || filepath.endsWith(".tgz")) {
       Wrapper._tempdir((err, dir) => {
         if (err) {
