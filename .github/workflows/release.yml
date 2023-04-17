@@ -84,6 +84,7 @@ jobs:
     needs: [build-release, publish-crate, publish-npm]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - run: gh release edit "${GITHUB_REF#refs/tags/}" --draft=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
