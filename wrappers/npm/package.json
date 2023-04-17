@@ -21,5 +21,9 @@
   },
   "scripts": {
     "postinstall": "node ./install.js"
+  },
+  "dependencies": {
+    "adm-zip": "0.5.10",
+    "tar": "6.1.13"
   }
 }

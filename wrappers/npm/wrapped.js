@@ -1,10 +1,10 @@
 const Wrapper = require("./wrapper");
-const { repository, version } = require("./package.json");
+const { repository, version, bin } = require("./package.json");
 
 const assetsPrefix = `${repository.url}/releases/download/v0.0.12`; // TODO: $version
 
 // https://github.com/aymericbeaumet/run/blob/master/.github/workflows/release.yml
-module.exports = new Wrapper([
+module.exports = new Wrapper(Object.keys(bin)[0], [
   // amd64
   {
     type: "Linux",
