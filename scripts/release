@@ -12,7 +12,7 @@ bump="$1"
 
 # make sure we are on the master branch
 branch="$(git rev-parse --abbrev-ref HEAD)"
-if [ "$branch" != master ]; then
+if [ "$SKIP_MASTER_CHECK" = "" ] && [ "$branch" != master ]; then
 	echo "error: not on master branch" >&2
 	exit 4
 fi
