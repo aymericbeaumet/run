@@ -34,10 +34,8 @@ npm version "$version"
 git add package.json
 popd
 
-# commit
+# commit, tag, and push
 tag="v$version"
 git commit -m "Release $tag"
-
-# tag and push
 git tag -a "$tag" -m "Release $tag"
 git push --atomic origin "$branch" "$tag"
