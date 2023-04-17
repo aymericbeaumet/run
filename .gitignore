@@ -1,3 +1,4 @@
 .bin/
+downloads/
 node_modules/
 target/
