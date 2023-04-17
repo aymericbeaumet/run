@@ -10,12 +10,6 @@ if [ $# -ne 1 ] || [ "$1" = "" ]; then
 fi
 bump="$1"
 
-# make sure we have all the required tools
-if ! which cargo cargo-set-version npm; then
-	echo "error: missing binaries" >&2
-	exit 3
-fi
-
 # make sure we are on the master branch
 branch="$(git rev-parse --abbrev-ref HEAD)"
 if [ "$branch" != master ]; then
