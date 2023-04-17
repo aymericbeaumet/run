@@ -1,6 +1,6 @@
 [package]
 name = "run-cli"
-version = "0.0.20"
+version = "0.0.21"
 description = "A CLI to help you run any command"
 authors = ["Aymeric Beaumet <hi@aymericbeaumet.com> (https://aymericbeaumet.com)"]
 keywords = ["cli", "command-line", "developer-tools", "task-runner", "tools"]
