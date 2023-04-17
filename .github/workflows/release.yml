@@ -54,10 +54,27 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   publish-crate:
+    needs: [build-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo publish --locked
+      - name: cargo publish
+        run: cargo publish --locked
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  publish-npm:
+    needs: [build-release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "lts"
+          registry-url: "https://registry.npmjs.org"
+      - name: npm publish
+        run: npm publish --access=public
+        working-directory: ./wrappers/npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,10 +1,10 @@
 #!/bin/bash
 
 set -e
+cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." || exit 1
-
-if [ $# -ne 1 ]; then
+# check usage
+if [ $# -ne 1 ] || [ "$1" = "" ]; then
 	echo "usage: $0 <major|minor|patch>" >&2
 	exit 2
 fi
@@ -17,11 +17,27 @@ if [ "$branch" != master ]; then
 	exit 3
 fi
 
-# bump, commit, tag, and push
+# make sure the repository is clean
+if [ "$(git status --porcelain)" != "" ]; then
+	echo "error: repository is dirty" >&2
+	exit 4
+fi
+
+# bump cargo version
 cargo set-version --bump "$bump"
 version="$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
-tag="v$version"
 git add Cargo.toml Cargo.lock
+
+# bump npm version
+pushd ./wrappers/npm
+npm version "$version"
+git add package.json
+popd
+
+# commit
+tag="v$version"
 git commit -m "Release $tag"
+
+# tag and push
 git tag -a "$tag" -m "Release $tag"
 git push --atomic origin "$branch" "$tag"
