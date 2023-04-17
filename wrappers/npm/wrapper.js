@@ -65,7 +65,7 @@ module.exports = class Wrapper {
         res.statusCode < 400 &&
         res.headers.location
       ) {
-        res.on("data", () => {});
+        res.on("data", () => {}); // consume all data or the script hangs
         res.on("end", () => Wrapper.httpsGet(res.headers.location, cb));
       } else {
         cb(res);
