@@ -4,7 +4,7 @@
 
 _todo_
 
-## Using the Rust toolchain
+## Using cargo
 
 [![crates.io](https://img.shields.io/crates/v/run-cli)](https://crates.io/crates/run-cli)
 
@@ -18,7 +18,7 @@ cargo install -f run-cli
 cargo install -f --git https://github.com/aymericbeaumet/run
 ```
 
-## Using npm
+## Using npm, yarn, or pnpm
 
 [![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
 
