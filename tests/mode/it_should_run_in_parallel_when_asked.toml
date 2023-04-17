@@ -6,4 +6,4 @@ cmd = ["coreutils", "sleep", "0.2s"]
 
 [[run]]
 name = "finish first"
-cmd = ["coreutils", "sleep", "0.1s"]
+cmd = ["coreutils", "echo", "first"]
