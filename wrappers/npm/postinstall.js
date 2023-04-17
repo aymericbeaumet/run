@@ -1,9 +1,10 @@
 const Wrapper = require("./wrapper");
+const path = require("path");
 const pkg = require("./package.json");
 
 const assetsPrefix = `${pkg.repository.url}/releases/download/v0.0.12`; // TODO: $pkg.version
 const bin_name = Object.keys(pkg.bin)[0];
-const bin_dest = path.join(__dirname, pkg.bin[BIN_NAME]);
+const bin_dest = path.join(__dirname, pkg.bin[bin_name]);
 
 const wrapper = new Wrapper(bin_name, bin_dest, [
   // amd64

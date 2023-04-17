@@ -8,20 +8,17 @@ const Zip = require("adm-zip");
 
 // TODO: move this class to its own package and publish to npm
 module.exports = class Wrapper {
-  constructor(name, dest, platforms) {
+  constructor(name, destFile, platforms) {
     const platform = Wrapper._platform(platforms);
     const nameWithExt = platform.type === "Windows_NT" ? `${name}.exe` : name;
 
     this.url = new URL(platform.url);
-    this.downloadsDir = path.join(__dirname, "downloads");
-    this.destFile = dest;
+    this.name = nameWithExt;
+    this.destFile = destFile;
   }
 
   install = () => {
-    const archiveName = this.url.toString().replace(/[^a-zA-Z0-9.]/g, "_");
-    const archivePath = path.join(this.downloadsDir, `${archiveName}`);
-
-    Wrapper._downloadArchive(this.url, archivePath, (err) => {
+    Wrapper._downloadArchive(this.url, (err, archivePath) => {
       if (err) {
         throw err;
       }
@@ -30,13 +27,13 @@ module.exports = class Wrapper {
           throw err;
         }
         Wrapper._installBinary(
-          path.join(archiveDir, this.binName),
-          this.binPath,
+          path.join(archiveDir, this.name),
+          this.destFile,
           (err) => {
             if (err) {
               throw err;
             }
-            console.log(`Binary successfully installed: ${this.binPath}`);
+            console.log(`Binary successfully installed: ${this.destFile}`);
           }
         );
       });
@@ -46,25 +43,23 @@ module.exports = class Wrapper {
   static _installBinary(archiveBinPath, installBinPath, cb) {
     const parentDir = path.dirname(installBinPath);
 
-    fs.rm(parentDir, { recursive: true }, (err) => {
+    fs.mkdir(path.dirname(installBinPath), { recursive: true }, (err) => {
       if (err) {
         return cb(err);
       }
-      fs.mkdir(parentDir, { recursive: true }, (err) => {
-        if (err) {
-          return cb(err);
-        }
-        fs.rename(archiveBinPath, installBinPath, cb);
-      });
+      fs.rename(archiveBinPath, installBinPath, cb);
     });
   }
 
-  static _downloadArchive(url, filepath, cb) {
+  static _downloadArchive(url, cb) {
     Wrapper._tempdir((err, dir) => {
       if (err) {
         return cb(err);
       }
-      const outfile = path.join(dir, "archive");
+      const outfile = path.join(
+        dir,
+        url.toString().replace(/[^a-zA-Z0-9.]/g, "_")
+      );
 
       Wrapper._httpsGet(url, (res) => {
         if (res.statusCode !== 200) {
@@ -81,15 +76,14 @@ module.exports = class Wrapper {
             return cb(err);
           })
           .on("finish", () => {
-            fs.rename(outfile, filepath, (err) => {
-              return cb(err);
-            });
+            return cb(err, outfile);
           });
       });
     });
   }
 
   static _extractArchive(filepath, cb) {
+    console.log({ filepath });
     if (filepath.endsWith(".tar.gz") || filepath.endsWith(".tgz")) {
       Wrapper._tempdir((err, dir) => {
         if (err) {
