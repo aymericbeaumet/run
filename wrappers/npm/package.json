@@ -17,7 +17,7 @@
   },
   "homepage": "https://www.run-cli.org",
   "bin": {
-    "run": "./run"
+    "run": "./bin/run"
   },
   "scripts": {
     "postinstall": "node ./postinstall.js"
