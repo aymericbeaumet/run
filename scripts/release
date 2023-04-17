@@ -35,7 +35,6 @@ git add package.json package-lock.json
 popd
 
 # commit, tag, and push
-tag="v$version"
-git commit -m "Release $tag"
-git tag -a "$tag" -m "Release $tag"
-git push --atomic origin "$branch" "$tag"
+git commit -m "Release $version"
+git tag -a "$version" -m "Release $version"
+git push --atomic origin "$branch" "$version"
