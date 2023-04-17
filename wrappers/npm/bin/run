@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 throw new Error(
-  "This file should have been overriden by ./scripts/postinstall.js. Open an issue: https://github.com/aymericbeaumet/run/issues"
+  "This file should have been overriden during the install process. Open an issue: https://github.com/aymericbeaumet/run/issues"
 );
