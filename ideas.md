@@ -14,3 +14,4 @@
 - Add support for secret management (vault, aws secrets, etc)
 - Add support for micro-services discovery (k8s, consul, docker, etc)
 - Add a literate mode that supports loading .toml.md
+- Output dependency graph in dot format

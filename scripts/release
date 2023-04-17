@@ -31,7 +31,7 @@ git add Cargo.toml Cargo.lock
 # bump npm version
 pushd ./wrappers/npm
 npm version "$version"
-git add package.json
+git add package.json package-lock.json
 popd
 
 # commit, tag, and push
