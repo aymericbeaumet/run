@@ -1,5 +1,5 @@
 {
-  "name": "@run-cli/run-cli",
+  "name": "@run-cli/run",
   "version": "0.0.14",
   "description": "A CLI to help you run any command",
   "author": "Aymeric Beaumet <hi@aymericbeaumet.com> (https://aymericbeaumet.com)",
