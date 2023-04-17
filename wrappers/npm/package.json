@@ -1,0 +1,13 @@
+{
+  "name": "@run-cli/run-cli",
+  "version": "0.0.12",
+  "description": "A CLI to help you run any command",
+  "author": "Aymeric Beaumet <hi@aymericbeaumet.com> (https://aymericbeaumet.com)",
+  "keywords": ["cli", "command-line", "developer-tools", "task-runner", "tools"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aymericbeaumet/run-cli.git"
+  },
+  "homepage": "https://www.run-cli.org"
+}
