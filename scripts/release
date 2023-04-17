@@ -1,27 +1,41 @@
 #!/bin/bash
 
 set -e
+cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." || exit 1
-
-if [ $# -ne 1 ]; then
+# check usage
+if [ $# -ne 1 ] || [ "$1" = "" ]; then
 	echo "usage: $0 <major|minor|patch>" >&2
-	exit 2
+	exit 1
 fi
 bump="$1"
 
 # make sure we are on the master branch
 branch="$(git rev-parse --abbrev-ref HEAD)"
-if [ "$branch" != master ]; then
+if [ "$SKIP_MASTER_CHECK" != "true" ] && [ "$branch" != master ]; then
 	echo "error: not on master branch" >&2
+	exit 2
+fi
+
+# make sure the repository is clean
+if [ "$(git status --porcelain)" != "" ]; then
+	echo "error: repository is dirty" >&2
 	exit 3
 fi
 
-# bump, commit, tag, and push
+# bump cargo version
 cargo set-version --bump "$bump"
 version="$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
-tag="v$version"
 git add Cargo.toml Cargo.lock
+
+# bump npm version
+pushd ./wrappers/npm
+npm version "$version"
+git add package.json package-lock.json
+popd
+
+# commit, tag, and push
+tag="v$version"
 git commit -m "Release $tag"
 git tag -a "$tag" -m "Release $tag"
 git push --atomic origin "$branch" "$tag"

@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+throw new Error(
+  "This file should have been overriden during the install process. Open an issue: https://github.com/aymericbeaumet/run/issues"
+);

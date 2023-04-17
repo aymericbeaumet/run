@@ -12,7 +12,7 @@ You can pass the commands directly for simple tasks:
     $ run 'echo hello' 'ls /tmp'
 
 Or you can use a config file for more complex setups:
-    $ run -f development.toml
+    $ run -f dev.toml
 
 For more information: https://www.run-cli.org"
 )]
