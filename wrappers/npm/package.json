@@ -17,10 +17,10 @@
   },
   "homepage": "https://www.run-cli.org",
   "bin": {
-    "run": "./exec.js"
+    "run": "./run"
   },
   "scripts": {
-    "postinstall": "node ./install.js"
+    "postinstall": "node ./postinstall.js"
   },
   "dependencies": {
     "adm-zip": "0.5.10",

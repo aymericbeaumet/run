@@ -8,15 +8,13 @@ const Zip = require("adm-zip");
 
 // TODO: move this class to its own package and publish to npm
 module.exports = class Wrapper {
-  constructor(name, platforms) {
+  constructor(name, dest, platforms) {
     const platform = Wrapper._platform(platforms);
     const nameWithExt = platform.type === "Windows_NT" ? `${name}.exe` : name;
 
     this.url = new URL(platform.url);
     this.downloadsDir = path.join(__dirname, "downloads");
-    this.installDir = path.join(__dirname, "bin");
-    this.binName = nameWithExt;
-    this.binPath = path.join(this.installDir, this.binName);
+    this.destFile = dest;
   }
 
   install = () => {
@@ -43,14 +41,6 @@ module.exports = class Wrapper {
         );
       });
     });
-  };
-
-  exec = () => {
-    const result = childProcess.spawnSync(this.binPath, process.argv.slice(2), {
-      cwd: process.cwd(),
-      stdio: "inherit",
-    });
-    process.exit(result.status);
   };
 
   static _installBinary(archiveBinPath, installBinPath, cb) {

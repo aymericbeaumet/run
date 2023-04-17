@@ -1,10 +1,11 @@
 const Wrapper = require("./wrapper");
-const { repository, version, bin } = require("./package.json");
+const pkg = require("./package.json");
 
-const assetsPrefix = `${repository.url}/releases/download/v0.0.12`; // TODO: $version
+const assetsPrefix = `${pkg.repository.url}/releases/download/v0.0.12`; // TODO: $pkg.version
+const bin_name = Object.keys(pkg.bin)[0];
+const bin_dest = path.join(__dirname, pkg.bin[BIN_NAME]);
 
-// https://github.com/aymericbeaumet/run/blob/master/.github/workflows/release.yml
-module.exports = new Wrapper(Object.keys(bin)[0], [
+const wrapper = new Wrapper(bin_name, bin_dest, [
   // amd64
   {
     type: "Linux",
@@ -49,3 +50,5 @@ module.exports = new Wrapper(Object.keys(bin)[0], [
     url: `${assetsPrefix}/run-i686-pc-windows-msvc.zip`,
   },
 ]);
+
+wrapper.install();
