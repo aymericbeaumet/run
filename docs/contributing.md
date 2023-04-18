@@ -11,15 +11,19 @@ Project roadmap is managed on [GitHub](https://github.com/users/aymericbeaumet/p
 
 ## Development
 
-So far the development only happened on Unix systems. The [Rust toolchain](https://www.rust-lang.org/tools/install) is mandatory. Here are some useful commands:
+- so far the development only happened on Unix systems
+- the [Rust toolchain](https://www.rust-lang.org/tools/install) is mandatory
+- [watchexec](https://github.com/watchexec/watchexec) is very handy to watch for changes and re-run the code or the tests.
+
+Here are some useful commands:
 
 ```bash
 cargo run                    # execute `run.toml` with the Run binary
 cargo run -- 'echo hello'    # execute a command with the Run binary
 cargo run -- --help          # print help
 cargo run -- --version       # print version
-cargo build                  # build a dev binary
-cargo build --release        # build a release binary
+cargo build                  # build a debug binary in `./target/debug/run`
+cargo build --release        # build a release binary in `./target/release/run`
 cargo test                   # run tests
 cargo fmt                    # format the codebase
 cargo fmt --check            # check the codebase format
@@ -27,5 +31,3 @@ cargo clippy                 # lint the codebase
 cargo upgrade --incompatible # bump dependencies (https://crates.io/crates/cargo-edit)
 ./scripts/release patch      # tag a new release
 ```
-
-[watchexec](https://github.com/watchexec/watchexec) is very handy to watch for changes and re-run the code or the tests.
