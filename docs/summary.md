@@ -5,8 +5,8 @@
 ## Getting Started
 
 - [Installation](./installation.md)
-- [First steps](./getting-started/using-the-shell.md)
-- [Using config file](./getting-started/using-config-file.md)
+- [First steps](./getting-started/first-steps.md)
+- [Using config file](./getting-started/real-world-example.md)
 
 ## User Guide
 

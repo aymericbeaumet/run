@@ -1,5 +1,3 @@
-# Configuration
-
 How can you configure `run`?
 
 ## Precedence

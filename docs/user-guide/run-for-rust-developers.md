@@ -1,1 +1,3 @@
-# Rust Project
+```bash
+run 'cargo test' 'cargo run'
+```

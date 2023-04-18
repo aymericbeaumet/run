@@ -1,8 +1,11 @@
-# Contributing
+## How can you help with the project?
 
-- Project is managed here: [https://github.com/users/aymericbeaumet/projects/1].
-- Search for existing issues that you might want to address.
-- Always create [an issue](https://github.com/aymericbeaumet/run/issues/new) or [a discussion](https://github.com/aymericbeaumet/run/discussions/new/choose) before starting coding on something new.
+- project roadmap is managed here: [https://github.com/users/aymericbeaumet/projects/1].
+- create [an issue](https://github.com/aymericbeaumet/run/issues) when you face a problem.
+- create [a discussion](https://github.com/aymericbeaumet/run/discussions) when you have a question.
+- search for existing issues that you might want to address.
+
+## Development
 
 ```bash
 cargo run -- --help          # read help
