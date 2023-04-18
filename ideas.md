@@ -18,3 +18,8 @@
 - Release checksum
 - Homebrew install
 - Add native support for a local .bin directory
+
+[production-ready]
+
+- Add systemd integration/support/compatibility
+- Add reverse-proxy support for 0 downtime
