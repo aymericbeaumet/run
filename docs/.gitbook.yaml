@@ -3,10 +3,19 @@ structure:
   summary: summary.md
 
 redirects:
-  dl: installation.md
-  download: installation.md
-  downloads: installation.md
-  get: installation.md
-  install: installation.md
-  instal: installation.md
-  instalation: installation.md
+  # ./readme.md
+  how: ./readme.md
+  what: ./readme.md
+  why: ./readme.md
+  # ./getting-started/first-steps.md
+  begin: ./getting-started/first-steps.md
+  learn: ./getting-started/first-steps.md
+  start: ./getting-started/first-steps.md
+  # ./installation.md
+  dl: ./installation.md
+  download: ./installation.md
+  downloads: ./installation.md
+  get: ./installation.md
+  instal: ./installation.md
+  instalation: ./installation.md
+  install: ./installation.md
