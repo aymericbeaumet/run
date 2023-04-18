@@ -12,11 +12,17 @@
 ## User Guide
 
 - [Introduction](./user-guide/introduction.md)
-- [CLI & Env](./user-guide/cli-and-env.md)
 - [Runfile](./user-guide/runfile.md)
-- [Go Developers](./user-guide/run-for-go-developers.md)
-- [Node.js Developers](./user-guide/run-for-nodejs-developers.md)
-- [Rust Developers](./user-guide/run-for-rust-developers.md)
+- [Tags filtering](./user-guide/tags.md)
+- [Dependencies](./user-guide/dependencies.md)
+- [Watch mode](./user-guide/watch-mode.md)
+
+## Examples
+
+- [Go Project](./examples/go-project/run.toml.md)
+- [Node.js Project](./examples/nodejs-project/run.toml.md)
+- [Rust Project](./examples/rust-project/run.toml.md)
+- [Tmux mode](./examples/tmux-mode/run.toml.md)
 
 ## Misc
 

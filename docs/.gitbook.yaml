@@ -1,14 +1,21 @@
-root: .
-
 structure:
   readme: readme.md
   summary: summary.md
 
 redirects:
-  dl: installation
-  download: installation
-  downloads: installation
-  get: installation
-  install: installation
-  instal: installation
-  instalation: installation
+  # ./readme.md
+  how: ./readme.md
+  what: ./readme.md
+  why: ./readme.md
+  # ./getting-started/first-steps.md
+  begin: ./getting-started/first-steps.md
+  learn: ./getting-started/first-steps.md
+  start: ./getting-started/first-steps.md
+  # ./installation.md
+  dl: ./installation.md
+  download: ./installation.md
+  downloads: ./installation.md
+  get: ./installation.md
+  instal: ./installation.md
+  instalation: ./installation.md
+  install: ./installation.md

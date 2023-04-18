@@ -28,8 +28,8 @@ cargo set-version --bump "$bump"
 version="$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
 git add Cargo.toml Cargo.lock
 
-# bump npm version
-pushd ./wrappers/npm
+# bump node wrapper version
+pushd ./wrappers/node
 npm version "$version"
 git add package.json package-lock.json
 popd
