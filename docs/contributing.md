@@ -12,7 +12,8 @@ Project roadmap is managed on [GitHub](https://github.com/users/aymericbeaumet/p
 ## Development
 
 ```bash
-cargo run -- --help          # read help
+cargo run -- --help          # print help
 cargo test                   # run tests
 cargo upgrade --incompatible # bump dependencies
+./scripts/release patch      # tag a new release
 ```
