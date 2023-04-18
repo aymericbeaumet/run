@@ -13,7 +13,7 @@
 - [Configuration File](./user-guide/configuration.md)
 - [Go developers](./user-guide/run-for-go-developers.md)
 - [Node.js developers](./user-guide/run-for-nodejs-developers.md)
-- [Rust developers](./user-guide/run-for-rust-developers.md.md)
+- [Rust developers](./user-guide/run-for-rust-developers.md)
 
 ## Misc
 
