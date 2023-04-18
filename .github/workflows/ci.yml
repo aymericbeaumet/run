@@ -5,10 +5,10 @@ permissions:
 
 on:
   pull_request:
-    paths-ignore: ["**/*.md"]
+    paths-ignore: ["docs/**", "**/*.md"]
     branches: ["master"]
   push:
-    paths-ignore: ["**/*.md"]
+    paths-ignore: ["docs/**", "**/*.md"]
     branches: ["master"]
     tags: ["v*.*.*"]
   schedule:

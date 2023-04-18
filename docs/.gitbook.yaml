@@ -1,4 +1,14 @@
 root: .
+
 structure:
   readme: readme.md
   summary: summary.md
+
+redirects:
+  dl: installation
+  download: installation
+  downloads: installation
+  get: installation
+  install: installation
+  instal: installation
+  instalation: installation
