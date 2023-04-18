@@ -1,21 +1,21 @@
 # Table of contents
 
-- [Home](readme.md)
-- [Installation](installation.md)
+- [Home](./readme)
+- [Installation](./installation)
 
 ## Getting Started
 
-- [Using the shell](./getting-started/using-the-shell.md)
-- [Using config file](./getting-started/using-config-file.md)
+- [Using the shell](./getting-started/using-the-shell)
+- [Using config file](./getting-started/using-config-file)
 
 ## User Guide
 
-- [Configuration File](./user-guide/configuration.md)
-- [Go project](./user-guide/go-project.md)
-- [Node.js project](./user-guide/node-project.md)
-- [Rust project](./user-guide/rust-project.md)
+- [Configuration File](./user-guide/configuration)
+- [Go developers](./user-guide/go-project)
+- [Node.js developers](./user-guide/node-project)
+- [Rust developers](./user-guide/rust-project)
 
 ## Misc
 
-- [FAQ](./faq.md)
-- [Contributing](./contributing.md)
+- [FAQ](./faq)
+- [Contributing](./contributing)
