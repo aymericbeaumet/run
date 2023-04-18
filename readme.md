@@ -10,4 +10,4 @@ Learn more at the [Run](https://run-cli.org) website.
 
 Run is a simple, standalone tool that manages your processes for any project.
 
-Learn more at the [run](https://run-cli.org) website.
+Learn more at the [Run](https://run-cli.org) website.
