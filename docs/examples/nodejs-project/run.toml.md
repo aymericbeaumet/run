@@ -1,3 +1,7 @@
+> This example is using _literate configuration. [Learn more](../../user-guide/runfile.md#literate-runfiles).
+
+This example shows how you can run redis and your node server in tmux mode.
+
 ```toml
 mode = "tmux"
 

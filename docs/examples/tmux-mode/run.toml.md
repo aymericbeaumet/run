@@ -1,3 +1,5 @@
+> This example is using _literate configuration. [Learn more](../../user-guide/runfile.md#literate-runfiles).
+
 This run starts three commands in individual panels grouped under a unique tmux window.
 
 ```toml

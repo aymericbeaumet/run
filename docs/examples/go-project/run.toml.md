@@ -1,13 +1,13 @@
 > This example is using _literate configuration. [Learn more](../../user-guide/runfile.md#literate-runfiles).
 
-This example shows how you can run your tests and your program in tmux mode.
+This example shows how you can run your Go tests and program in tmux mode.
 
 ```toml
 mode = "tmux"
 
 [[run]]
-cmd = ["cargo", "test"]
+cmd = ["go", "test", "./..."]
 
 [[run]]
-cmd = ["cargo", "run"]
+cmd = ["go", "run", "."]
 ```
