@@ -19,10 +19,10 @@
 
 ## Examples
 
-- [Mode tmux](./examples/mode-tmux/run.toml.md)
 - [Go Project](./examples/go-project/run.toml.md)
 - [Node.js Project](./examples/nodejs-project/run.toml.md)
 - [Rust Project](./examples/rust-project/run.toml.md)
+- [Tmux mode](./examples/tmux-mode/run.toml.md)
 
 ## Misc
 
