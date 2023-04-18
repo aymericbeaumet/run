@@ -1,6 +1,6 @@
-# This run starts three commands in individual panels grouped under a
-# unique tmux window.
+This run starts three commands in individual panels grouped under a unique tmux window.
 
+```toml
 mode = "tmux"
 
 [[run]]
@@ -15,3 +15,4 @@ cmd = ["uname", "-a"]
 [[run]]
 name = "df"
 cmd = ["df", "-h"]
+```
