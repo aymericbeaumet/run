@@ -1,6 +1,7 @@
 use crate::runner::{
     RunnerCommand, RunnerLog, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
 };
+use anyhow::bail;
 use anyhow::Context;
 use clap::Parser;
 use clap::ValueEnum;
@@ -256,14 +257,30 @@ impl Config {
             )
         })?;
 
-        let mut config = Self::load_config_toml(&config_path)
-            .await
-            .with_context(|| {
-                format!(
-                    "failed to load the config file at {}",
-                    config_path.display()
-                )
-            })?;
+        // We have to do this to check the complete extension (e.g. ".toml.md")
+        let config_path_str = config_path.to_string_lossy().to_string();
+
+        let mut config = if config_path_str.ends_with(".toml") {
+            Self::load_config_toml(&config_path)
+                .await
+                .with_context(|| {
+                    format!(
+                        "failed to load the config file at {}",
+                        config_path.display()
+                    )
+                })?
+        } else if config_path_str.ends_with(".toml.md") {
+            Self::load_config_toml_literate(&config_path)
+                .await
+                .with_context(|| {
+                    format!(
+                        "failed to load the literate config file at {}",
+                        config_path.display()
+                    )
+                })?
+        } else {
+            bail!("unsupported config file format");
+        };
 
         config.set_absolute_workdir(&config_path).with_context(|| {
             format!(
@@ -291,6 +308,35 @@ impl Config {
     async fn load_config_toml<P: AsRef<Path>>(abspath: P) -> anyhow::Result<Config> {
         let config_str = tokio::fs::read_to_string(&abspath).await?;
         Ok(toml::from_str(&config_str)?)
+    }
+
+    async fn load_config_toml_literate<P: AsRef<Path>>(abspath: P) -> anyhow::Result<Config> {
+        use pulldown_cmark::{CodeBlockKind, Event, Tag};
+
+        let config_str = tokio::fs::read_to_string(&abspath).await?;
+        let parser = pulldown_cmark::Parser::new(&config_str);
+
+        let mut toml_str = String::new();
+        let mut in_code_block = false;
+        for event in parser {
+            match event {
+                Event::Start(Tag::CodeBlock(code_block)) => match code_block {
+                    CodeBlockKind::Fenced(code) if code == "toml".into() => {
+                        in_code_block = true;
+                    }
+                    _ => bail!("code block must start with ```toml (indented is not allowed)"),
+                },
+                Event::Text(text) if in_code_block => {
+                    toml_str.push_str(&text);
+                }
+                Event::End(Tag::CodeBlock(_)) => {
+                    in_code_block = false;
+                }
+                _ => {}
+            }
+        }
+
+        Ok(toml::from_str(&toml_str)?)
     }
 
     fn set_absolute_workdir<P: AsRef<Path>>(&mut self, config_path: P) -> anyhow::Result<()> {
