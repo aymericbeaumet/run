@@ -1,4 +1,15 @@
 root: .
+
 structure:
   readme: readme.md
   summary: summary.md
+
+redirects:
+  dl: getting-started/installation
+  download: getting-started/installation
+  downloads: getting-started/installation
+  get: getting-started/installation
+  install: getting-started/installation
+  instal: getting-started/installation
+  installation: getting-started/installation
+  instalation: getting-started/installation
