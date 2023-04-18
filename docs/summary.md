@@ -6,11 +6,13 @@
 
 - [Installation](./installation.md)
 - [First steps](./getting-started/first-steps.md)
-- [Using config file](./getting-started/real-world-example.md)
+- [Concrete use case](./getting-started/concrete-use-case.md)
+- [Moving forward](./getting-started/moving-forward.md)
 
 ## User Guide
 
-- [Configuration File](./user-guide/configuration.md)
+- [Intro](./user-guide/introduction.md)
+- [Configuration](./user-guide/configuration.md)
 - [Go developers](./user-guide/run-for-go-developers.md)
 - [Node.js developers](./user-guide/run-for-nodejs-developers.md)
 - [Rust developers](./user-guide/run-for-rust-developers.md)
