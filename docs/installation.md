@@ -16,7 +16,7 @@ cargo install -f run-cli
 cargo install -f --git https://github.com/aymericbeaumet/run
 ```
 
-Once installed, have a look at the [Rust Developer Guide](./user-guide/rust-developer.md).
+Once installed, have a look at the [Rust Developer Guide](./user-guide/run-for-rust-developers.md).
 
 ## Using Node.js [![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
 
@@ -29,4 +29,4 @@ yarn add -D @run-cli/run
 pnpm add -D @run-cli/run
 ```
 
-Once installed, have a look at the [Node.js Developer Guide](./user-guide/node-developer.md).
+Once installed, have a look at the [Node.js Developer Guide](./user-guide/run-for-nodejs-developers.md).
