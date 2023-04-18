@@ -13,6 +13,7 @@
 
 - [Introduction](./user-guide/introduction.md)
 - [Configuration](./user-guide/configuration.md)
+- [Literate](./user-guide/literate.md)
 - [Go Developers](./user-guide/run-for-go-developers.md)
 - [Node.js Developers](./user-guide/run-for-nodejs-developers.md)
 - [Rust Developers](./user-guide/run-for-rust-developers.md)

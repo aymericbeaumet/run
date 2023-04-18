@@ -15,7 +15,7 @@ lazy_static::lazy_static! {
 async fn run_examples_checks() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
-    for (test_name, file) in list_files(["examples/*/run.toml"]) {
+    for (test_name, file) in list_files(["examples/*/run.toml", "examples/*/run.toml.md"]) {
         set.spawn(async move {
             example_check(&file)
                 .await
@@ -36,7 +36,7 @@ async fn run_examples_checks() -> anyhow::Result<()> {
 async fn run_e2e_tests() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
-    for (test_name, file) in list_files(["tests/**/*.toml"]) {
+    for (test_name, file) in list_files(["tests/**/*.toml", "tests/**/*.toml.md"]) {
         set.spawn(async move {
             e2e_test(&file)
                 .await

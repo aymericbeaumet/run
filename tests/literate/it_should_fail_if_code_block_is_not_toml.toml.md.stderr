@@ -1,0 +1,4 @@
+Error: failed to load the literate config file at $CARGO_MANIFEST_DIR/tests/literate/it_should_fail_if_code_block_is_not_toml.toml.md
+
+Caused by:
+    code block must start with ```toml (indented is not allowed)
