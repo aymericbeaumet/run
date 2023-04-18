@@ -11,8 +11,7 @@ Project roadmap is managed on [GitHub](https://github.com/users/aymericbeaumet/p
 
 ## Development
 
-- mandatory: [Rust toolchain](https://www.rust-lang.org/tools/install)
-- recommended: [watchexec](https://github.com/watchexec/watchexec) (very handy to watch for changes and re-run the code or the tests)
+The [Rust toolchain](https://www.rust-lang.org/tools/install) has to be installed to work on this project. It is recommended to install [watchexec](https://github.com/watchexec/watchexec) as it is very handy to watch for changes and re-run the code or the tests.
 
 Here are some useful commands:
 
