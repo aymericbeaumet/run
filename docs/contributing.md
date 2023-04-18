@@ -28,6 +28,6 @@ cargo test                   # run tests
 cargo fmt                    # format the codebase
 cargo fmt --check            # check the codebase format
 cargo clippy                 # lint the codebase
-cargo upgrade --incompatible # bump dependencies (https://crates.io/crates/cargo-edit)
+cargo upgrade --incompatible # upgrade dependencies (https://crates.io/crates/cargo-edit)
 ./scripts/release patch      # tag a new release
 ```
