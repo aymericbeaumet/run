@@ -18,11 +18,11 @@ cmd = ["npm", "run", "dev"]
 
 Run supports literate Runfiles with the extension `.toml.md`. This allows to embed TOML code blocks within markdown documents. This is convenient to document workflows, and is working well with generated docs.
 
-You have to use the fence notation and specify the _toml_ language: `\`\`\`toml`. The indented notation is not allowed.
+You have to use the fence notation and specify the _toml_ language: ` ```toml `. The indented notation is not allowed.
 
 All the TOML code blocks are concatenated, and are then being parsed as a single entity.
 
-### Example
+### Example: `run.toml.md`
 
 ````markdown
 # Development
