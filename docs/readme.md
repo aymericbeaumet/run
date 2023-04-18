@@ -7,20 +7,24 @@ This documentation should give you a good idea of how Run can be benefitial to y
 Here's what the infamous _Hello, World!_ could look like with Run:
 
 ```bash
-$ cargo run -- 'echo Hello,' 'printf World!'
+$ run 'echo Hello,' 'printf World!'
 [echo] Hello,
 [printf] World!
 ```
 
-You could also use a `run.toml` file to achieve the same result:
+You could also use a Runfile to achieve the same result:
 
-```bash
-$ cat run.toml
+```toml
+# run.toml
+
 [[run]]
 cmd = ["echo", "Hello,"]
 
 [[run]]
 cmd = ["printf", "World!"]
+```
+
+```bash
 $ run
 [echo] Hello,
 [printf] World!
