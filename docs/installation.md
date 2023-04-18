@@ -28,3 +28,7 @@ pnpm add -D @run-cli/run
 ```
 
 Once installed, have a look at the [Node.js Developer Guide](./user-guide/run-for-nodejs-developers.md).
+
+## Manual install [![GitHub Release](https://img.shields.io/github/v/release/aymericbeaumet/run)](https://github.com/aymericbeaumet/run/releases/latest)
+
+You can manually download the binary for your platform from the [latest release](https://github.com/aymericbeaumet/run/releases/latest).
