@@ -12,7 +12,7 @@ $ cargo run -- 'echo Hello,' 'printf World!'
 [printf] World!
 ```
 
-You could also use a `run.toml` file, notice how the result is the same:
+You could also use a `run.toml` file to achieve the same result:
 
 ```bash
 $ cat run.toml
