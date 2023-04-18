@@ -5,11 +5,10 @@ structure:
   summary: summary.md
 
 redirects:
-  dl: getting-started/installation
-  download: getting-started/installation
-  downloads: getting-started/installation
-  get: getting-started/installation
-  install: getting-started/installation
-  instal: getting-started/installation
-  installation: getting-started/installation
-  instalation: getting-started/installation
+  dl: installation
+  download: installation
+  downloads: installation
+  get: installation
+  install: installation
+  instal: installation
+  instalation: installation

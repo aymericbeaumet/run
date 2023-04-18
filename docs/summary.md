@@ -1,10 +1,10 @@
 # Table of contents
 
 - [What is Run?](./readme.md)
+- [Installation](./installation.md)
 
 ## Getting Started
 
-- [Installation](./installation.md)
 - [First steps](./getting-started/first-steps.md)
 - [Concrete use case](./getting-started/concrete-use-case.md)
 - [Moving forward](./getting-started/moving-forward.md)
