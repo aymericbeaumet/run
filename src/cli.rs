@@ -3,10 +3,11 @@ use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(display_name = "run")]
+#[command(bin_name = "run")]
+#[command(display_name = "Run")]
 #[command(version)]
 #[command(about = "
-run is a task runner.
+Run is a task runner.
 
 You can pass commands directly for simple tasks:
     $ run 'echo hello' 'ls /tmp'

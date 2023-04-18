@@ -1,10 +1,10 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/aymericbeaumet/run/ci.yml?branch=master&label=ci)](https://github.com/aymericbeaumet/run/actions/workflows/ci.yml) [![GitHub Release](https://img.shields.io/github/v/release/aymericbeaumet/run)](https://github.com/aymericbeaumet/run/releases) [![GitHub](https://img.shields.io/github/license/aymericbeaumet/run)](https://github.com/aymericbeaumet/run-cli/blob/master/license.md)
 
-# run
+# Run
 
-run is a simple, standalone tool that manages your processes for any project.
+Run is a simple, standalone tool that manages your processes for any project.
 
-Learn more at the [run](https://run-cli.org) website.
+Learn more at the [Run](https://run-cli.org) website.
 
 ## Features
 
@@ -37,4 +37,4 @@ Visit [the install documentation](https://run-cli.org/installation) for an exhau
 
 ## Documentation
 
-For more information about the project, including installation, getting started, and many other topics, have look at the [run](https://run-cli.org) website.
+For more information about the project, including installation, getting started, and many other topics, have look at the [Run](https://run-cli.org) website.

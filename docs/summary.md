@@ -1,11 +1,11 @@
 # Table of contents
 
-- [Home](./readme.md)
-- [Installation](./installation.md)
+- [What is Run?](./readme.md)
 
 ## Getting Started
 
-- [Using the shell](./getting-started/using-the-shell.md)
+- [Installation](./installation.md)
+- [First steps](./getting-started/using-the-shell.md)
 - [Using config file](./getting-started/using-config-file.md)
 
 ## User Guide
