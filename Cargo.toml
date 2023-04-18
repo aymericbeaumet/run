@@ -7,7 +7,7 @@ keywords = ["cli", "command-line", "developer-tools", "task-runner", "tools"]
 categories = ["command-line-utilities", "development-tools"]
 license = "MIT"
 repository = "https://github.com/aymericbeaumet/run"
-homepage = "https://www.run-cli.org"
+homepage = "https://run-cli.org"
 edition = "2021"
 readme = "readme.md"
 

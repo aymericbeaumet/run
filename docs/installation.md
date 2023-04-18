@@ -4,9 +4,7 @@
 
 _todo_
 
-## Using cargo
-
-[![crates.io](https://img.shields.io/crates/v/run-cli)](https://crates.io/crates/run-cli)
+## Using cargo [![crates.io](https://img.shields.io/crates/v/run-cli)](https://crates.io/crates/run-cli)
 
 This method requires the [Rust toolchain](https://www.rust-lang.org/tools/install) to be installed on your machine.
 
@@ -20,9 +18,7 @@ cargo install -f --git https://github.com/aymericbeaumet/run
 
 Once installed, have a look at the [Rust Developer](./user-guide/rust-developer.md) user guide.
 
-## Using npm, yarn, or pnpm
-
-[![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
+## Using npm, yarn, or pnpm [![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
 
 This method requires [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), [yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable), or [pnpm](https://pnpm.io/installation) to be installed on your machine.
 

@@ -3,19 +3,18 @@ use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(
-    version,
-    about = "
+#[command(display_name = "run")]
+#[command(version)]
+#[command(about = "
 run is a task runner.
 
-You can pass the commands directly for simple tasks:
+You can pass commands directly for simple tasks:
     $ run 'echo hello' 'ls /tmp'
 
-Or you can use a config file for more complex setups:
+Or you can use config files for more complex setups:
     $ run -f dev.toml
 
-For more information: https://www.run-cli.org"
-)]
+For more information: https://run-cli.org")]
 pub struct Cli {
     #[arg(
         short,

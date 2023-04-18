@@ -4,7 +4,7 @@
 
 run is a simple, standalone tool that manages your processes for any project.
 
-Learn more at the [run](https://www.run-cli.org) website.
+Learn more at the [run](https://run-cli.org) website.
 
 ## Features
 
@@ -33,8 +33,8 @@ For more examples, have a look at the [examples directory](./examples).
 # todo
 ```
 
-Visit [the install documentation](https://www.run-cli.org/installation) for an exhaustive list of the installation methods.
+Visit [the install documentation](https://run-cli.org/installation) for an exhaustive list of the installation methods.
 
 ## Documentation
 
-For more information about the project, including installation, getting started, and many other topics, have look at the [run](https://www.run-cli.org) website.
+For more information about the project, including installation, getting started, and many other topics, have look at the [run](https://run-cli.org) website.
