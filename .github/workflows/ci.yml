@@ -36,6 +36,13 @@ jobs:
           components: clippy
       - run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
 
+  cargo-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --all-targets --all-features --verbose
+
   cargo-test:
     strategy:
       matrix:
@@ -48,7 +55,7 @@ jobs:
 
   begin-release:
     if: startsWith(github.event.ref, 'refs/tags/v')
-    needs: [cargo-fmt, cargo-clippy, cargo-test]
+    needs: [cargo-fmt, cargo-clippy, cargo-build, cargo-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
