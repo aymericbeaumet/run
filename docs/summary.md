@@ -13,6 +13,9 @@
 
 - [Introduction](./user-guide/introduction.md)
 - [Configuration](./user-guide/configuration.md)
+  - [Runfile](./user-guide/runfile.md)
+  - [Literate Runfile](./user-guide/literate-runfile.md)
+  - [Environment](./user-guide/environment.md)
 - [Literate](./user-guide/literate.md)
 - [Go Developers](./user-guide/run-for-go-developers.md)
 - [Node.js Developers](./user-guide/run-for-nodejs-developers.md)
