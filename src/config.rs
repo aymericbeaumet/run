@@ -258,7 +258,7 @@ impl Config {
         })?;
 
         // We have to do this to check the complete extension (e.g. ".toml.md")
-        let config_path_str = config_path.to_string_lossy().to_string();
+        let config_path_str = config_path.to_string_lossy();
 
         let mut config = if config_path_str.ends_with(".toml") {
             Self::load_config_toml(&config_path)
