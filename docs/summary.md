@@ -11,9 +11,9 @@
 ## User Guide
 
 - [Configuration File](./user-guide/configuration)
-- [Go developers](./user-guide/go-project)
-- [Node.js developers](./user-guide/node-project)
-- [Rust developers](./user-guide/rust-project)
+- [Go developers](./user-guide/run-for-go-developers)
+- [Node.js developers](./user-guide/run-for-nodejs-developers)
+- [Rust developers](./user-guide/run-for-rust-developers)
 
 ## Misc
 
