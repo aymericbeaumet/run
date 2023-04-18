@@ -4,7 +4,7 @@ _todo_
 
 ## Using Node.js [![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
 
-This method requires [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), [yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable), or [pnpm](https://pnpm.io/installation) to be installed on your machine.
+This method requires [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), [yarn](https://yarnpkg.com/getting-started/install), or [pnpm](https://pnpm.io/installation) to be installed on your machine.
 
 ```bash
 # install latest stable
