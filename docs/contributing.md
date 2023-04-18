@@ -4,22 +4,28 @@ Project roadmap is managed on [GitHub](https://github.com/users/aymericbeaumet/p
 
 ## How can you help?
 
-- create [an issue](https://github.com/aymericbeaumet/run/issues) when you face a problem
-- create [a discussion](https://github.com/aymericbeaumet/run/discussions) when you have a question or wants a new feature
-- search for existing issues that you might want to address
-- improve the documentation
+- create [an issue](https://github.com/aymericbeaumet/run/issues/new) when you face a problem ([search first](https://github.com/aymericbeaumet/run/issues))
+- create [a discussion](https://github.com/aymericbeaumet/run/discussions/new/choose) when you have a question or wants a new feature
+- search for [opened issues](https://github.com/aymericbeaumet/run/issues?q=is%3Aissue+is%3Aopen) that you might want to address
+- improve the [documentation](https://github.com/aymericbeaumet/run/tree/master/docs)
 
 ## Development
 
-So far the development only happened on Unix systems.
+So far the development only happened on Unix systems. The [Rust toolchain](https://www.rust-lang.org/tools/install) is mandatory. Here are some useful commands:
 
 ```bash
+cargo run                    # execute `run.toml` with the Run binary
+cargo run -- 'echo hello'    # execute a command with the Run binary
 cargo run -- --help          # print help
 cargo run -- --version       # print version
-cargo run -- 'echo hello'    # run a command
 cargo build                  # build a dev binary
 cargo build --release        # build a release binary
 cargo test                   # run tests
-cargo upgrade --incompatible # bump dependencies
+cargo fmt                    # format the codebase
+cargo fmt --check            # check the codebase format
+cargo clippy                 # lint the codebase
+cargo upgrade --incompatible # bump dependencies (https://crates.io/crates/cargo-edit)
 ./scripts/release patch      # tag a new release
 ```
+
+[watchexec](https://github.com/watchexec/watchexec) is very handy to watch for changes and re-run the code or the tests.

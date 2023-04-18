@@ -17,3 +17,4 @@
 - Output dependency graph in dot format
 - Release checksum
 - Homebrew install
+- Add native support for a local .bin directory
