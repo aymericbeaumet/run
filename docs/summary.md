@@ -12,10 +12,8 @@
 ## User Guide
 
 - [Introduction](./user-guide/introduction.md)
-- [Configuration](./user-guide/configuration.md)
-  - [Runfile](./user-guide/runfile.md)
-  - [Literate Runfile](./user-guide/literate-runfile.md)
-  - [Environment](./user-guide/environment.md)
+- [CLI & Env](./user-guide/cli-and-env.md)
+- [Runfile](./user-guide/runfile.md)
 - [Go Developers](./user-guide/run-for-go-developers.md)
 - [Node.js Developers](./user-guide/run-for-nodejs-developers.md)
 - [Rust Developers](./user-guide/run-for-rust-developers.md)
