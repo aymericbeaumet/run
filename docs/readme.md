@@ -36,4 +36,4 @@ This behavior is deterministic as Run executes the commands sequentially by defa
 
 ## Next steps
 
-Have a look at the [Installation](./installation.md), read the [Getting Started](./getting-started) or dive into the [User Guide](./user-guide/).
+Have a look at the [Installation](./installation.md), read the [Getting Started](./getting-started/first-steps.md) or dive into the [User Guide](./user-guide/introduction.md).
