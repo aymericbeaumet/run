@@ -1,4 +1,7 @@
-const childProcess = require("node:child_process");
+/*
+ * TODO: move this file to its own package and publish to npm when it's been proven to work on all platforms.
+ */
+
 const fs = require("fs");
 const https = require("https");
 const os = require("os");
@@ -6,18 +9,18 @@ const path = require("path");
 const tar = require("tar");
 const Zip = require("adm-zip");
 
-// TODO: move this class to its own package and publish to npm
 module.exports = class Wrapper {
-  constructor(name, destFile, platforms) {
-    const platform = Wrapper._platform(platforms);
-    const nameWithExt = platform.type === "Windows_NT" ? `${name}.exe` : name;
+  constructor(binName, binDest, platforms) {
+    const platform = Wrapper._findPlatform(platforms);
 
+    this.binName = binName;
+    this.binDest = binDest;
+    this.binPrefix = platform.binPrefix || "";
+    this.binSuffix = platform.binSuffix || "";
     this.url = new URL(platform.url);
-    this.name = nameWithExt;
-    this.destFile = destFile;
   }
 
-  install = () => {
+  install() {
     Wrapper._downloadArchive(this.url, (err, archivePath) => {
       if (err) {
         throw err;
@@ -27,27 +30,16 @@ module.exports = class Wrapper {
           throw err;
         }
         Wrapper._installBinary(
-          path.join(archiveDir, this.name),
-          this.destFile,
+          path.join(archiveDir, this.binPrefix + this.binName + this.binSuffix),
+          this.binDest,
           (err) => {
             if (err) {
               throw err;
             }
-            console.log(`Binary successfully installed: ${this.destFile}`);
+            console.log(`Binary successfully installed: ${this.binDest}`);
           }
         );
       });
-    });
-  };
-
-  static _installBinary(archiveBinPath, installBinPath, cb) {
-    const parentDir = path.dirname(installBinPath);
-
-    fs.mkdir(path.dirname(installBinPath), { recursive: true }, (err) => {
-      if (err) {
-        return cb(err);
-      }
-      fs.rename(archiveBinPath, installBinPath, cb);
     });
   }
 
@@ -76,7 +68,7 @@ module.exports = class Wrapper {
             return cb(err);
           })
           .on("finish", () => {
-            return cb(err, outfile);
+            return cb(null, outfile);
           });
       });
     });
@@ -109,7 +101,16 @@ module.exports = class Wrapper {
     }
   }
 
-  static _platform(platforms) {
+  static _installBinary(archiveBinPath, installBinPath, cb) {
+    fs.mkdir(path.dirname(installBinPath), { recursive: true }, (err) => {
+      if (err) {
+        return cb(err);
+      }
+      fs.rename(archiveBinPath, installBinPath, cb);
+    });
+  }
+
+  static _findPlatform(platforms) {
     const type = os.type();
     const arch = os.arch();
     for (const platform of platforms) {

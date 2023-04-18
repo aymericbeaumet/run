@@ -1,12 +1,12 @@
-const Wrapper = require("./wrapper");
 const path = require("path");
 const pkg = require("./package.json");
+const Wrapper = require("./wrapper");
 
 const assetsPrefix = `${pkg.repository.url}/releases/download/v${pkg.version}`;
-const bin_name = Object.keys(pkg.bin)[0];
-const bin_dest = path.join(__dirname, pkg.bin[bin_name]);
+const name = Object.keys(pkg.bin)[0];
+const dest = path.join(__dirname, pkg.bin[name]);
 
-const wrapper = new Wrapper(bin_name, bin_dest, [
+const wrapper = new Wrapper(name, dest, [
   // amd64
   {
     type: "Linux",
@@ -27,6 +27,7 @@ const wrapper = new Wrapper(bin_name, bin_dest, [
     type: "Windows_NT",
     arch: "x64",
     url: `${assetsPrefix}/run-x86_64-pc-windows-msvc.zip`,
+    binSuffix: ".exe",
   },
   // arm64
   {
@@ -49,6 +50,7 @@ const wrapper = new Wrapper(bin_name, bin_dest, [
     type: "Windows_NT",
     arch: "ia32",
     url: `${assetsPrefix}/run-i686-pc-windows-msvc.zip`,
+    binSuffix: ".exe",
   },
 ]);
 
