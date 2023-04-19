@@ -77,8 +77,8 @@ jobs:
           - target: aarch64-apple-darwin
             os: macos-latest
           # i686
-          #- target: i686-unknown-linux-gnu
-          #  os: ubuntu-latest
+          - target: i686-unknown-linux-gnu
+            os: ubuntu-latest
           #- target: i686-pc-windows-msvc
           #  os: windows-latest
     runs-on: ${{ matrix.os }}
