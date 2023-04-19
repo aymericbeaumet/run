@@ -75,18 +75,24 @@ jobs:
           - target: x86_64-apple-darwin
             os: macos-latest
           # windows
-          - target: i686-pc-windows-msvc
-            os: windows-latest
           - target: x86_64-pc-windows-msvc
             os: windows-latest
+          - target: i686-pc-windows-msvc
+            os: windows-latest
     runs-on: ${{ matrix.os }}
+    env:
+      CARGO: cargo
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
-      - run: cargo build --release --target ${{ matrix.target }}
+      - if: contains(['aarch64-unknown-linux-gnu', 'i686-unknown-linux-gnu'], matrix.target)
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
+          echo "CARGO=cross" >> $GITHUB_ENV
+      - run: ${{ env.CARGO}} build --release --target ${{ matrix.target }}
 
   #publish-crate:
   #  needs: [begin-release]
