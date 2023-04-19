@@ -79,8 +79,10 @@ jobs:
           # windows
           - target: x86_64-pc-windows-msvc
             os: windows-latest
+            ext: ".exe"
           - target: i686-pc-windows-msvc
             os: windows-latest
+            ext: ".exe"
           # freebsd
           - target: x86_64-unknown-freebsd
             os: ubuntu-latest
@@ -102,7 +104,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
-          path: ./target/${{ matrix.target }}/release
+          path: ./target/${{ matrix.target }}/release/run${{ matrix.ext }}
+          if-no-files-found: error
 
   release-binaries:
     needs: [build-binaries]
