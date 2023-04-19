@@ -47,6 +47,12 @@ const wrapper = new Wrapper(name, dest, [
     url: `${assetsPrefix}/run-i686-pc-windows-msvc.zip`,
     binSuffix: ".exe",
   },
+  // freebsd
+  {
+    type: "Freebsd",
+    arch: "x64",
+    url: `${assetsPrefix}/run-x86_64-unknown-freebsd.tar.gz`,
+  },
 ]);
 
 wrapper.install();

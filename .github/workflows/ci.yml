@@ -57,7 +57,7 @@ jobs:
   #        draft: true
   #        token: ${{ secrets.GITHUB_TOKEN }}
 
-  build-release:
+  build-binaries:
     #needs: [begin-release]
     strategy:
       matrix:
@@ -65,10 +65,12 @@ jobs:
           # linux
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
+            cross: true
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
           - target: i686-unknown-linux-gnu
             os: ubuntu-latest
+            cross: true
           # macos
           - target: aarch64-apple-darwin
             os: macos-latest
@@ -79,6 +81,10 @@ jobs:
             os: windows-latest
           - target: i686-pc-windows-msvc
             os: windows-latest
+          # freebsd
+          - target: x86_64-unknown-freebsd
+            os: ubuntu-latest
+            cross: true
     runs-on: ${{ matrix.os }}
     env:
       CARGO: cargo
@@ -88,11 +94,24 @@ jobs:
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
-      - if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'i686-unknown-linux-gnu' }}
+      - if: matrix.cross
         run: |
           cargo install cross --git https://github.com/cross-rs/cross
           echo "CARGO=cross" >> $GITHUB_ENV
       - run: ${{ env.CARGO }} build --release --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ./target/${{ matrix.target }}/release/run
+
+  release-binaries:
+    needs: [build-binaries]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: binaries
+      - run: ls -R
 
   #publish-crate:
   #  needs: [begin-release]
