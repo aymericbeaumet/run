@@ -102,7 +102,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
-          path: ./target/${{ matrix.target }}/release/run*
+          path: ./target/${{ matrix.target }}/release
 
   release-binaries:
     needs: [build-binaries]
