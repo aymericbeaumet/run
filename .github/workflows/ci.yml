@@ -101,7 +101,7 @@ jobs:
       - run: ${{ env.CARGO }} build --release --target ${{ matrix.target }}
       - uses: actions/upload-artifact@v3
         with:
-          name: binaries
+          name: ${{ matrix.target }}
           path: ./target/${{ matrix.target }}/release/run
 
   release-binaries:
@@ -109,8 +109,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
-        with:
-          name: binaries
       - run: ls -R
 
   #publish-crate:
