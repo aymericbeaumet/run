@@ -63,22 +63,22 @@ jobs:
       matrix:
         include:
           # linux
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
+          #- target: aarch64-unknown-linux-gnu
+          #  os: ubuntu-latest
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-          - target: i686-unknown-linux-gnu
-            os: ubuntu-latest
+          #- target: i686-unknown-linux-gnu
+          #  os: ubuntu-latest
           # macos
           - target: aarch64-apple-darwin
             os: macos-latest
           - target: x86_64-apple-darwin
             os: macos-latest
           # windows
-          #- target: i686-pc-windows-msvc
-          #  os: windows-latest
-          #- target: x86_64-pc-windows-msvc
-          #  os: windows-latest
+          - target: i686-pc-windows-msvc
+            os: windows-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -86,10 +86,6 @@ jobs:
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
-
-      - if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends asciidoctor zsh xz-utils liblz4-tool musl-tools brotli zstd
-
       - run: cargo build --release --target ${{ matrix.target }}
 
   #publish-crate:
