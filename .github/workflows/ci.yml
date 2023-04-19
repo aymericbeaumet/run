@@ -48,7 +48,7 @@ jobs:
 
   #begin-release:
   #  if: startsWith(github.event.ref, 'refs/tags/v')
-  #  needs: [cargo-fmt, cargo-clippy, cargo-build, cargo-test]
+  #  needs: [cargo-fmt, cargo-clippy, cargo-test]
   #  runs-on: ubuntu-latest
   #  steps:
   #    - uses: actions/checkout@v3
@@ -88,6 +88,7 @@ jobs:
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
+      - run: cargo build
 
   #publish-crate:
   #  needs: [begin-release]
