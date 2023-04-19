@@ -88,11 +88,11 @@ jobs:
         with:
           toolchain: stable
           targets: ${{ matrix.target }}
-      - if: contains(['aarch64-unknown-linux-gnu', 'i686-unknown-linux-gnu'], matrix.target)
+      - if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'i686-unknown-linux-gnu' }}
         run: |
           cargo install cross --git https://github.com/cross-rs/cross
           echo "CARGO=cross" >> $GITHUB_ENV
-      - run: ${{ env.CARGO}} build --release --target ${{ matrix.target }}
+      - run: ${{ env.CARGO }} build --release --target ${{ matrix.target }}
 
   #publish-crate:
   #  needs: [begin-release]
