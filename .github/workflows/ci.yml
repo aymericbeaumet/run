@@ -102,7 +102,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
-          path: ./target/${{ matrix.target }}/release/run
+          path: ./target/${{ matrix.target }}/release/run*
 
   release-binaries:
     needs: [build-binaries]
@@ -110,7 +110,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
-      - run: ls -R
+        with:
+          path: ./bin
+      - run: ls -R ./bin
 
   #publish-crate:
   #  needs: [begin-release]
