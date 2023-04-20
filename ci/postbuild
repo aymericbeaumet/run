@@ -5,7 +5,7 @@
 set -e
 
 # check usage
-if [ $# -ne 2 ] || [ "$1" = "" ]; then
+if [ $# -ne 2 ] || [ "$1" = "" ] || [ "$2" = "" ]; then
 	echo "usage: $0 <rust_target> <out_dir>" >&2
 	exit 1
 fi
