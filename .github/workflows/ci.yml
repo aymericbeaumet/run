@@ -112,13 +112,13 @@ jobs:
         with:
           path: ./ci/artifacts
       - uses: actions/setup-go@v3
-      #- uses: goreleaser/goreleaser-action@v4
-      #  with:
-      #    args: release --clean
-      #    workdir: ./ci
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #    HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+      - uses: goreleaser/goreleaser-action@v4
+        with:
+          args: release --clean
+          workdir: ./ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
 
   #publish-crate:
   #  needs: [publish-release]
