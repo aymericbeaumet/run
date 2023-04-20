@@ -57,7 +57,7 @@ module.exports = class Wrapper {
   }
 
   static _downloadArchive(url, cb) {
-    Wrapper._tempdir((err, dir) => {
+    Wrapper._newTmpDir((err, dir) => {
       if (err) {
         return cb(err);
       }
@@ -104,7 +104,7 @@ module.exports = class Wrapper {
 
   static _extractArchive(filepath, cb) {
     if (filepath.endsWith(".tar.gz") || filepath.endsWith(".tgz")) {
-      Wrapper._tempdir((err, dir) => {
+      Wrapper._newTmpDir((err, dir) => {
         if (err) {
           return cb(err);
         }
@@ -113,7 +113,7 @@ module.exports = class Wrapper {
         });
       });
     } else if (filepath.endsWith(".zip")) {
-      Wrapper._tempdir((err, dir) => {
+      Wrapper._newTmpDir((err, dir) => {
         if (err) {
           return cb(err);
         }
@@ -166,7 +166,7 @@ module.exports = class Wrapper {
     });
   }
 
-  static _tempdir(cb) {
+  static _newTmpDir(cb) {
     fs.mkdtemp(path.join(os.tmpdir(), "wrapper-"), cb);
   }
 };
