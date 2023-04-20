@@ -56,8 +56,6 @@ module.exports = class Wrapper {
     });
   }
 
-  static _onerror(err) {}
-
   static _downloadArchive(url, cb) {
     Wrapper._tempdir((err, dir) => {
       if (err) {
