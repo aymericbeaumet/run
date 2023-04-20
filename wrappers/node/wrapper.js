@@ -18,8 +18,6 @@ module.exports = class Wrapper {
 
     this.binName = binName;
     this.binDest = binDest;
-    this.binPrefix = platform.binPrefix || "";
-    this.binSuffix = platform.binSuffix || "";
     this.checksum = platform.checksum;
     this.url = new URL(platform.url);
   }
@@ -40,17 +38,17 @@ module.exports = class Wrapper {
             throw err;
           }
 
-          const binPath = path.join(
-            extractedDir,
-            this.binPrefix + this.binName + this.binSuffix
-          );
-          Wrapper._installBinary(binPath, this.binDest, (err) => {
-            if (err) {
-              throw err;
-            }
+          Wrapper._installBinary(
+            path.join(extractedDir, this.binName),
+            this.binDest,
+            (err) => {
+              if (err) {
+                throw err;
+              }
 
-            console.log(`Binary successfully installed: ${this.binDest}`);
-          });
+              console.log(`Binary successfully installed: ${this.binDest}`);
+            }
+          );
         });
       });
     });
