@@ -27,7 +27,8 @@ builds:
       - freebsd_amd64
     hooks:
       post:
-        - cmd: >-
+        - output: true
+          cmd: >-
             ./postbuild{{- " " -}}
 
             {{ if eq .Arch "amd64" }}x86_64
