@@ -1,29 +1,51 @@
 builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - windows
-      - darwin
+  - id: linux
+    binary: run
+    goos: [linux]
+    goarch: [arm64, amd64, 386]
+    hooks:
+      post: sh postbuild.sh
+  - id: darwin
+    binary: run
+    goos: [darwin]
+    goarch: [arm64, amd64]
+    hooks:
+      post: sh postbuild.sh
+  - id: windows
+    binary: run
+    goos: [windows]
+    goarch: [amd64, 386]
+    hooks:
+      post: sh postbuild.sh
+  - id: freebsd
+    binary: run
+    goos: [freebsd]
+    goarch: [amd64]
+    hooks:
+      post: sh postbuild.sh
 
 archives:
-  - format: tar.gz
-    # this name template makes the OS and Arch compatible with the results of uname.
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
+  - name_template: >-
+      {{ .Binary }}-
       {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else if eq .Arch "386" }}i686
+      {{- else }}{{ .Arch }}{{- end -}}-
+      {{- if eq .Os "linux" }}unknown-linux-gnu
+      {{- else if eq .Os "darwin" }}apple-darwin
+      {{- else if eq .Os "windows" }}pc-windows-msvc
+      {{- else if eq .Os "freebsd" }}unknown-freebsd
+      {{- else }}{{ .Os }}{{- end -}}
+    format: tar.gz
     format_overrides:
       - goos: windows
         format: zip
 checksum:
   name_template: "checksums.txt"
+
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+
 changelog:
   sort: asc
   filters:

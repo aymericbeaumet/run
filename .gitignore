@@ -1,3 +1,4 @@
 .bin/
+artifacts/
 node_modules/
 target/
