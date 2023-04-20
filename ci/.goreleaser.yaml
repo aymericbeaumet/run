@@ -28,7 +28,7 @@ builds:
     hooks:
       post:
         - cmd: |
-            ./postbuild
+            ./postbuild{{- " " -}}
 
             {{ if eq .Arch "amd64" }}x86_64
             {{- else if eq .Arch "arm64" }}aarch64
@@ -41,7 +41,7 @@ builds:
             {{- else if eq .Os "freebsd" }}unknown-freebsd
             {{- else }}{{ .Os }}{{ end }}
 
-            {{ .Path }}
+            {{- " " -}}{{ dir .Path -}}
 
 archives:
   - format: tar.gz
