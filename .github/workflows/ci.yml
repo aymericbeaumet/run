@@ -116,6 +116,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+      - uses: actions/upload-artifact@v3
+        with:
+          if-no-files-found: error
+          name: artifacts.json
+          path: ./ci/dist/artifacts.json
 
   #publish-crate:
   #  needs: [publish-release]

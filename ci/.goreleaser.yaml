@@ -62,6 +62,9 @@ archives:
       {{- else if eq .Os "freebsd" }}unknown-freebsd
       {{- else }}{{ .Os }}{{ end }}
 
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+
 changelog:
   sort: asc
   filters:
