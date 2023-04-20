@@ -6,6 +6,8 @@ const assetsPrefix = `${pkg.repository.url}/releases/download/v${pkg.version}`;
 const name = Object.keys(pkg.bin)[0];
 const dest = path.join(__dirname, pkg.bin[name]);
 
+// TODO: add support for goreleaser artifacts + checksums
+
 const wrapper = new Wrapper(name, dest, [
   // linux
   {
