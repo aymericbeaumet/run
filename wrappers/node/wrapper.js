@@ -13,9 +13,6 @@ const Zip = require("adm-zip");
 module.exports = class Wrapper {
   constructor(binName, binDest, platforms) {
     const platform = Wrapper._findPlatform(platforms);
-
-    console.log(platform);
-
     this.binName = binName;
     this.binDest = binDest;
     this.checksum = platform.checksum;
