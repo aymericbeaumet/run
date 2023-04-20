@@ -2,6 +2,7 @@
  * TODO: move this file to its own package and publish to npm when it's been proven to work on all platforms.
  */
 
+const crypto = require("crypto");
 const fs = require("fs");
 const https = require("https");
 const os = require("os");
@@ -12,39 +13,51 @@ const Zip = require("adm-zip");
 module.exports = class Wrapper {
   constructor(binName, binDest, platforms) {
     const platform = Wrapper._findPlatform(platforms);
-
     this.binName = binName;
     this.binDest = binDest;
     this.binPrefix = platform.binPrefix || "";
     this.binSuffix = platform.binSuffix || "";
+    this.checksum = platform.checksum;
     this.url = new URL(platform.url);
   }
 
   install() {
-    Wrapper._downloadArchive(this.url, (err, archivePath) => {
+    Wrapper._downloadArchive(this.url, (err, archiveFile) => {
       if (err) {
         throw err;
       }
-      Wrapper._extractArchive(archivePath, (err, archiveDir) => {
+
+      Wrapper._verifyChecksum(archiveFile, this.checksum, (err) => {
         if (err) {
           throw err;
         }
-        Wrapper._installBinary(
-          path.join(archiveDir, this.binPrefix + this.binName + this.binSuffix),
-          this.binDest,
-          (err) => {
-            if (err) {
-              throw err;
-            }
-            console.log(`Binary successfully installed: ${this.binDest}`);
+
+        Wrapper._extractArchive(archiveFile, (err, extractedDir) => {
+          if (err) {
+            throw err;
           }
-        );
+
+          Wrapper._installBinary(
+            path.join(
+              extractedDir,
+              this.binPrefix + this.binName + this.binSuffix
+            ),
+            this.binDest,
+            (err) => {
+              if (err) {
+                throw err;
+              }
+
+              console.log(`Binary successfully installed: ${this.binDest}`);
+            }
+          );
+        });
       });
     });
   }
 
   static _downloadArchive(url, cb) {
-    Wrapper._tempdir((err, dir) => {
+    Wrapper._newTmpDir((err, dir) => {
       if (err) {
         return cb(err);
       }
@@ -57,7 +70,7 @@ module.exports = class Wrapper {
         if (res.statusCode !== 200) {
           return cb(
             new Error(
-              `Unexpected status code ${res.statusCode} when requesting ${this.url}`
+              `Unexpected status code ${res.statusCode} when requesting ${url}`
             )
           );
         }
@@ -74,9 +87,24 @@ module.exports = class Wrapper {
     });
   }
 
+  static _verifyChecksum(filepath, checksum, cb) {
+    fs.readFile(filepath, (err, data) => {
+      if (err) {
+        return cb(err);
+      }
+
+      const hash = crypto.createHash("sha256").update(data).digest("hex");
+      if (`sha256:${hash}` !== checksum) {
+        return cb(new Error("Checksum mismatch"));
+      }
+
+      return cb(null);
+    });
+  }
+
   static _extractArchive(filepath, cb) {
     if (filepath.endsWith(".tar.gz") || filepath.endsWith(".tgz")) {
-      Wrapper._tempdir((err, dir) => {
+      Wrapper._newTmpDir((err, dir) => {
         if (err) {
           return cb(err);
         }
@@ -85,7 +113,7 @@ module.exports = class Wrapper {
         });
       });
     } else if (filepath.endsWith(".zip")) {
-      Wrapper._tempdir((err, dir) => {
+      Wrapper._newTmpDir((err, dir) => {
         if (err) {
           return cb(err);
         }
@@ -138,7 +166,7 @@ module.exports = class Wrapper {
     });
   }
 
-  static _tempdir(cb) {
+  static _newTmpDir(cb) {
     fs.mkdtemp(path.join(os.tmpdir(), "wrapper-"), cb);
   }
 };

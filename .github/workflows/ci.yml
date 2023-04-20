@@ -36,13 +36,6 @@ jobs:
           components: clippy
       - run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
 
-  cargo-build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build --all-targets --all-features --verbose
-
   cargo-test:
     strategy:
       matrix:
@@ -53,52 +46,84 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test --all-targets --all-features --verbose
 
-  begin-release:
-    if: startsWith(github.event.ref, 'refs/tags/v')
-    needs: [cargo-fmt, cargo-clippy, cargo-build, cargo-test]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: taiki-e/create-gh-release-action@v1
-        with:
-          draft: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   build-release:
-    needs: [begin-release]
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    needs: [cargo-fmt, cargo-clippy, cargo-test]
     strategy:
       matrix:
         include:
-          # amd64
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-          - target: x86_64-unknown-freebsd
-            os: ubuntu-latest
-          - target: x86_64-apple-darwin
-            os: macos-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-          # arm64
+          # linux
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-latest
-          - target: aarch64-apple-darwin
-            os: macos-latest
-          # i686
+            cross: true
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
           - target: i686-unknown-linux-gnu
             os: ubuntu-latest
+            cross: true
+          # macos
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          # windows
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
           - target: i686-pc-windows-msvc
             os: windows-latest
+          # freebsd
+          - target: x86_64-unknown-freebsd
+            os: ubuntu-latest
+            cross: true
     runs-on: ${{ matrix.os }}
+    env:
+      CARGO: cargo
     steps:
       - uses: actions/checkout@v3
-      - uses: taiki-e/upload-rust-binary-action@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          bin: run
-          target: ${{ matrix.target }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          toolchain: stable
+          targets: ${{ matrix.target }}
+      - if: matrix.cross
+        run: |
+          cargo install cross --git https://github.com/cross-rs/cross
+          echo "CARGO=cross" >> $GITHUB_ENV
+      - run: ${{ env.CARGO }} build --release --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v3
+        with:
+          if-no-files-found: error
+          name: ${{ matrix.target }}
+          path: |
+            ./target/${{ matrix.target }}/release/run*
+            !**/*.d
+
+  publish-release:
+    needs: [build-release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: git fetch --force --tags
+      - uses: actions/setup-go@v4
+      - uses: actions/download-artifact@v3
+        with:
+          path: ./ci/artifacts
+      - uses: goreleaser/goreleaser-action@v4
+        with:
+          args: release --clean
+          workdir: ./ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+      - uses: actions/upload-artifact@v3
+        with:
+          if-no-files-found: error
+          name: artifacts.json
+          path: ./ci/dist/artifacts.json
 
   publish-crate:
-    needs: [begin-release]
+    needs: [publish-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -108,7 +133,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
 
   publish-npm:
-    needs: [build-release]
+    needs: [publish-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -116,16 +141,11 @@ jobs:
         with:
           node-version: 18
           registry-url: "https://registry.npmjs.org"
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifacts.json
+          path: ./wrappers/node
       - run: npm publish --access=public
         working-directory: ./wrappers/node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  finish-release:
-    needs: [build-release, publish-crate, publish-npm]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: gh release edit "${GITHUB_REF#refs/tags/}" --draft=false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
