@@ -106,12 +106,9 @@ jobs:
           fetch-depth: 0
       - run: git fetch --force --tags
       - uses: actions/setup-go@v4
-        with:
-          go-version: stable
       - uses: actions/download-artifact@v3
         with:
           path: ./ci/artifacts
-      - uses: actions/setup-go@v3
       - uses: goreleaser/goreleaser-action@v4
         with:
           args: release --clean
