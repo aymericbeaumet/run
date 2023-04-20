@@ -128,9 +128,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      #- run: cargo publish --locked
-      #  env:
-      #    CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
+      - run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
 
   publish-npm:
     needs: [publish-release]
@@ -145,7 +145,7 @@ jobs:
         with:
           name: artifacts.json
           path: ./wrappers/node
-      #- run: npm publish --access=public
-      #  working-directory: ./wrappers/node
-      #  env:
-      #    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access=public
+        working-directory: ./wrappers/node
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
