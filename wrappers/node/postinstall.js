@@ -26,6 +26,7 @@ const platforms = artifacts
     type: GOOS_TO_NODETYPE[a.goos],
     arch: GOARCH_TO_NODEARCH[a.goarch],
     url: assetsPrefix + a.name,
+    binSuffix: a.goos === "windows" ? ".exe" : "",
     checksum: a.extra.Checksum,
   }));
 

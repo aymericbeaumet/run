@@ -15,6 +15,8 @@ module.exports = class Wrapper {
     const platform = Wrapper._findPlatform(platforms);
     this.binName = binName;
     this.binDest = binDest;
+    this.binPrefix = platform.binPrefix || "";
+    this.binSuffix = platform.binSuffix || "";
     this.checksum = platform.checksum;
     this.url = new URL(platform.url);
   }
@@ -36,7 +38,10 @@ module.exports = class Wrapper {
           }
 
           Wrapper._installBinary(
-            path.join(extractedDir, this.binName),
+            path.join(
+              extractedDir,
+              this.binPrefix + this.binName + this.binSuffix
+            ),
             this.binDest,
             (err) => {
               if (err) {
