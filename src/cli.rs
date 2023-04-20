@@ -3,8 +3,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(bin_name = "run")]
-#[command(display_name = "Run")]
+#[command(name = "run")]
 #[command(version)]
 #[command(about = "
 Run is a task runner.
