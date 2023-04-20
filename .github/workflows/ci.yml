@@ -48,7 +48,7 @@ jobs:
 
   build-release:
     if: startsWith(github.event.ref, 'refs/tags/v')
-    #needs: [cargo-fmt, cargo-clippy, cargo-test]
+    needs: [cargo-fmt, cargo-clippy, cargo-test]
     strategy:
       matrix:
         include:
