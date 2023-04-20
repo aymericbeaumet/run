@@ -68,12 +68,6 @@ checksum:
 
 changelog:
   sort: asc
-  filters:
-    exclude:
-      - "^chore:"
-      - "^docs:"
-      - "^style:"
-      - "^test:"
 
 brews:
   - tap:
