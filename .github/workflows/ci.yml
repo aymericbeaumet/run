@@ -47,7 +47,7 @@ jobs:
   #    - run: cargo test --all-targets --all-features --verbose
 
   build-release:
-    #if: startsWith(github.event.ref, 'refs/tags/v')
+    if: startsWith(github.event.ref, 'refs/tags/v')
     #needs: [cargo-fmt, cargo-clippy, cargo-test]
     strategy:
       matrix:
