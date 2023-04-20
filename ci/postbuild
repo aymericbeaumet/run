@@ -13,4 +13,4 @@ rust_target="$1"
 out_dir="$2"
 
 # overwrite go binary with rust binary
-cp -vf "./artifacts/$rust_target/*" "$(dirname "$out_dir")/"
+cp -vf "./artifacts/$rust_target"/* "$(dirname "$out_dir")/"
