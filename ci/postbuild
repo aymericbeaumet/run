@@ -1,3 +1,16 @@
 #!/bin/sh
 
-ls -R >/tmp/ls.txt
+# This script is run for each build target. It overrides the Go binaries with the Rust binaries in the ./artifacts directory.
+
+set -e
+
+# check usage
+if [ $# -ne 2 ] || [ "$1" = "" ]; then
+	echo "usage: $0 <rust_target> <out_dir>" >&2
+	exit 1
+fi
+rust_target="$1"
+out_dir="$2"
+
+# overwrite go binary with rust binary
+cp -vf "./artifacts/$rust_target/*" "$(dirname "$out_dir")/"

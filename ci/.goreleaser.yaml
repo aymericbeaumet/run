@@ -1,3 +1,16 @@
+# This is a GoReleaser configuration (https://goreleaser.com).
+# GoReleaser is really good and is unmatched in the Rust ecosystem.
+# So we use it for everything release wise (besides cross-compilation).
+
+project_name: run
+
+env:
+  - RUN_AUTHOR=Aymeric Beaumet <hi@aymericbeaumet.com>
+  - RUN_DESCRIPTION=Run is a lightweight, standalone tool that manages tasks and processes for you.
+  - RUN_HOMEPAGE=https://run-cli.org
+  - RUN_LICENSE=MIT
+  - RUN_SOURCE=https://github.com/aymericbeaumet/run
+
 builds:
   - targets:
       # linux
@@ -13,31 +26,57 @@ builds:
       # freebsd
       - freebsd_amd64
     hooks:
-      post: ./postbuild
+      post:
+        - cmd: |
+            ./postbuild
+
+            {{ if eq .Arch "amd64" }}x86_64
+            {{- else if eq .Arch "arm64" }}aarch64
+            {{- else if eq .Arch "386" }}i686
+            {{- else }}{{ .Arch }}{{ end }}
+            {{- "-" -}}
+            {{- if eq .Os "linux" }}unknown-linux-gnu
+            {{- else if eq .Os "darwin" }}apple-darwin
+            {{- else if eq .Os "windows" }}pc-windows-msvc
+            {{- else if eq .Os "freebsd" }}unknown-freebsd
+            {{- else }}{{ .Os }}{{ end }}
+
+            {{ .Path }}
 
 archives:
-  - name_template: >-
-      {{- .ProjectName }}-
-      {{- if eq .Arch "amd64" }}x86_64
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: >-
+      {{- .ProjectName }}{{- "-" -}}
+
+      {{ if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "arm64" }}aarch64
       {{- else if eq .Arch "386" }}i686
-      {{- else }}{{ .Arch }}{{ end }}-
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- "-" -}}
       {{- if eq .Os "linux" }}unknown-linux-gnu
       {{- else if eq .Os "darwin" }}apple-darwin
       {{- else if eq .Os "windows" }}pc-windows-msvc
       {{- else if eq .Os "freebsd" }}unknown-freebsd
-      {{- else }}{{ .Os }}{{ end -}}
-    format: tar.gz
-    format_overrides:
-      - goos: windows
-        format: zip
-
-checksum:
-  name_template: "checksums.txt"
+      {{- else }}{{ .Os }}{{ end }}
 
 changelog:
   sort: asc
   filters:
     exclude:
+      - "^chore:"
       - "^docs:"
+      - "^style:"
       - "^test:"
+
+brews:
+  - tap:
+      owner: aymericbeaumet
+      name: homebrew-tap
+      token: "{{.Env.HOMEBREW_TOKEN}}"
+    folder: Formula
+    homepage: "{{.Env.RUN_HOMEPAGE}}"
+    description: "{{.Env.RUN_DESCRIPTION}}"
+    license: "{{.Env.RUN_LICENSE}}"

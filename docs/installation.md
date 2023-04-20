@@ -1,6 +1,8 @@
 ## Using Homebrew
 
-_todo_
+```bash
+brew install aymericbeaumet/tap/run
+```
 
 ## Using Node.js [![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
 
