@@ -130,7 +130,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       #- run: cargo publish --locked
       #  env:
-      #    cargo_registry_token: ${{ secrets.CARGO_TOKEN }}
+      #    CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
 
   publish-npm:
     needs: [publish-release]
@@ -148,4 +148,4 @@ jobs:
       #- run: npm publish --access=public
       #  working-directory: ./wrappers/node
       #  env:
-      #    node_auth_token: ${{ secrets.NPM_TOKEN }}
+      #    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
