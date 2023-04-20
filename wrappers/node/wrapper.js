@@ -29,31 +29,34 @@ module.exports = class Wrapper {
       if (err) {
         throw err;
       }
+
       Wrapper._verifyChecksum(archiveFile, this.checksum, (err) => {
         if (err) {
           throw err;
         }
+
         Wrapper._extractArchive(archiveFile, (err, extractedDir) => {
           if (err) {
             throw err;
           }
-          Wrapper._installBinary(
-            path.join(
-              extractedDir,
-              this.binPrefix + this.binName + this.binSuffix
-            ),
-            this.binDest,
-            (err) => {
-              if (err) {
-                throw err;
-              }
-              console.log(`Binary successfully installed: ${this.binDest}`);
-            }
+
+          const binPath = path.join(
+            extractedDir,
+            this.binPrefix + this.binName + this.binSuffix
           );
+          Wrapper._installBinary(binPath, this.binDest, (err) => {
+            if (err) {
+              throw err;
+            }
+
+            console.log(`Binary successfully installed: ${this.binDest}`);
+          });
         });
       });
     });
   }
+
+  static _onerror(err) {}
 
   static _downloadArchive(url, cb) {
     Wrapper._tempdir((err, dir) => {
