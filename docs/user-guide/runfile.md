@@ -1,8 +1,8 @@
 ## Runfiles
 
-Runfiles are `.toml` files.
+Runfiles are `.toml` files that allow to describe commands to be run. The default path being looked up by the CLI is `run.toml`.
 
-### Example
+### Example `run.toml`
 
 ```toml
 [[run]]

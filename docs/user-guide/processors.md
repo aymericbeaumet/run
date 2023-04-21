@@ -1,7 +1,7 @@
-Processors are systems that process the output of your commands. They are already embedded in Run.
-See `run --help` for more information on how you can enable, disable or configure the processors.
+Processors are functions that process the output of your commands. They are already embedded in Run.
+See `run --help` for more information on how you can enable, disable or configure processors.
 
-> By default only the _Prefix_ processor is enabled. You can disable all processors by using the `--raw` flag. This could give a visible improvement in performance in some cases.
+> By default only the _prefix_ processor is enabled. You can disable all processors by using the `--raw` flag. This could give a visible performance improvement in some cases.
 
 ## Prefix
 
@@ -22,7 +22,7 @@ You can enable the OpenAI processor to ask ChatGPT for feedback when your comman
 You need an active [OpenAI account](https://platform.openai.com/account) and an [API key](https://platform.openai.com/account/api-keys) for this to work.
 
 ````bash
-$ run 'ls /tmp/missing'
+$ RUN_CLI_OPENAI_ENABLED=true RUN_CLI_OPENAI_API_KEY=<key> run 'ls /tmp/missing'
 [ls] ls: /tmp/missing: No such file or directory
 
 +=============================[ ChatGPT Feedback ]=============================+

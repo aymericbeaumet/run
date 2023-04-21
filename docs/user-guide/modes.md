@@ -2,14 +2,15 @@ Modes allow to specify the way commands should be executed by Run. There are thr
 
 ## Sequential
 
-The commands are executed sequentially. Any command running will block the following commands execution. This is the default mode and should be omitted from your Runfile or the CLI arguments
+The commands are executed sequentially. Any command running will block the following commands execution. This is the default mode and should be omitted from your Runfile or the CLI arguments.
 
 ```bash
+# from the CLI
 $ run -m sequential
 ```
 
 ```toml
-# run.toml
+# in your run.toml
 mode = "sequential"
 ```
 
@@ -18,11 +19,12 @@ mode = "sequential"
 The commands are executed in parallel. No command execution will be blocked.
 
 ```bash
+# from the CLI
 $ run -m parallel
 ```
 
 ```toml
-# run.toml
+# in your run.toml
 mode = "parallel"
 ```
 
@@ -31,10 +33,11 @@ mode = "parallel"
 The commands are executed in individual tmux panes stacked vertically. No command execution will be blocked.
 
 ```bash
+# from the CLI
 $ run -m tmux
 ```
 
 ```toml
-# run.toml
+# in your run.toml
 mode = "tmux"
 ```

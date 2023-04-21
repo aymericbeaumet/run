@@ -1,9 +1,8 @@
-It is common to have different kinds of task in a single Runfile.
-You can use tags to only run a specific subset of the tasks.
-
-Commands will be executed in the order they are defined.
+It is common to have different kinds of task in a single Runfile. You can use tags to only run a specific subset of the tasks. Commands will be executed in the order they are defined.
 
 ## Add tags
+
+This is an example of how you can add tags to commands. It is load as the `run.toml` used by the snippets below.
 
 ```toml
 [[run]]
