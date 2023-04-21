@@ -64,6 +64,7 @@ archives:
       {{- else }}{{ .Os }}{{ end }}
 
 checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
 
 changelog:
   sort: asc
