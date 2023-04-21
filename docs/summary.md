@@ -6,7 +6,7 @@
 ## Getting Started
 
 - [First steps](./getting-started/first-steps.md)
-- [Concrete use case](./getting-started/concrete-use-case.md)
+- [Your first Runfile](./getting-started/your-first-runfile.md)
 - [Moving forward](./getting-started/moving-forward.md)
 
 ## User Guide
