@@ -1,6 +1,8 @@
 It is common to have different kinds of task in a single Runfile.
 You can use tags to only run a specific subset of the tasks.
 
+Commands will be executed in the order they are defined.
+
 ## Add tags
 
 ```toml
@@ -26,6 +28,8 @@ $ run -t world
 ```
 
 ## Combine several tags
+
+Combining tags act as a logical OR. That is all the commands that matches at least one of the provided tags will be executed.
 
 You can pass the tag flag several times:
 
