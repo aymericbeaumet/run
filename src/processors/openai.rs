@@ -29,15 +29,16 @@ impl Processor for Openai {
 
     async fn flush(&mut self) -> anyhow::Result<()> {
         eprintln!(
-            "\n+=============================[ OpenAI Feedback ]==============================+"
+            "\n+=============================[ ChatGPT Feedback ]=============================+"
         );
 
+        // TODO: include more information in the prompt (cmd, args, os, arch, current directory, $PATH, etc)
         let body = json!({
           "model": "gpt-3.5-turbo",
           "messages": [
               {
                   "role": "user",
-                  "content": format!("I am a developer working in a terminal. The command I run fails with the following error message. In a first paragraph explain what the issue is and why it is happening. In a second paragraph explain how to fix the issue. You can suggest a command that might help fixing the issue. Use the triple backtick notation if you need to print code.\n\n{}", self.lines.join("\n")),
+                  "content": format!("I am a developer working in a terminal. The command I run fails with the following error message. In a first paragraph explain what the issue is and why it is happening. In a second paragraph explain how to fix the issue. You can suggest at most one command that might help fixing the issue. Use the triple backtick notation if you need to print code.\n\n{}", self.lines.join("\n")),
               },
           ]
         });
