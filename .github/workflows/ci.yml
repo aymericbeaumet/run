@@ -10,7 +10,7 @@ on:
   push:
     paths-ignore: ["docs/**", "**/*.md"]
     branches: ["master"]
-    tags: ["v*.*.*"]
+    tags: ["*.*.*"]
   schedule:
     - cron: "00 00 * * *"
 
@@ -47,7 +47,7 @@ jobs:
       - run: cargo test --all-targets --all-features --verbose
 
   build-release:
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    if: startsWith(github.event.ref, 'refs/tags/')
     needs: [cargo-fmt, cargo-clippy, cargo-test]
     strategy:
       matrix:

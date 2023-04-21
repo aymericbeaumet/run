@@ -3,7 +3,7 @@
 This example shows how you can run redis and your node server in tmux mode.
 
 ```toml
-mode = "tmux"
+mode = "parallel"
 
 [[run]]
 name = "install"
