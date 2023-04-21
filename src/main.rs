@@ -1,5 +1,3 @@
-#![warn(clippy::indexing_slicing)]
-
 mod cli;
 mod config;
 mod executor;

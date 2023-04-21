@@ -81,7 +81,7 @@ impl Executor {
                         for processor in &mut self.out_processors {
                             line = processor.process(line)?;
                         }
-                        println!("{}", line);
+                        println!("{line}");
                     }
 
                     for processor in &mut self.out_processors {
@@ -102,7 +102,7 @@ impl Executor {
                         for processor in &mut self.err_processors {
                             line = processor.process(line)?;
                         }
-                        eprintln!("{}", line);
+                        eprintln!("{line}");
                     }
 
                     for processor in &mut self.err_processors {

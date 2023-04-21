@@ -92,7 +92,7 @@ impl Runner {
 
         if self.tmux.kill_duplicate_session {
             if let Err(err) = self.tmux(["kill-session", "-t", &session]).await {
-                println!("[debug] failed to kill duplicate session: {}", err); // TODO: use log library
+                println!("[debug] failed to kill duplicate session: {err}"); // TODO: use log library
             }
         }
 
@@ -205,7 +205,7 @@ impl Runner {
         if self.log.terminations {
             eprintln!(
                 "{}",
-                Self::format_termination(&prefix, &cmd.program, &cmd.args, &status)
+                Self::format_termination(&prefix, &cmd.program, &cmd.args, status)
             );
         }
 
@@ -220,10 +220,10 @@ impl Runner {
         prefix: &str,
         program: &str,
         args: &[String],
-        status: &ExitStatus,
+        status: ExitStatus,
     ) -> String {
         let status = match status.code() {
-            Some(code) => format!("status code {}", code),
+            Some(code) => format!("status code {code}"),
             None => "an unknown status".to_owned(),
         };
         format!(

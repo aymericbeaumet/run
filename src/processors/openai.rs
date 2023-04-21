@@ -60,7 +60,7 @@ impl Processor for Openai {
             "|                                                                              |"
         );
         for line in textwrap::wrap(choice.message.content.trim(), 76) {
-            eprintln!("| {:<76} |", line);
+            eprintln!("| {line:<76} |");
         }
         eprintln!(
             "|                                                                              |"

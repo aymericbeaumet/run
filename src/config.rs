@@ -402,7 +402,7 @@ impl TryFrom<Config> for RunnerOptions {
                 let workdir = run
                     .command_workdir
                     .map(|w| {
-                        let mut abs = workdir.to_path_buf();
+                        let mut abs = workdir.clone();
                         abs.push(w);
                         abs.canonicalize().expect("infaillible")
                     })

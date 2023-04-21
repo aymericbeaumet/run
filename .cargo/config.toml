@@ -1,0 +1,22 @@
+[target.'cfg(all())']
+rustflags = [
+  # forbidden
+  "-Dunsafe_code",
+  # warnings
+  "-Wclippy::char_lit_as_u8",
+  "-Wclippy::dbg_macro",
+  "-Wclippy::empty_drop",
+  "-Wclippy::empty_structs_with_brackets",
+  "-Wclippy::exit",
+  "-Wclippy::get_unwrap",
+  "-Wclippy::indexing_slicing",
+  "-Wclippy::pedantic",
+  "-Wclippy::rc_buffer",
+  "-Wclippy::rc_mutex",
+  "-Wclippy::rest_pat_in_fully_bound_structs",
+  # allowed
+  "-Aclippy::module_name_repetitions",
+  "-Aclippy::option-option",
+  "-Aclippy::print_stderr",
+  "-Aclippy::print_stdout",
+]
