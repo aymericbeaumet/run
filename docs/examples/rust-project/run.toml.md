@@ -3,7 +3,7 @@
 This example shows how you can run your tests and your program in tmux mode.
 
 ```toml
-mode = "tmux"
+mode = "parallel" # or mode = "tmux"
 
 [[run]]
 cmd = ["cargo", "test"]

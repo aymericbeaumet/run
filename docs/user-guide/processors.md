@@ -25,7 +25,7 @@ You need an active [OpenAI account](https://platform.openai.com/account) and an 
 $ run 'ls /tmp/missing'
 [ls] ls: /tmp/missing: No such file or directory
 
-+==================================[ OpenAI ]==================================+
++=============================[ ChatGPT Feedback ]=============================+
 |                                                                              |
 | The issue is that the command "ls" is trying to list the contents of a       |
 | directory that does not exist. "/tmp/missing" is not a valid directory path  |
