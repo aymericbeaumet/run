@@ -29,5 +29,5 @@
 ## Misc
 
 - [FAQ](./faq.md)
-- [Alternatives](./alternatives)
+- [Alternatives](./alternatives.md)
 - [Contributing](./contributing.md)
