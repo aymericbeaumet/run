@@ -22,7 +22,7 @@ You have to use the fence notation and specify the _toml_ language: ` ```toml `.
 
 All the TOML code blocks are concatenated, and are then being parsed as a single entity.
 
-### Example: `run.toml.md`
+### Example `run.toml.md`
 
 ````markdown
 # Development
