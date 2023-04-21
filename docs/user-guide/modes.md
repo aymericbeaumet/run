@@ -1,3 +1,5 @@
+Modes allow to specify the way commands should be executed by Run. There are three modes: sequential, parallel, and tmux. The default is sequential.
+
 ## Sequential
 
 ```bash

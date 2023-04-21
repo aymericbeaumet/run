@@ -15,9 +15,9 @@
 - [Runfile](./user-guide/runfile.md)
 - [Modes](./user-guide/modes.md)
 - [Tagging](./user-guide/tagging.md)
-- [Dependencies](./user-guide/dependencies.md)
-- [Watch mode](./user-guide/watch-mode.md)
 - [Processors](./user-guide/processors.md)
+- [Dependencies (TODO)](./user-guide/dependencies.md)
+- [Watch (TODO)](./user-guide/watch.md)
 
 ## Examples
 
