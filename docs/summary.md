@@ -16,6 +16,7 @@
 - [Tags filtering](./user-guide/tags.md)
 - [Dependencies](./user-guide/dependencies.md)
 - [Watch mode](./user-guide/watch-mode.md)
+- [Processors](./user-guide/processors.md)
 
 ## Examples
 

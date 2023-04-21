@@ -70,7 +70,18 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - "^chore:"
+      - "^chore"
+      - "^docs"
+      - "typo"
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
 
 brews:
   - tap:
