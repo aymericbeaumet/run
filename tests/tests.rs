@@ -15,18 +15,18 @@ lazy_static::lazy_static! {
 async fn run_examples_checks() -> anyhow::Result<()> {
     let mut set = tokio::task::JoinSet::new();
 
-    for (test_name, file) in list_files(["examples/*/run.toml", "examples/*/run.toml.md"]) {
+    for (example_name, file) in list_files(["examples/*/run.toml", "examples/*/run.toml.md"]) {
         set.spawn(async move {
             example_check(&file)
                 .await
-                .with_context(|| format!("example failed: {}", &test_name))?;
-            Ok::<String, anyhow::Error>(test_name)
+                .with_context(|| format!("example failed: {}", &example_name))?;
+            Ok::<String, anyhow::Error>(example_name)
         });
     }
 
     while let Some(Ok(joined)) = set.join_next().await {
-        let test_name = joined?;
-        println!("[ok] {}", &test_name);
+        let example_name = joined?;
+        println!("[ok] {}", &example_name);
     }
 
     Ok(())
@@ -85,20 +85,20 @@ async fn e2e_test<P: AsRef<Path>>(file: P) -> anyhow::Result<()> {
     // assert stdout
     if let Some(expected) = expected_stdout {
         if expected != stdout {
-            bail!(format!(
+            bail!(
                 "stdout does not match: {}",
                 StrComparison::new(&expected, &stdout)
-            ));
+            );
         }
     }
 
     // assert stderr
     if let Some(expected) = expected_stderr {
         if expected != stderr {
-            bail!(format!(
+            bail!(
                 "stderr does not match: {}",
                 StrComparison::new(&expected, &stderr)
-            ));
+            );
         }
     }
 

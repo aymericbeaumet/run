@@ -72,6 +72,7 @@ changelog:
     exclude:
       - "^chore"
       - "^docs"
+      - "^style"
       - "typo"
   groups:
     - title: Features
