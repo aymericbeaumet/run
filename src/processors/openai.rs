@@ -29,7 +29,7 @@ impl Processor for Openai {
 
     async fn flush(&mut self) -> anyhow::Result<()> {
         eprintln!(
-            "\n+==================================[ OpenAI ]==================================+"
+            "\n+=============================[ OpenAI Feedback ]==============================+"
         );
 
         let body = json!({
@@ -37,7 +37,7 @@ impl Processor for Openai {
           "messages": [
               {
                   "role": "user",
-                  "content": format!("I am a developer working in a terminal. I'm trying to run a command but I get the following error message. In a first paragraph explain what the issue is and why it is happening. In a second paragraph explain how to fix the issue. In a third paragraph suggest a command that might help fixing the issue.\n{}", self.lines.join("\n")),
+                  "content": format!("I am a developer working in a terminal. The command I run fails with the following error message. In a first paragraph explain what the issue is and why it is happening. In a second paragraph explain how to fix the issue. You can suggest a command that might help fixing the issue. Use the triple backtick notation if you need to print code.\n\n{}", self.lines.join("\n")),
               },
           ]
         });
@@ -58,7 +58,7 @@ impl Processor for Openai {
         eprintln!(
             "|                                                                              |"
         );
-        for line in textwrap::wrap(&choice.message.content, 76) {
+        for line in textwrap::wrap(choice.message.content.trim(), 76) {
             eprintln!("| {:<76} |", line);
         }
         eprintln!(

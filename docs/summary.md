@@ -13,7 +13,7 @@
 
 - [Introduction](./user-guide/introduction.md)
 - [Runfile](./user-guide/runfile.md)
-- [Tags filtering](./user-guide/tags.md)
+- [Tagging](./user-guide/tagging.md)
 - [Dependencies](./user-guide/dependencies.md)
 - [Watch mode](./user-guide/watch-mode.md)
 - [Processors](./user-guide/processors.md)

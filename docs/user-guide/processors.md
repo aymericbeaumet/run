@@ -5,7 +5,9 @@ See `run --help` for more information on how you can enable, disable or configur
 
 ## Prefix
 
-This processor is enabled by default. It prefixes stdout and stderr with the command name.
+This processors prefixes stdout and stderr with the command name.
+
+> This processors is enabled by default.
 
 ```bash
 $ run 'echo foobar'
@@ -15,7 +17,9 @@ $ run 'echo foobar'
 
 ## OpenAI
 
-You can enable the OpenAI processor to ask for feedbacks based on stderr when your command fails.
+You can enable the OpenAI processor to ask ChatGPT for feedback when your command fails. A prompt is sent with stderr every time it fails. Keep an eye on the usage, and I'd recommend to set [billing limits](https://platform.openai.com/account/billing/limits) just in case.
+
+You need an active [OpenAI account](https://platform.openai.com/account) and an [API key](https://platform.openai.com/account/api-keys) for this to work.
 
 ````bash
 $ run 'ls /tmp/missing'
@@ -47,6 +51,7 @@ $ run 'ls /tmp/missing'
 | ```                                                                          |
 | ls /tmp/newdirectory                                                         |
 | ```                                                                          |
+|                                                                              |
 +==============================================================================+
 
 [ls] ls /tmp/missing terminated with status code 1
