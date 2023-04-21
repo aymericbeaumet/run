@@ -137,8 +137,8 @@ where
 {
     patterns
         .into_iter()
-        .map(|pattern| format!("{}/{}", CARGO_MANIFEST_DIR, pattern))
-        .flat_map(|pattern| glob(&pattern).unwrap().map(|entry| entry.unwrap()))
+        .map(|pattern| format!("{CARGO_MANIFEST_DIR}/{pattern}"))
+        .flat_map(|pattern| glob(&pattern).unwrap().map(Result::unwrap))
         .map(|file| {
             let test_name = &file.strip_prefix(CARGO_MANIFEST_DIR).unwrap();
             let test_name = test_name.to_str().unwrap().to_string();
@@ -148,7 +148,7 @@ where
 
 /// patch performs a few operations to make sure the tests run nicely on all platforms:
 /// 0. it trims the string
-/// 1. it replaces $CARGO_MANIFEST_DIR with the actual path. This is useful as some path are
+/// 1. it replaces `$CARGO_MANIFEST_DIR` with the actual path. This is useful as some path are
 ///    actually absolute path, and we don't want to hardcode the absolute path in the test files.
 /// 2. it deletes windows extended length marker (\\?\)
 /// 3. it replaces the windows EOL with unix EOL
@@ -177,7 +177,7 @@ fn install_local_coreutils() -> PathBuf {
         ));
 
     if !root.is_dir() {
-        let _ = std::fs::remove_dir_all(&root);
+        let _: Result<_, _> = std::fs::remove_dir_all(&root);
         let mut cmd = std::process::Command::new(env!("CARGO"));
         cmd.arg("install");
         cmd.arg("--debug");
