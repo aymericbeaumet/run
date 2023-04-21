@@ -28,7 +28,7 @@ mode = "parallel"
 
 ## Tmux
 
-The commands are executed in individual tmux panes. No command execution will be blocked.
+The commands are executed in individual tmux panes stacked vertically. No command execution will be blocked.
 
 ```bash
 $ run -m tmux
