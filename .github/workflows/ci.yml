@@ -1,8 +1,5 @@
 name: ci
 
-permissions:
-  contents: write
-
 on:
   pull_request:
     paths-ignore: ["docs/**", "**/*.md"]
@@ -108,6 +105,8 @@ jobs:
   publish-release:
     needs: [build-release]
     runs-on: ubuntu-latest
+      permissions:
+        contents: write
     steps:
       - uses: actions/checkout@v3
         with:
@@ -143,17 +142,21 @@ jobs:
   publish-npm:
     needs: [publish-release]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: "https://registry.npmjs.org"
       - uses: actions/download-artifact@v3
         with:
           name: artifacts.json
           path: ./wrappers/node
-      - run: npm publish --access=public
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm install -g npm
+      - run: npm publish --provenance --access=public
         working-directory: ./wrappers/node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
