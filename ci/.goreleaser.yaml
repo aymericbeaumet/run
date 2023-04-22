@@ -31,11 +31,16 @@ builds:
           cmd: >-
             ./postbuild{{- " " -}}
 
-            {{ if eq .Arch "amd64" }}x86_64 {{- else if eq .Arch "arm64" }}aarch64 {{- else if eq
-            .Arch "386" }}i686 {{- else }}{{ .Arch }}{{ end }} {{- "-" -}} {{- if eq .Os "linux"
-            }}unknown-linux-gnu {{- else if eq .Os "darwin" }}apple-darwin {{- else if eq .Os
-            "windows" }}pc-windows-msvc {{- else if eq .Os "freebsd" }}unknown-freebsd {{- else }}{{
-            .Os }}{{ end }}
+            {{ if eq .Arch "amd64" }}x86_64
+            {{- else if eq .Arch "arm64" }}aarch64
+            {{- else if eq .Arch "386" }}i686
+            {{- else }}{{ .Arch }}{{ end }}
+            {{- "-" -}}
+            {{- if eq .Os "linux" }}unknown-linux-gnu
+            {{- else if eq .Os "darwin" }}apple-darwin
+            {{- else if eq .Os "windows" }}pc-windows-msvc
+            {{- else if eq .Os "freebsd" }}unknown-freebsd
+            {{- else }}{{ .Os }}{{ end }}
 
             {{- " " -}}{{ dir .Path -}}
 
@@ -47,10 +52,16 @@ archives:
     name_template: >-
       {{- .ProjectName }}-{{ .Version }}{{ "-" -}}
 
-      {{ if eq .Arch "amd64" }}x86_64 {{- else if eq .Arch "arm64" }}aarch64 {{- else if eq .Arch
-      "386" }}i686 {{- else }}{{ .Arch }}{{ end }} {{- "-" -}} {{- if eq .Os "linux"
-      }}unknown-linux-gnu {{- else if eq .Os "darwin" }}apple-darwin {{- else if eq .Os "windows"
-      }}pc-windows-msvc {{- else if eq .Os "freebsd" }}unknown-freebsd {{- else }}{{ .Os }}{{ end }}
+      {{ if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}aarch64
+      {{- else if eq .Arch "386" }}i686
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- "-" -}}
+      {{- if eq .Os "linux" }}unknown-linux-gnu
+      {{- else if eq .Os "darwin" }}apple-darwin
+      {{- else if eq .Os "windows" }}pc-windows-msvc
+      {{- else if eq .Os "freebsd" }}unknown-freebsd
+      {{- else }}{{ .Os }}{{ end }}
 
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
