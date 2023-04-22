@@ -1,6 +1,6 @@
 {
   "name": "@aymericbeaumet/run-cli",
-  "version": "0.0.50",
+  "version": "0.0.51",
   "description": "A CLI to help you run any command",
   "author": "Aymeric Beaumet <hi@aymericbeaumet.com> (https://aymericbeaumet.com)",
   "keywords": [
