@@ -31,7 +31,7 @@ cargo install -f run-cli
 You can also install the latest master:
 
 ```bash
-cargo install -f --git https://github.com/aymericbeaumet/run-cli#master
+cargo install -f --git https://github.com/aymericbeaumet/run-cli
 ```
 
 Once installed, have a look at the [Rust Developer Guide](./user-guide/run-for-rust-developers.md).
