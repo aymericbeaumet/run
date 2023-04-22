@@ -1,13 +1,13 @@
 Processors are functions that process the output of your commands. They are already embedded in Run.
 See `run --help` for more information on how you can enable, disable or configure processors.
 
-> By default only the _prefix_ processor is enabled. You can disable all processors by using the `--raw` flag. This could give a visible performance improvement in some cases.
+{% hint style="info" %}
+You can disable all processors by using the `--raw` flag. This will cause Run to not capture stdout/stderr, and could give a visible performance improvement in some cases.
+{% endhint %}
 
 ## Prefix
 
-This processors prefixes stdout and stderr with the command name.
-
-> This processors is enabled by default.
+This processors prefixes stdout and stderr with the command name. This processor is enabled by default.
 
 ```bash
 $ run 'echo foobar'
