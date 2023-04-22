@@ -1,4 +1,5 @@
 module.exports = {
-  proseWrap: "always",
   endOfLine: "lf",
+  printWidth: 100,
+  proseWrap: "always",
 };

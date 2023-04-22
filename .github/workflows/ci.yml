@@ -42,8 +42,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - run:
-          cargo clippy --all-targets --all-features --verbose -- --deny warnings
+      - run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
 
   cargo-test:
     strategy:

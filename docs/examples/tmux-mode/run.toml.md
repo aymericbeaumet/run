@@ -1,8 +1,7 @@
 > This example is using a _literate Runfile_.
 > [Learn more](../../user-guide/runfile.md#literate-runfiles).
 
-This run starts three commands in individual panels grouped under a unique tmux
-window.
+This run starts three commands in individual panels grouped under a unique tmux window.
 
 ```toml
 mode = "tmux"

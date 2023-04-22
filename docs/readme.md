@@ -1,10 +1,10 @@
-Run is a lightweight, standalone tool that manages tasks and processes for you.
-It is entirely written in safe Rust, is working on all the major operating
-systems, and is virtually compatible with any stack or language.
+Run is a lightweight, standalone tool that manages tasks and processes for you. It is entirely
+written in safe Rust, is working on all the major operating systems, and is virtually compatible
+with any stack or language.
 
-This documentation should give you a good idea of how Run can be benefitial to
-you, and how you can get the most out of it. If you have questions, feel free to
-come [discuss](https://github.com/aymericbeaumet/run/discussions).
+This documentation should give you a good idea of how Run can be benefitial to you, and how you can
+get the most out of it. If you have questions, feel free to come
+[discuss](https://github.com/aymericbeaumet/run/discussions).
 
 ## Hello, World!
 
@@ -34,11 +34,10 @@ $ run
 [printf] World!
 ```
 
-This behavior is deterministic as Run executes the commands sequentially by
-default.
+This behavior is deterministic as Run executes the commands sequentially by default.
 
-> You will find if you run these examples that Run also prints the exit code on
-> the standard error. For brevity it has been omitted in the samples above.
+> You will find if you run these examples that Run also prints the exit code on the standard error.
+> For brevity it has been omitted in the samples above.
 
 ## Next steps
 
