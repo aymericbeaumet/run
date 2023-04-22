@@ -11,9 +11,9 @@ This method requires [npm](https://docs.npmjs.com/downloading-and-installing-nod
 installed on your machine.
 
 ```bash
-npm install -D @run-cli/run-cli
-yarn add -D @run-cli/run-cli
-pnpm add -D @run-cli/run-cli
+npm install -D @aymericbeaumet/run-cli
+yarn add -D @aymericbeaumet/run-cli
+pnpm add -D @aymericbeaumet/run-cli
 ```
 
 Once installed, have a look at the
