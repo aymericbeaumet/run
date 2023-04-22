@@ -18,6 +18,14 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run prettier-check
+
   cargo-fmt:
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +42,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - run: cargo clippy --all-targets --all-features --verbose -- --deny warnings
+      - run:
+          cargo clippy --all-targets --all-features --verbose -- --deny warnings
 
   cargo-test:
     strategy:
@@ -48,7 +57,7 @@ jobs:
 
   build-release:
     if: startsWith(github.event.ref, 'refs/tags/')
-    needs: [cargo-fmt, cargo-clippy, cargo-test]
+    needs: [prettier, cargo-fmt, cargo-clippy, cargo-test]
     strategy:
       matrix:
         include:

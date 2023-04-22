@@ -1,4 +1,5 @@
-> This example is using a _literate Runfile_. [Learn more](../../user-guide/runfile.md#literate-runfiles).
+> This example is using a _literate Runfile_.
+> [Learn more](../../user-guide/runfile.md#literate-runfiles).
 
 This example shows how you can run redis and your node server in tmux mode.
 
