@@ -38,10 +38,7 @@ module.exports = class Wrapper {
           }
 
           Wrapper._installBinary(
-            path.join(
-              extractedDir,
-              this.binPrefix + this.binName + this.binSuffix
-            ),
+            path.join(extractedDir, this.binPrefix + this.binName + this.binSuffix),
             this.binDest,
             (err) => {
               if (err) {
@@ -61,18 +58,11 @@ module.exports = class Wrapper {
       if (err) {
         return cb(err);
       }
-      const outfile = path.join(
-        dir,
-        url.toString().replace(/[^a-zA-Z0-9.]/g, "_")
-      );
+      const outfile = path.join(dir, url.toString().replace(/[^a-zA-Z0-9.]/g, "_"));
 
       Wrapper._httpsGet(url, (res) => {
         if (res.statusCode !== 200) {
-          return cb(
-            new Error(
-              `Unexpected status code ${res.statusCode} when requesting ${url}`
-            )
-          );
+          return cb(new Error(`Unexpected status code ${res.statusCode} when requesting ${url}`));
         }
 
         res
@@ -146,18 +136,12 @@ module.exports = class Wrapper {
         return platform;
       }
     }
-    throw new Error(
-      `Your platform has type=${type} and arch=${arch}, and is not supported.`
-    );
+    throw new Error(`Your platform has type=${type} and arch=${arch}, and is not supported.`);
   }
 
   static _httpsGet(url, cb) {
     https.get(url, (res) => {
-      if (
-        res.statusCode > 300 &&
-        res.statusCode < 400 &&
-        res.headers.location
-      ) {
+      if (res.statusCode > 300 && res.statusCode < 400 && res.headers.location) {
         res.on("data", () => {}); // consume all data so the script does not hang
         res.on("end", () => Wrapper._httpsGet(res.headers.location, cb));
       } else {

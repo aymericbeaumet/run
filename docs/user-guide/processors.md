@@ -1,13 +1,14 @@
 Processors are functions that process the output of your commands. They are already embedded in Run.
 See `run --help` for more information on how you can enable, disable or configure processors.
 
-> By default only the _prefix_ processor is enabled. You can disable all processors by using the `--raw` flag. This could give a visible performance improvement in some cases.
+{% hint style="info" %} You can disable all processors by using the `--raw` flag. This will cause
+Run to not capture stdout/stderr, and could give a visible performance improvement in some cases.
+{% endhint %}
 
 ## Prefix
 
-This processors prefixes stdout and stderr with the command name.
-
-> This processors is enabled by default.
+This processors prefixes stdout and stderr with the command name. This processor is enabled by
+default.
 
 ```bash
 $ run 'echo foobar'
@@ -17,9 +18,12 @@ $ run 'echo foobar'
 
 ## OpenAI
 
-You can enable the OpenAI processor to ask ChatGPT for feedback when your command fails. A prompt is sent with stderr every time it fails. Keep an eye on the usage, and I'd recommend to set [billing limits](https://platform.openai.com/account/billing/limits) just in case.
+You can enable the OpenAI processor to ask ChatGPT for feedback when your command fails. A prompt is
+sent with stderr every time it fails. Keep an eye on the usage, and I'd recommend to set
+[billing limits](https://platform.openai.com/account/billing/limits) just in case.
 
-You need an active [OpenAI account](https://platform.openai.com/account) and an [API key](https://platform.openai.com/account/api-keys) for this to work.
+You need an active [OpenAI account](https://platform.openai.com/account) and an
+[API key](https://platform.openai.com/account/api-keys) for this to work.
 
 ````bash
 $ RUN_CLI_OPENAI_ENABLED=true RUN_CLI_OPENAI_API_KEY=<key> run 'ls /tmp/missing'

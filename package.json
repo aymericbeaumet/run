@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "scripts": {
+    "prettier": "prettier --write .",
+    "prettier-check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "2.8.7",
+    "prettier-plugin-toml": "0.3.1"
+  }
+}
