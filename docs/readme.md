@@ -20,12 +20,12 @@ You could also use a Runfile to achieve the same result:
 
 ```toml
 # run.toml
-
 [[run]]
 cmd = ["echo", "Hello,"]
 
 [[run]]
 cmd = ["printf", "World!"]
+
 ```
 
 ```bash

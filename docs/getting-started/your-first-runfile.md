@@ -6,4 +6,5 @@ cmd = ["command1", "arg"]
 
 [[run]]
 cmd = ["command2", "arg"]
+
 ```

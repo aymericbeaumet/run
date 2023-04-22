@@ -18,4 +18,5 @@ cmd = ["uname", "-a"]
 [[run]]
 name = "df"
 cmd = ["df", "-h"]
+
 ```

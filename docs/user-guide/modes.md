@@ -14,6 +14,7 @@ $ run -m sequential
 ```toml
 # in your run.toml
 mode = "sequential"
+
 ```
 
 ## Parallel
@@ -28,6 +29,7 @@ $ run -m parallel
 ```toml
 # in your run.toml
 mode = "parallel"
+
 ```
 
 ## Tmux
@@ -43,4 +45,5 @@ $ run -m tmux
 ```toml
 # in your run.toml
 mode = "tmux"
+
 ```
