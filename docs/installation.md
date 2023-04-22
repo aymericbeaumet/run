@@ -11,10 +11,9 @@ This method requires [npm](https://docs.npmjs.com/downloading-and-installing-nod
 installed on your machine.
 
 ```bash
-# install latest stable
-npm install -D @aymericbeaumet/run-cli
-yarn add -D @aymericbeaumet/run-cli
-pnpm add -D @aymericbeaumet/run-cli
+npm install -D @run-cli/run-cli
+yarn add -D @run-cli/run-cli
+pnpm add -D @run-cli/run-cli
 ```
 
 Once installed, have a look at the
@@ -26,11 +25,13 @@ This method requires the [Rust toolchain](https://www.rust-lang.org/tools/instal
 on your machine.
 
 ```bash
-# install latest stable
 cargo install -f run-cli
+```
 
-# install latest master
-cargo install -f --git https://github.com/aymericbeaumet/run-cli
+You can also install the latest master:
+
+```bash
+cargo install -f --git https://github.com/aymericbeaumet/run-cli#master
 ```
 
 Once installed, have a look at the [Rust Developer Guide](./user-guide/run-for-rust-developers.md).
