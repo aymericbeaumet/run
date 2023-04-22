@@ -1,12 +1,12 @@
 module.exports = {
   endOfLine: "lf",
   printWidth: 100,
-  proseWrap: "always",
+  proseWrap: "preserve",
   overrides: [
     {
-      files: "*.yaml",
+      files: "*.md",
       options: {
-        proseWrap: "preserve",
+        proseWrap: "always",
       },
     },
   ],
