@@ -153,7 +153,7 @@ jobs:
         with:
           name: artifacts.json
           path: ./wrappers/node
-      - run: npm publish --access=public --provenance
+      - run: npm publish --access=public
         working-directory: ./wrappers/node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
