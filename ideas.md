@@ -1,4 +1,4 @@
-- Add support for remote runs (e.g.: over https)
+- Add support for remote Runfiles (e.g.: over https)
 - Detect http://....:... patterns in stdout, and add them to panel title in tmux
 - Add a "wait_for" condition to config to allow waiting for a specific state (e.g.: http//.../health returns 200)
 - Allow to configure options for specific tags
@@ -12,8 +12,6 @@
 - tmux: use `run -f /dev/null 'command' inside each panel (prefix, openai, watcher, etc)`
 - Add support for micro-services discovery (k8s, consul, docker, etc)
 - Output dependency graph in dot format
-- GitHub release checksum
-- Homebrew release
 - Add native support for a local .bin directory
 
 [production-ready]
