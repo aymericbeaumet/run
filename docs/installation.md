@@ -4,7 +4,7 @@
 brew install aymericbeaumet/tap/run-cli
 ```
 
-## Using Node.js [![npm](https://img.shields.io/npm/v/@run-cli/run)](https://www.npmjs.com/package/@run-cli/run)
+## Using Node.js [![npm](https://img.shields.io/npm/v/@aymericbeaumet/run-cli)](https://www.npmjs.com/package/@aymericbeaumet/run-cli)
 
 This method requires [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm),
 [yarn](https://yarnpkg.com/getting-started/install), or [pnpm](https://pnpm.io/installation) to be
