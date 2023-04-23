@@ -85,7 +85,8 @@ changelog:
       order: 999
 
 brews:
-  - tap:
+  - name: run-cli
+    tap:
       owner: aymericbeaumet
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TOKEN }}"
