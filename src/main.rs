@@ -3,6 +3,7 @@ mod config;
 mod executor;
 mod processors;
 mod runner;
+mod watcher;
 
 use config::{Command, Config};
 use runner::{Runner, RunnerOptions};

@@ -1,3 +1,4 @@
+use crate::runner::RunnerWatch;
 use crate::runner::{
     RunnerCommand, RunnerLog, RunnerMode, RunnerOpenai, RunnerOptions, RunnerPrefix, RunnerTmux,
 };
@@ -10,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 /*
- * Shared configuration for the command line interface and the TOML configuration file.
+ * Shared configuration for both the command line interface and the TOML configuration file.
  */
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Parser, Merge)]
@@ -53,7 +54,7 @@ pub struct Config {
         long,
         env = "RUN_CLI_RAW",
         help = "Output only stdout and stderr. Disabling all processors (prefix, openai, etc)",
-        // boolean options
+        // shared between all boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
         value_name = "true|false"
@@ -81,6 +82,19 @@ pub struct Config {
     pub tmux: Tmux,
 
     #[arg(
+        short,
+        long,
+        env = "RUN_CLI_WATCH",
+        help = "Watch for changes and restart the commands.",
+        // shared between all boolean options
+        value_parser = clap::builder::BoolishValueParser::new(),
+        hide_possible_values = true,
+        value_name = "true|false"
+    )]
+    #[serde(rename = "watch")]
+    pub watch: Option<Option<bool>>,
+
+    #[arg(
         long,
         env = "RUN_CLI_WORKDIR",
         help = "Change the base working directory of all commands"
@@ -95,17 +109,20 @@ pub struct Command {
     #[serde(rename = "cmd")]
     pub command_cmd: Vec<String>,
 
+    #[serde(rename = "description")]
+    pub command_description: Option<String>,
+
     #[serde(rename = "env")]
     pub command_envs: Vec<String>,
 
     #[serde(rename = "name")]
     pub command_name: Option<String>,
 
-    #[serde(rename = "description")]
-    pub command_description: Option<String>,
-
     #[serde(rename = "tags")]
     pub command_tags: Vec<String>,
+
+    #[serde(rename = "watch")]
+    pub command_watch: Option<bool>,
 
     #[serde(rename = "workdir")]
     pub command_workdir: Option<PathBuf>,
@@ -118,7 +135,7 @@ pub struct Log {
         long = "log-enabled",
         env = "RUN_CLI_LOG_ENABLED",
         help = "Set to false to disable all logs (does not affect processes outputs)",
-        // boolean options
+        // shared between all boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
         value_name = "true|false"
@@ -130,7 +147,7 @@ pub struct Log {
         long = "log-spawns",
         env = "RUN_CLI_LOG_SPAWNS",
         help = "Whether the spawn messages should be logged",
-        // boolean options
+        // shared between all boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
         value_name = "true|false"
@@ -142,7 +159,7 @@ pub struct Log {
         long = "log-terminations",
         env = "RUN_CLI_LOG_TERMINATIONS",
         help = "Whether the termination messages should be logged",
-        // boolean options
+        // shared between all boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
         value_name = "true|false"
@@ -158,7 +175,7 @@ pub struct Openai {
         long = "openai-enabled",
         env = "RUN_CLI_OPENAI_ENABLED",
         help = "Call the OpenAI API with stderr to try and give you advices",
-        // boolean options
+        // shared between all boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
         value_name = "true|false"
@@ -199,7 +216,7 @@ pub struct Prefix {
         long = "prefix-enabled",
         env = "RUN_CLI_PREFIX_ENABLED",
         help = "Prefix each line from stdout and stderr with the command id",
-        // boolean options
+        // shared between all boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
         value_name = "true|false"
@@ -215,7 +232,7 @@ pub struct Tmux {
         long = "tmux-kill-duplicate-session",
         env = "RUN_CLI_TMUX_KILL_DUPLICATE_SESSION",
         help = "Kill the existing tmux session if it already exists",
-        // boolean options
+        // shared between all boolean options
         value_parser = clap::builder::BoolishValueParser::new(),
         hide_possible_values = true,
         value_name = "true|false"
@@ -358,6 +375,7 @@ impl TryFrom<Config> for RunnerOptions {
 
     fn try_from(config: Config) -> Result<Self, Self::Error> {
         let raw = resolve_bool(config.raw, false);
+        let watch = resolve_bool(config.watch, false);
 
         let workdir = config
             .workdir
@@ -399,6 +417,12 @@ impl TryFrom<Config> for RunnerOptions {
 
                 let tags = run.command_tags;
 
+                let watch = if run.command_watch.unwrap_or(watch) {
+                    RunnerWatch::Enabled
+                } else {
+                    RunnerWatch::Disabled
+                };
+
                 let workdir = run
                     .command_workdir
                     .map(|w| {
@@ -415,6 +439,7 @@ impl TryFrom<Config> for RunnerOptions {
                     envs,
                     name,
                     tags,
+                    watch,
                     workdir,
                 })
             })

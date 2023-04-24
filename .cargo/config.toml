@@ -19,4 +19,5 @@ rustflags = [
   "-Aclippy::option-option",
   "-Aclippy::print_stderr",
   "-Aclippy::print_stdout",
+  "-Aclippy::too-many-lines",
 ]

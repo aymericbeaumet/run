@@ -10,6 +10,7 @@ use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::process::ExitStatus;
 use tokio::process::Command;
+use tokio::sync::mpsc;
 
 pub struct Runner {
     commands: Vec<RunnerCommand>,
@@ -176,23 +177,14 @@ impl Runner {
 
     async fn exec(&self, cmd: &RunnerCommand) -> anyhow::Result<()> {
         let prefix = format!("[{}]", &cmd.name);
-        let mut executor = Executor::default();
+        let (tx, rx) = mpsc::channel(100);
 
-        if let RunnerOpenai::Enabled {
-            api_base_url,
-            api_key,
-        } = &self.openai
-        {
-            executor.push_err(processors::Openai::new(
-                api_base_url.clone(),
-                api_key.clone(),
-            ));
+        if matches!(cmd.watch, RunnerWatch::Enabled) {
+            let w = crate::watcher::Watcher::new(tx, [&cmd.workdir])?;
+            tokio::spawn(w.watch());
         }
 
-        if let RunnerPrefix::Enabled = self.prefix {
-            executor.push_out(processors::Prefix::new(prefix.clone()));
-            executor.push_err(processors::Prefix::new(prefix.clone()));
-        }
+        let executor = self.create_executor(&prefix);
 
         if self.log.spawns {
             eprintln!("{}", Self::format_spawn(&prefix, &cmd.program, &cmd.args));
@@ -210,6 +202,28 @@ impl Runner {
         }
 
         Ok(())
+    }
+
+    fn create_executor(&self, prefix: &str) -> Executor {
+        let mut executor = Executor::default();
+
+        if let RunnerOpenai::Enabled {
+            api_base_url,
+            api_key,
+        } = &self.openai
+        {
+            executor.push_err(processors::Openai::new(
+                api_base_url.clone(),
+                api_key.clone(),
+            ));
+        }
+
+        if let RunnerPrefix::Enabled = self.prefix {
+            executor.push_out(processors::Prefix::new(prefix.to_string()));
+            executor.push_err(processors::Prefix::new(prefix.to_string()));
+        }
+
+        executor
     }
 
     fn format_spawn(prefix: &str, program: &str, args: &[String]) -> String {
