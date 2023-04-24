@@ -1,19 +1,19 @@
 ## Using Homebrew
 
 ```bash
-brew install aymericbeaumet/tap/run-cli
+brew install aymericbeaumet/tap/run
 ```
 
-## Using Node.js [![npm](https://img.shields.io/npm/v/@aymericbeaumet/run-cli)](https://www.npmjs.com/package/@aymericbeaumet/run-cli)
+## Using Node.js [![npm](https://img.shields.io/npm/v/@aymericbeaumet/run)](https://www.npmjs.com/package/@aymericbeaumet/run)
 
 This method requires [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm),
 [yarn](https://yarnpkg.com/getting-started/install), or [pnpm](https://pnpm.io/installation) to be
 installed on your machine.
 
 ```bash
-npm install -D @aymericbeaumet/run-cli
-yarn add -D @aymericbeaumet/run-cli
-pnpm add -D @aymericbeaumet/run-cli
+npm install -D @aymericbeaumet/run
+yarn add -D @aymericbeaumet/run
+pnpm add -D @aymericbeaumet/run
 ```
 
 Once installed, have a look at the
@@ -31,7 +31,7 @@ cargo install -f run-cli
 You can also install the latest master:
 
 ```bash
-cargo install -f --git https://github.com/aymericbeaumet/run-cli
+cargo install -f --git https://github.com/aymericbeaumet/run
 ```
 
 Once installed, have a look at the [Rust Developer Guide](./user-guide/run-for-rust-developers.md).

@@ -3,7 +3,7 @@ const Wrapper = require("./wrapper");
 const pkg = require("./package.json");
 const artifacts = require("./artifacts.json");
 
-const assetsPrefix = `${pkg.repository.url}/releases/download/v${pkg.version}/`;
+const assetsPrefix = `${pkg.repository.url}/releases/download/${pkg.version}/`;
 const name = Object.keys(pkg.bin)[0];
 const dest = path.join(__dirname, pkg.bin[name]);
 
