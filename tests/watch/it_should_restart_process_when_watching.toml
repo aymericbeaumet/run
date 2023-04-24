@@ -1,0 +1,4 @@
+watch = true
+
+[[run]]
+cmd = ["coreutils", "echo", "bar"]

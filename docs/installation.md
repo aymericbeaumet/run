@@ -1,4 +1,4 @@
-## Using Homebrew
+## Using Homebrew [![GitHub Release](https://img.shields.io/github/v/release/aymericbeaumet/run)](https://github.com/aymericbeaumet/homebrew-tap/blob/master/Formula/run.rb)
 
 ```bash
 brew install aymericbeaumet/tap/run-cli
@@ -26,12 +26,6 @@ on your machine.
 
 ```bash
 cargo install -f run-cli
-```
-
-You can also install the latest master:
-
-```bash
-cargo install -f --git https://github.com/aymericbeaumet/run-cli
 ```
 
 Once installed, have a look at the [Rust Developer Guide](./user-guide/run-for-rust-developers.md).

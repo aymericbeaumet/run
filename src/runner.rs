@@ -255,6 +255,7 @@ pub struct RunnerCommand {
     pub envs: Vec<(String, String)>,
     pub name: String,
     pub tags: Vec<String>,
+    pub watch: RunnerWatch,
     pub workdir: PathBuf,
 }
 
@@ -306,4 +307,10 @@ pub struct RunnerTmux {
     pub program: String,
     pub session_prefix: String,
     pub socket_path: PathBuf,
+}
+
+#[derive(Debug, Serialize)]
+pub enum RunnerWatch {
+    Disabled,
+    Enabled,
 }
