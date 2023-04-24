@@ -85,7 +85,7 @@ changelog:
       order: 999
 
 brews:
-  - name: run-cli
+  - name: run
     tap:
       owner: aymericbeaumet
       name: homebrew-tap

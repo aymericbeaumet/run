@@ -1,6 +1,6 @@
 {
-  "name": "@aymericbeaumet/run-cli",
-  "version": "0.0.52",
+  "name": "@aymericbeaumet/run",
+  "version": "0.0.53",
   "description": "A CLI to help you run any command",
   "author": "Aymeric Beaumet <hi@aymericbeaumet.com> (https://aymericbeaumet.com)",
   "keywords": [
@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aymericbeaumet/run-cli"
+    "url": "https://github.com/aymericbeaumet/run"
   },
   "homepage": "https://run-cli.org",
   "bin": {
