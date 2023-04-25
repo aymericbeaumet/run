@@ -1,6 +1,6 @@
 mod cli;
 mod config;
-mod executor;
+mod executors;
 mod processors;
 mod runner;
 mod watcher;
